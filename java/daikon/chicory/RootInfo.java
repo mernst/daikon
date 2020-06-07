@@ -49,8 +49,7 @@ public class RootInfo extends DaikonVariableInfo {
     }
 
     // Print each parameter
-    root.addParameters(
-        mi.class_info, mi.member, Arrays.<String>asList(mi.arg_names), /*offset = */ "", depth);
+    root.addParameters(mi.class_info, mi.member, Arrays.<String>asList(mi.arg_names), depth);
 
     // debug_vars.log("exit enter_process%n");
 
@@ -83,8 +82,7 @@ public class RootInfo extends DaikonVariableInfo {
         depth);
 
     // Print arguments
-    root.addParameters(
-        mi.class_info, mi.member, Arrays.<String>asList(mi.arg_names), /*offset = */ "", depth);
+    root.addParameters(mi.class_info, mi.member, Arrays.<String>asList(mi.arg_names), depth);
 
     // Print return type information for methods only and not constructors
     if (mi.member instanceof Method) {
