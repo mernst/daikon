@@ -77,7 +77,8 @@ public class Chicory {
   public static boolean debug_transform = false;
 
   @Option("Print detailed information on variables being observed")
-  public static boolean debug_decl_print = false;
+  // TEMPORARY, for debugging
+  public static boolean debug_decl_print = true;
 
   @Option("Treat classes that match the regex as boot classes (do not instrument)")
   public static @Nullable Pattern boot_classes = null;

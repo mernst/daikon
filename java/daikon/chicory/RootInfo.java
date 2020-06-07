@@ -107,8 +107,8 @@ public class RootInfo extends DaikonVariableInfo {
   }
 
   /**
-   * Creates a RootInfo object for an object program point. This will include the class' fields and
-   * the "this" object.
+   * Creates a new RootInfo object for an object program point. This will include the class' fields
+   * and the "this" object.
    */
   public static RootInfo getObjectPpt(ClassInfo cinfo, int depth) {
     // debug_vars.clear("enter getObjectPpt: %s%n", cinfo);
@@ -126,7 +126,9 @@ public class RootInfo extends DaikonVariableInfo {
     return root;
   }
 
-  /** Creates a RootInfo object for a class program point. This will just include static fields. */
+  /**
+   * Creates a new RootInfo object for a class program point. This will just include static fields.
+   */
   public static RootInfo getClassPpt(ClassInfo cinfo, int depth) {
     // debug_vars.clear("enter getClassPpt: %s%n", cinfo);
 

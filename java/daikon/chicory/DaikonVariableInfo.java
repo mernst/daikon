@@ -217,7 +217,8 @@ public abstract class DaikonVariableInfo
   private StringBuilder getStringBuilder(StringBuilder offset) {
     StringBuilder theBuf = new StringBuilder();
 
-    theBuf.append(offset + name + DaikonWriter.lineSep);
+    theBuf.append(
+        offset + name + " [" + System.identityHashCode(this) + "]" + DaikonWriter.lineSep);
 
     StringBuilder childOffset = new StringBuilder(offset);
     childOffset.append("--");
@@ -390,7 +391,15 @@ public abstract class DaikonVariableInfo
     return buf.toString();
   }
 
-  /** Add the parameters of the given method to this node. */
+  /**
+   * Add the parameters of the given method to this node.
+   *
+   * @param method the method
+   * @param argnames the method's arguments
+   * @param offset the prefix for variables -- that is, the name of the object whose fields are
+   *     being printed. Is always "".
+   * @param depth the remaining depth to print variables to
+   */
   protected void addParameters(
       ClassInfo cinfo, Member method, List<String> argnames, String offset, int depth) {
     Class<?>[] arguments =
@@ -399,11 +408,11 @@ public abstract class DaikonVariableInfo
             : ((Method) method).getParameterTypes();
 
     debug_vars.log("enter addParameters%n");
-    Iterator<String> argnamesiter = argnames.iterator();
+    Iterator<String> argnamesIter = argnames.iterator();
     int param_offset = 0;
-    for (int i = 0; (i < arguments.length) && argnamesiter.hasNext(); i++) {
+    for (int i = 0; (i < arguments.length) && argnamesIter.hasNext(); i++) {
       Class<?> type = arguments[i];
-      String name = argnamesiter.next();
+      String name = argnamesIter.next();
       if (type.getName().equals("daikon.dcomp.DCompMarker")
           || type.getName().equals("java.lang.DCompMarker")) {
         continue;
@@ -413,7 +422,9 @@ public abstract class DaikonVariableInfo
       DaikonVariableInfo theChild =
           addParamDeclVar(cinfo, type, name, offset, depth, i, param_offset);
       param_offset++;
-      if ((type == Double.TYPE) || (type == Long.TYPE)) param_offset++;
+      if ((type == Double.TYPE) || (type == Long.TYPE)) {
+        param_offset++;
+      }
       assert cinfo.clazz != null : "@AssumeAssertion(nullness): need to check justification";
       theChild.addChildNodes(cinfo, type, name, offset, depth);
       debug_vars.exdent();
@@ -426,6 +437,9 @@ public abstract class DaikonVariableInfo
    * this node.
    *
    * @param type the class whose fields should all be added to this node
+   * @param offset the prefix for variables -- that is, the name of the object whose fields are
+   *     being printed
+   * @param depth the remaining depth to print variables to
    */
   @RequiresNonNull("#1.clazz")
   protected void addClassVars(
@@ -647,7 +661,9 @@ public abstract class DaikonVariableInfo
     addChild(newChild);
 
     boolean ignore = newChild.check_for_dup_names();
-    if (!ignore) newChild.checkForDerivedVariables(type, name, offset);
+    if (!ignore) {
+      newChild.checkForDerivedVariables(type, name, offset);
+    }
 
     debug_vars.log("exit addParamDeclVar%n");
     return newChild;
@@ -1359,10 +1375,15 @@ public abstract class DaikonVariableInfo
 
   /**
    * If the variable name has been seen before (which can happen with statics and children of
-   * statics, set the flags so that the variable is not considered for decl or dtrace and return
+   * statics), set the flags so that the variable is not considered for decl or dtrace and return
    * true. Otherwise, do nothing and return false.
+   *
+   * @return true if this DaikonVariableInfo should be ignored (should not be printed)
    */
   private boolean check_for_dup_names() {
+
+    // TODO: It seems wrong to choose the first occurrence of the variable, which could be a nested
+    // occurrence rather than the canonical top-level occurrence.
 
     if (ppt_statics.contains(name)) {
       debug_vars.log("ignoring already included variable %s [%s]", name, getClass());

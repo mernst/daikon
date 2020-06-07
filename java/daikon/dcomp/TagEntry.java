@@ -2,6 +2,7 @@ package daikon.dcomp;
 
 import daikon.DynComp;
 import daikon.chicory.DaikonVariableInfo;
+import daikon.plumelib.bcelutil.SimpleLog;
 import daikon.plumelib.util.WeakIdentityHashMap;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ class TagEntry extends WeakReference<Object> {
   public static final WeakIdentityHashMap<Object, TagEntry> object_map =
       new WeakIdentityHashMap<Object, TagEntry>();
 
-  // private static SimpleLog debug = new SimpleLog(false);
+  private static SimpleLog debug = new SimpleLog(false);
 
   /**
    * Parent in the tree that represents the set for this element. If this, this entry is the
@@ -90,7 +91,7 @@ class TagEntry extends WeakReference<Object> {
    */
   public static void union(Object obj1, Object obj2) {
     assert (obj1 != null) && (obj2 != null);
-    // debug.log("union of '%s' and '%s'%n", obj1, obj2);
+    debug.log("union of '%s' and '%s'%n", obj1, obj2);
 
     TagEntry o1 = get_entry(obj1), o2 = get_entry(obj2);
     TagEntry r1 = o1.find(), r2 = o2.find();
