@@ -2095,6 +2095,9 @@ public final class DCRuntime {
    * the same comparability. Constructed classname variables are made comparable to other classname
    * variables only.
    *
+   * @param ps where to print the variables
+   * @param sets the comparability sets
+   * @param dv_tree the tree of variables
    * @param pptName used only for debugging output
    */
   private static void print_decl_vars(
@@ -2637,6 +2640,8 @@ public final class DCRuntime {
    * Merges any variables in the dest tree that are in the same set in the source tree. The source
    * tree's comparability is unchanged. Variables are identified by name.
    *
+   * @param src the comparability to read
+   * @param dest the comparability to modify
    * @param debuginfo information about this method call, for debugging
    */
   static void merge_dv_comparability(RootInfo src, RootInfo dest, String debuginfo) {
@@ -3169,7 +3174,12 @@ public final class DCRuntime {
     }
   }
 
-  /** Returns all of the daikonvariables in the tree rooted at dvi. */
+  /**
+   * Returns all of the daikonvariables in the tree rooted at dvi.
+   *
+   * @param dvi the tree of variables
+   * @return all the daikonvarables in the tree
+   */
   private static List<DaikonVariableInfo> varlist(DaikonVariableInfo dvi) {
     List<DaikonVariableInfo> list = new ArrayList<>();
     list.add(dvi);
