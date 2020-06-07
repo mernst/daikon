@@ -278,7 +278,7 @@ public abstract class DaikonVariableInfo
    * @param val the object whose value to print
    */
   @SuppressWarnings("unchecked")
-  public static String getDTraceValueString(Object val) {
+  public String getDTraceValueString(Object val) {
     if (isArray) {
       return getValueStringOfListWithMod((List<Object>) val); // unchecked cast
     } else {
@@ -287,7 +287,7 @@ public abstract class DaikonVariableInfo
   }
 
   /** Gets the value of an object and concatenates the associated "modified" integer. */
-  protected static String getValueStringOfObjectWithMod(Object theValue, boolean hashArray) {
+  protected String getValueStringOfObjectWithMod(Object theValue, boolean hashArray) {
     String retString = getValueStringOfObject(theValue, hashArray) + DaikonWriter.lineSep;
 
     if (theValue instanceof NonsensicalObject) {
@@ -303,7 +303,7 @@ public abstract class DaikonVariableInfo
    * Gets the value, but with no endline. If hashArray is true, it prints the "hash code" of the
    * array and not its separate values.
    */
-  private static String getValueStringOfObject(Object theValue, boolean hashArray) {
+  private String getValueStringOfObject(Object theValue, boolean hashArray) {
     if (theValue == null) {
       return "null";
     }
@@ -326,7 +326,7 @@ public abstract class DaikonVariableInfo
   }
 
   /** Get value string for a primitive (wrapped) object. */
-  private static String getPrimitiveValueString(Object obj) {
+  private String getPrimitiveValueString(Object obj) {
     assert (obj instanceof Runtime.PrimitiveWrapper)
         : "Objects passed to showPrimitive must implement PrimitiveWrapper"
             + DaikonWriter.lineSep
@@ -338,13 +338,13 @@ public abstract class DaikonVariableInfo
   }
 
   /** Gets a string representation of the values in an array. */
-  private static String getValueStringOfArray(Object array) {
+  private String getValueStringOfArray(Object array) {
     List<Object> theList = DTraceWriter.getListFromArray(array);
     return getValueStringOfList(theList);
   }
 
   /** Gets the Object's unique ID as a string. In other words, a "hash code". */
-  private static String getObjectHashCode(Object theObject) {
+  private String getObjectHashCode(Object theObject) {
     if (theObject == null) {
       return "null";
     } else if (theObject instanceof NonsensicalObject) {
@@ -358,7 +358,7 @@ public abstract class DaikonVariableInfo
    * Gets the list of values (as a string) from getValueStringOfList and concatenates the "modified"
    * value.
    */
-  private static String getValueStringOfListWithMod(List<Object> theValues) {
+  private String getValueStringOfListWithMod(List<Object> theValues) {
     String retString = getValueStringOfList(theValues) + DaikonWriter.lineSep;
 
     if (theValues instanceof NonsensicalList) {
@@ -375,7 +375,7 @@ public abstract class DaikonVariableInfo
    *
    * @param theValues the values to print out
    */
-  protected static String getValueStringOfList(List<Object> theValues) {
+  protected String getValueStringOfList(List<Object> theValues) {
     if (theValues == null) {
       return "null";
     }
