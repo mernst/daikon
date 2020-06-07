@@ -34,6 +34,7 @@ public class RootInfo extends DaikonVariableInfo {
 
     // Clear the set of static variables
     ppt_statics.clear();
+    ppt_statics_classes.clear();
 
     // Print class variables.   Print class variables first because
     // the depth goes deeper there ('this' is not counted).  This
@@ -69,6 +70,7 @@ public class RootInfo extends DaikonVariableInfo {
 
     // Clear the set of static variables
     ppt_statics.clear();
+    ppt_statics_classes.clear();
 
     // Print class variables.   Print class variables first because
     // the depth goes deeper there ('this' is not counted).  This
@@ -119,6 +121,7 @@ public class RootInfo extends DaikonVariableInfo {
 
     // Clear the set of static variables
     ppt_statics.clear();
+    ppt_statics_classes.clear();
 
     root.addClassVars(
         cinfo, /*dontPrintInstanceVars = */ false, cinfo.clazz, /*offset = */ "", depth);
@@ -141,6 +144,7 @@ public class RootInfo extends DaikonVariableInfo {
 
     // Clear the set of static variables
     ppt_statics.clear();
+    ppt_statics_classes.clear();
 
     root.addClassVars(
         cinfo, /*dontPrintInstanceVars = */ true, cinfo.clazz, /*offset = */ "", depth);

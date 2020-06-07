@@ -134,6 +134,12 @@ public abstract class DaikonVariableInfo
   protected static Set<String> ppt_statics = new HashSet<>();
 
   /**
+   * Set of fully qualified class names whose static variables have been printed, or are in the
+   * process of being printed.
+   */
+  protected static Set<Class<?>> ppt_statics_classes = new HashSet<>();
+
+  /**
    * Constructs a non-array-type DaikonVariableInfo object.
    *
    * @param theName the name of the variable
@@ -541,7 +547,8 @@ public abstract class DaikonVariableInfo
 
       // TODO: an alternate formulation would be
       //   if (is_static && !topLevelCall) continue;
-      // That isn't quite right because a static field could itself have static fields.
+      // That isn't quite right because a static field could itself have static fields, which we
+      // don't want to skip.
 
       // Skip any statics that have been already included
       if (is_static) {
@@ -678,6 +685,7 @@ public abstract class DaikonVariableInfo
     addChild(newChild);
 
     boolean ignore = newChild.check_for_dup_names();
+    assert !ignore;
     if (!ignore) {
       newChild.checkForDerivedVariables(type, name, offset);
     }
@@ -1213,9 +1221,7 @@ public abstract class DaikonVariableInfo
 
         addChild(newChild);
 
-        // Print out the class of each element in the array.  For
-        // some reason dfej doesn't include this on returned arrays
-        // or parameters.
+        // Print out the class of each element in the array.
         // The offset will only be equal to ""
         // if we are examining a local variable (parameter).
         if (!ignore) {
