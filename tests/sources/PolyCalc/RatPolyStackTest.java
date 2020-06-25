@@ -3,7 +3,7 @@ package PolyCalc;
 import junit.framework.*;
 import org.junit.Test;
 
-public class RatPolyStackTest extends TestCase {
+public class RatPolyStackTest {
   private RatPoly zero = new RatPoly(0, 0);
   private RatPoly one = new RatPoly(1, 0);
   private RatPoly two = new RatPoly(2, 0);

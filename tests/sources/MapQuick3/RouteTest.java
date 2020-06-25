@@ -5,11 +5,10 @@ import static MapQuick3.TestValues.TOLERANCE;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import junit.framework.TestCase;
 import org.junit.Test;
 
 /** Unit tests for the Route class */
-public class RouteTest extends TestCase {
+public class RouteTest {
 
   /** A Route with zero length * */
   private final Route routeZero;

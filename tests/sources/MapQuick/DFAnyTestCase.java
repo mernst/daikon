@@ -4,7 +4,7 @@ import MapQuick2.*;
 import java.util.Iterator;
 import junit.framework.*;
 
-public class DFAnyTestCase extends TestCase {
+public class DFAnyTestCase {
   /** @effects creates a new test which runs the given test in the given mode */
   public DFAnyTestCase(String name, TestRecord test) {
     super(name);

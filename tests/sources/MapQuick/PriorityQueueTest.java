@@ -4,7 +4,7 @@ import java.util.NoSuchElementException;
 import junit.framework.*;
 import org.junit.Test;
 
-public class PriorityQueueTest extends TestCase {
+public class PriorityQueueTest {
 
   public PriorityQueueTest(String name) {
     super(name);

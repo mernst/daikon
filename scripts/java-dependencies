@@ -7,10 +7,10 @@
 # to see what class files are built.  The class files are
 # built in a temporary directory which is later deleted.
 #
-#   sources     -- directory containing all of the possible sources
+#   sources     -- directory containing all of the possible sources.
 #   main        -- main files to compile.  Multiple files can be specified
-#                  (in quotes).  Must be full pathname to file
-#   javac       -- java compiler command to use.  Can just be 'javac'
+#                  (in quotes).  Must be full pathname to file.
+#   javac       -- java compiler command to use.  Can just be 'javac'.
 #
 #  The list of all files used by <main> is written to standard out.
 

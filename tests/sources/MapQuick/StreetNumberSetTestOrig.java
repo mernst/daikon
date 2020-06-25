@@ -6,7 +6,7 @@ import MapQuick1.*;
 import junit.framework.*;
 import org.junit.Test;
 
-public class StreetNumberSetTestOrig extends TestCase {
+public class StreetNumberSetTestOrig {
 
   public StreetNumberSetTestOrig(String name) {
     super(name);

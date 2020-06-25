@@ -4,7 +4,7 @@ import junit.framework.*;
 
 // This is just like VectorTest, but it calls the tests in a deterministic
 // order, so that the traces can be compared.
-public class VectorTestDeterministic13 extends TestCase {
+public class VectorTestDeterministic13 {
 
   public static void main(String[] args) {
     VectorTest13 t = new VectorTest13("foo");
@@ -23,5 +23,4 @@ public class VectorTestDeterministic13 extends TestCase {
     t.testRemoveElement();
     t.testRemoveAllElements();
   }
-
 }

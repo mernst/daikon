@@ -6,7 +6,7 @@ import junit.framework.*;
 import org.junit.Test;
 
 /** Unit tests for the GeoSegment class. */
-public class GeoSegmentTest extends TestCase {
+public class GeoSegmentTest {
 
   /** A GeoPoint object with the same data as eq2 * */
   private final GeoPoint eq1;

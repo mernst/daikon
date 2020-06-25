@@ -12,10 +12,11 @@ import java.lang.reflect.*;
  * example:
  *
  * <pre>
- * public class MathTest extends TestCase {
+ * public class MathTest {
  *     protected double fValue1;
  *     protected double fValue2;
  *
+ *   {@literal @}Before
  *    protected void setUp() {
  *         fValue1= 2.0;
  *         fValue2= 3.0;

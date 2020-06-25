@@ -5,7 +5,7 @@ import junit.framework.*;
 import org.junit.Before;
 import org.junit.Test;
 
-public class GeoSegmentTest extends TestCase {
+public class GeoSegmentTest {
 
   private static final double tolerance = GeoPointTest.tolerance;
 

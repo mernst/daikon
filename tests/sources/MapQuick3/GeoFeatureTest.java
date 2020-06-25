@@ -5,11 +5,10 @@ import static MapQuick3.TestValues.TOLERANCE;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import junit.framework.TestCase;
 import org.junit.Test;
 
 /** Unit tests for the GeoFeature class */
-public class GeoFeatureTest extends TestCase {
+public class GeoFeatureTest {
 
   /** A GeoFeature with zero length * */
   private final GeoFeature featZero;

@@ -10,7 +10,7 @@ import org.junit.Test;
 // upon itself; either immediately or if it ever reaches the same
 // GeoPoint twice.
 
-public class CompositeRouteTest extends TestCase {
+public class CompositeRouteTest {
 
   private static final double tolerance = GeoPointTest.tolerance;
 

@@ -3,7 +3,7 @@ package PolyCalc;
 import junit.framework.*;
 import org.junit.Test;
 
-public class RatPolyTest extends TestCase {
+public class RatPolyTest {
 
   private RatNum[] num =
       new RatNum[] {

@@ -3,7 +3,7 @@ package javautil;
 import junit.framework.*;
 import org.junit.Test;
 
-public class VectorTest13 extends TestCase {
+public class VectorTest13 {
 
   public static final int NUM = 5;
 

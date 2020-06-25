@@ -1,9 +1,8 @@
 package PolyCalc;
 
-import junit.framework.TestCase;
 import org.junit.Test;
 
-public class RatNumTest extends TestCase {
+public class RatNumTest {
 
   // naming convention used throughout class: spell out number in
   // variable as its constructive form.  Unary minus is notated with

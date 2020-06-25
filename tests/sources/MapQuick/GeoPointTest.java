@@ -5,7 +5,7 @@ import junit.framework.*;
 import org.junit.Before;
 import org.junit.Test;
 
-public class GeoPointTest extends TestCase {
+public class GeoPointTest {
 
   public static final double tolerance = 0.01;
 
@@ -29,7 +29,6 @@ public class GeoPointTest extends TestCase {
     gpEast = new GeoPoint(42358333, -71040699);
     gpNorth = new GeoPoint(42372821, -71060278);
     gpSouthEast = new GeoPoint(42343845, -71040699);
-    ;
     gpSouth = new GeoPoint(42343845, -71060278);
   }
 

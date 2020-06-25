@@ -4,7 +4,7 @@ import MapQuick2.*;
 import junit.framework.*;
 import org.junit.Test;
 
-public class StreetSegmentTest extends TestCase {
+public class StreetSegmentTest {
 
   public StreetSegmentTest(String name) {
     super(name);

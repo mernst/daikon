@@ -1,12 +1,11 @@
 package MapQuick3;
 
 import java.io.IOException;
-import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
 
 /** Unit tests for the WalkingRouteFormatter class. */
-public class WalkingRouteFormatterTest extends TestCase {
+public class WalkingRouteFormatterTest {
 
   private WalkingRouteFormatter mDirections;
   private Route mShortRoute;

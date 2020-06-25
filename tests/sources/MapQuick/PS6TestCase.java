@@ -6,7 +6,7 @@ import java.util.Iterator;
 import junit.framework.*;
 import org.junit.Test;
 
-public class PS6TestCase extends TestCase {
+public class PS6TestCase {
   /** indicates that the getDirections(Address x 2) interface should be tested */
   public static final int MODE_PROGRAMMATIC_ADT = 0;
 

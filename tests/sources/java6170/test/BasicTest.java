@@ -3,7 +3,7 @@ package java6170.test;
 import junit.framework.*;
 import org.junit.Test;
 
-public class BasicTest extends TestCase {
+public class BasicTest {
   public BasicTest(String name) {
     super(name);
   }
