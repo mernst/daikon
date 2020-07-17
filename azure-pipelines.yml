@@ -104,6 +104,11 @@ jobs:
     fetchDepth: 25
   - bash: ./scripts/test-kvasir.sh
     displayName: test-kvasir.sh
+  - task: PublishPipelineArtifact@1
+    condition: failed()
+    inputs:
+      targetPath: $(Pipeline.Workspace)/tests/kvasir-test/flex-pristine
+      artifactName: flex-pristine
 
 - job: kvasir_ubuntu_jdk11
   pool:
@@ -114,6 +119,11 @@ jobs:
     fetchDepth: 25
   - bash: ./scripts/test-kvasir.sh
     displayName: test-kvasir.sh
+  - task: PublishPipelineArtifact@1
+    condition: failed()
+    inputs:
+      targetPath: $(Pipeline.Workspace)/tests/kvasir-test/flex-pristine
+      artifactName: flex-pristine
 
 - job: typecheck_jdk8
   pool:
@@ -236,6 +246,11 @@ jobs:
     fetchDepth: 25
   - bash: ./scripts/test-kvasir.sh
     displayName: test-kvasir.sh
+  - task: PublishPipelineArtifact@1
+    condition: failed()
+    inputs:
+      targetPath: $(Pipeline.Workspace)/tests/kvasir-test/flex-pristine
+      artifactName: flex-pristine
 
 - job: kvasir_fedora_jdk11
   pool:
@@ -246,6 +261,11 @@ jobs:
     fetchDepth: 25
   - bash: ./scripts/test-kvasir.sh
     displayName: test-kvasir.sh
+  - task: PublishPipelineArtifact@1
+    condition: failed()
+    inputs:
+      targetPath: $(Pipeline.Workspace)/tests/kvasir-test/flex-pristine
+      artifactName: flex-pristine
 
 - job: quick_txt_diff_centos_jdk8
   pool:
@@ -340,6 +360,11 @@ jobs:
     fetchDepth: 25
   - bash: ./scripts/test-kvasir.sh
     displayName: test-kvasir.sh
+  - task: PublishPipelineArtifact@1
+    condition: failed()
+    inputs:
+      targetPath: $(Pipeline.Workspace)/tests/kvasir-test/flex-pristine
+      artifactName: flex-pristine
 
 - job: kvasir_centos_jdk11
   pool:
@@ -350,3 +375,8 @@ jobs:
     fetchDepth: 25
   - bash: ./scripts/test-kvasir.sh
     displayName: test-kvasir.sh
+  - task: PublishPipelineArtifact@1
+    condition: failed()
+    inputs:
+      targetPath: $(Pipeline.Workspace)/tests/kvasir-test/flex-pristine
+      artifactName: flex-pristine
