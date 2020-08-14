@@ -1,8 +1,8 @@
 package daikon.test;
 
 import static daikon.inv.Invariant.asInvClass;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import daikon.*;
 import daikon.inv.Invariant;
