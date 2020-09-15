@@ -11,8 +11,6 @@ import daikon.plumelib.bcelutil.StackTypes;
 import daikon.plumelib.options.Option;
 import daikon.plumelib.reflection.Signatures;
 import daikon.plumelib.util.EntryReader;
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -131,8 +129,8 @@ public class DCInstrument extends InstructionListUtils {
   protected @DotSeparatedIdentifiers String dcomp_prefix;
   /**
    * We add a dummy local variable to JDK methods during the initial jdk instrumentation (via
-   * BuildJDK) as a flag to indicate that the method needs to be re-instrumented at runtime. This is
-   * never done for Java 8.
+   * BuildJDK) as a flag to indicate that the method needs to be re-instrumented at run time. This
+   * is never done for Java 8.
    */
   protected static final String instrumentation_marker_variable = "DaIkOn_instrumented";
 
@@ -180,8 +178,6 @@ public class DCInstrument extends InstructionListUtils {
   static Map<String, Integer> class_access_map = new HashMap<>();
   /** Integer constant of access_flag value of ACC_ANNOTATION. */
   static Integer Integer_ACC_ANNOTATION = Integer.valueOf(Const.ACC_ANNOTATION);
-  /** Buffer size used when reading a '.class' file. */
-  private static final int BUFSIZE = 8192;
 
   /**
    * Array of classes whose fields are not initialized from java. Since the fields are not
@@ -850,7 +846,7 @@ public class DCInstrument extends InstructionListUtils {
    * signatures. Hence, we have adopted the following strategy: We will pre-instrument java.base in
    * order to add the instrumented versions of the JDK methods. However, these instrumented methods
    * are dummies that are missing external references to DCRuntime and will never be executed. At
-   * DynComp runtime we reinstrument these methods, discarding the bodies of the dummy versions and
+   * DynComp run time we reinstrument these methods, discarding the bodies of the dummy versions and
    * replacing them with the correctly instrumented versions.
    *
    * <p>A simpler approach would be to just instrument JDK classes as they are loaded. However, a
@@ -985,7 +981,7 @@ public class DCInstrument extends InstructionListUtils {
         }
 
         if (initial_jdk_instrument && has_code) {
-          // mark this method as needing to be reinstrumented at runtime
+          // mark this method as needing to be reinstrumented at run time
           mg.addLocalVariable(instrumentation_marker_variable, Type.INT, 0, null, null);
         }
         gen.addMethod(mg.getMethod());
@@ -1142,7 +1138,7 @@ public class DCInstrument extends InstructionListUtils {
         }
 
         if (initial_jdk_instrument && has_code) {
-          // mark this method as needing to be reinstrumented at runtime
+          // mark this method as needing to be reinstrumented at run time
           mg.addLocalVariable(instrumentation_marker_variable, Type.INT, 0, null, null);
         }
         gen.addMethod(mg.getMethod());
@@ -1638,7 +1634,7 @@ public class DCInstrument extends InstructionListUtils {
     // If this is an exit, push the return value and line number.
     // The return value
     // is stored in the local "return__$trace2_val"  If the return
-    // value is a primitive, wrap it in the appropriate runtime wrapper
+    // value is a primitive, wrap it in the appropriate run-time wrapper
     if (method_name.equals("exit")) {
       Type ret_type = mg.getReturnType();
       if (ret_type == Type.VOID) {
@@ -1726,7 +1722,7 @@ public class DCInstrument extends InstructionListUtils {
     // If this is an exit, push the return value and line number.
     // The return value
     // is stored in the local "return__$trace2_val"  If the return
-    // value is a primitive, wrap it in the appropriate runtime wrapper
+    // value is a primitive, wrap it in the appropriate run-time wrapper
     if (method_name.equals("exit_refs_only")) {
       Type ret_type = mg.getReturnType();
       if (ret_type == Type.VOID) {
@@ -2339,6 +2335,8 @@ public class DCInstrument extends InstructionListUtils {
       // we don't instrument lambda methods
       // BUG: BCEL doesn't know how to get classname from an
       // INVOKEDYNAMIC instruction.
+      // debug code
+      // System.out.printf("invokedynamic NOT the classname: %s%n", invoke.getClassName(pool));
       callee_instrumented = false;
     } else {
       classname = invoke.getClassName(pool);
@@ -2359,43 +2357,67 @@ public class DCInstrument extends InstructionListUtils {
         }
       }
 
-      if (invoke instanceof INVOKEINTERFACE) {
-        // debug code
-        // System.out.printf("invoke interface host: %s%n", gen.getClassName()+"."+mgen.getName());
-        // System.out.printf("invoke interface targ: %s%n", classname + "." + method_name);
-
-        // Check to see if the target class is marked Annotation.
-        // Note we cannot use classForName to inspect class as might trigger
-        // recursive call to Instrument which would not work at this point.
+      // There are two special cases we need to detect:
+      //   calls to annotations
+      //   calls to functional interfaces
+      //
+      // Annotation classes are never instrumented so we must set
+      // the callee_instrumented flag false.
+      //
+      // Functional interfaces are a bit more complicated. These are primarily (only?)
+      // used by Lambda functions.  Lambda methods are generated dynamically at
+      // run time via the InvokeDynamic instruction.  They are not seen by our
+      // ClassFileTransformer so are never instrumented.  Thus we must set the
+      // callee_instrumented flag false when we see a call to a Lambda method.
+      // The heuristic we use is to assume that any InvokeInterface or InvokeVirtual
+      // call to a functional interface is a call to a Lambda method.
+      //
+      // The java compiler detects functional interfaces automatically, but the
+      // user can declare their intent with the @FunctionInterface annotation.
+      // The Java runtime is annotated in this manner.  Hence, we look for this
+      // annotation to detect a call to a functional interface.  In practice, we
+      // could detect functional interfaces in a manner similar to the Java
+      // compiler, but for now we will go with this simpler method.
+      //
+      // Note that to simplfy our code we set the access flags for a functional
+      // interface to ANNOTATION in our class_access_map.
+      //
+      if (invoke instanceof INVOKEINTERFACE || invoke instanceof INVOKEVIRTUAL) {
+        // Check to see if we have seen this class before.
         Integer access = class_access_map.get(classname);
         if (access == null) {
-          // We have not seen this class before.
+          // We have not seen this class before. Check to see if the target class is
+          // an Annotation or a FunctionalInterface. Note we cannot use classForName
+          // to inspect the class as this might trigger a recursive call to Instrument
+          // which would not work at this point.
           URL class_url = ClassLoader.getSystemResource(classname.replace('.', '/') + ".class");
           if (class_url != null) {
             try {
               InputStream inputStream = class_url.openStream();
               if (inputStream != null) {
-                DataInputStream dataInputStream;
-                if (inputStream instanceof DataInputStream) {
-                  dataInputStream = (DataInputStream) inputStream;
-                } else {
-                  dataInputStream =
-                      new DataInputStream(new BufferedInputStream(inputStream, BUFSIZE));
+                // Parse the bytes of the classfile, die on any errors
+                ClassParser parser = new ClassParser(inputStream, classname + "<internal>");
+                JavaClass c = parser.parse();
+                access = c.getAccessFlags();
+
+                // Now check for FunctionalInterface
+                for (final AnnotationEntry item : c.getAnnotationEntries()) {
+                  if (item.getAnnotationType().endsWith("FunctionalInterface;")) {
+                    access = Integer_ACC_ANNOTATION;
+                    // debug code
+                    // System.out.println(item.getAnnotationType());
+                    break;
+                  }
                 }
-                if (dataInputStream.readInt() != Const.JVM_CLASSFILE_MAGIC) {
-                  throw new ClassFormatException(class_url + " is not a Java .class file");
-                }
-                // read and discard Version
-                dataInputStream.readUnsignedShort(); // minor version number
-                dataInputStream.readUnsignedShort(); // major version number
-                // read and discard ConstantPool
-                @SuppressWarnings("UnusedVariable") // side effect: skip constants in class file
-                ConstantPool discarded = new ConstantPool(dataInputStream);
-                // finally read what we are looking for
-                access = dataInputStream.readUnsignedShort();
-                class_access_map.put(classname, access);
                 // debug code
-                // System.out.printf("access flags: 0x%04X%n", access.intValue());
+                // if ((access.intValue() & Const.ACC_ANNOTATION) != 0) {
+                //   System.out.printf(
+                //       "invoke interface host: %s%n", gen.getClassName() + "." + mgen.getName());
+                //   System.out.printf(
+                //       "invoke interface targ: %s%n", classname + "." + method_name);
+                //   System.out.printf("access flags: 0x%04X%n", access.intValue());
+                // }
+                class_access_map.put(classname, access);
               } else {
                 // debug code
                 // System.out.printf("Unable to open stream: %s%n", class_url);
@@ -2417,6 +2439,8 @@ public class DCInstrument extends InstructionListUtils {
           callee_instrumented = false;
         }
 
+        // UNDONE: New code added above should handle the case below.  Need to find a test
+        // case and verify this code is no longer needed.
         // This is a bit of a hack.  An invokeinterface instruction with a
         // a target of "java.util.stream.<something>" might be calling a
         // Lambda method in which case we don't want to add the dcomp_marker.
@@ -2449,7 +2473,7 @@ public class DCInstrument extends InstructionListUtils {
           // TODO:
           // This is actually a general problem.  Correct solution would seem
           // to be a variation of "has_instrumented" to find target of virtual
-          // call at runtime.
+          // call at run time.
           // This is just a hack to get through PASCALI corpus.
           String super_class = gen.getSuperclassName();
           if (!super_class.equals("java.lang.Object") && BcelUtil.inJdk(super_class)) {
@@ -2572,6 +2596,10 @@ public class DCInstrument extends InstructionListUtils {
       return false;
     }
 
+    if (Instrument.is_transformer(classname.replace('.', '/'))) {
+      return false;
+    }
+
     // Special case the execution trace tool.
     if (classname.startsWith("minst.Minst")) {
       return false;
@@ -2688,9 +2716,9 @@ public class DCInstrument extends InstructionListUtils {
       // If the superclass has an instrumented method, call it
       // otherwise call the uninstrumented method.  This has to be
       // done inline, because the call to super can only take place
-      // in this class.  We check at runtime to see if the superclass
+      // in this class.  We check at run time to see if the superclass
       // has an instrumented version of the method.  This is safe because
-      // at runtime the superclass must already be loaded.
+      // at run time the superclass must already be loaded.
 
       // push the class of the superclass
       il.append(new LDC(pool.addClass(classname)));
@@ -4298,12 +4326,12 @@ public class DCInstrument extends InstructionListUtils {
         set_method = create_set_tag(gen, f, field_map.get(f));
       }
       if (initial_jdk_instrument) {
-        // mark this method as needing to be reinstrumented at runtime
+        // mark this method as needing to be reinstrumented at run time
         get_method.addLocalVariable(instrumentation_marker_variable, Type.INT, 0, null, null);
       }
       gen.addMethod(get_method.getMethod());
       if (initial_jdk_instrument) {
-        // mark this method as needing to be reinstrumented at runtime
+        // mark this method as needing to be reinstrumented at run time
         set_method.addLocalVariable(instrumentation_marker_variable, Type.INT, 0, null, null);
       }
       gen.addMethod(set_method.getMethod());
@@ -4341,12 +4369,12 @@ public class DCInstrument extends InstructionListUtils {
           set_method = create_set_tag(gen, f, field_map.get(f));
         }
         if (initial_jdk_instrument) {
-          // mark this method as needing to be reinstrumented at runtime
+          // mark this method as needing to be reinstrumented at run time
           get_method.addLocalVariable(instrumentation_marker_variable, Type.INT, 0, null, null);
         }
         gen.addMethod(get_method.getMethod());
         if (initial_jdk_instrument) {
-          // mark this method as needing to be reinstrumented at runtime
+          // mark this method as needing to be reinstrumented at run time
           set_method.addLocalVariable(instrumentation_marker_variable, Type.INT, 0, null, null);
         }
         gen.addMethod(set_method.getMethod());

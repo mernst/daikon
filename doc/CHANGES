@@ -20,6 +20,12 @@ Further documentation can be found in:
 
 ===========================================================================
 
+5.8.6 (forthcoming)
+
+DynComp handles lambdas (Java anonymous functions).
+
+===========================================================================
+
 5.8.4 (July 22, 2020)
 
 Moved the SplitDtrace class from the unnamed package to the daikon/ package.
@@ -304,7 +310,7 @@ Miscellaneous bug fixes and minor improvements.
 5.3.6 (July 5, 2016)
 
 A new front end for Simulink/Stateflow (SLSF) block diagrams is available.
-See https://bitbucket.org/verivital/hynger .
+See https://github.com/verivital/hynger .
 
 Fjalar/Kvasir:
  - DynComp has been modified to improve its accuracy and correct its
@@ -1190,7 +1196,7 @@ Chicory
         was resolved.
 
         In some circumstances, when classes are dynamically created at
-        runtime, Chicory would incorrectly determine that the class
+        run time, Chicory would incorrectly determine that the class
         was a user class (i.e., not part of the JDK).  This would
         result in classloader areas.  This has been resolved
 
@@ -2972,7 +2978,7 @@ Kvasir
   User Changes
 
     Kvasir now produces all of its output (both variable declarations and
-    runtime values) in one .dtrace file instead of as separate .decls and
+    run-time values) in one .dtrace file instead of as separate .decls and
     .dtrace files.  The --decls-file=<filename> command-line option forces
     Kvasir to generate separate .decls and .dtrace files, as before.
 

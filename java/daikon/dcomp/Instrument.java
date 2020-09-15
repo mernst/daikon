@@ -16,10 +16,16 @@ import org.checkerframework.dataflow.qual.Pure;
 
 public class Instrument implements ClassFileTransformer {
 
+  /** Directory for debug output. */
   File debug_dir;
+  /** Directory for debug instrumented class output. */
   File debug_bin_dir;
+  /** Directory for debug original class output. */
   File debug_orig_dir;
+  /** Have we seen a class member of a known transformer? */
+  static boolean transformer_seen = false;
 
+  /** Instrument class constructor. Setup debug directories, if needed. */
   public Instrument() {
     debug_dir = DynComp.debug_dir;
     debug_bin_dir = new File(debug_dir, "bin");
@@ -31,7 +37,7 @@ public class Instrument implements ClassFileTransformer {
     }
   }
 
-  /** Debug code for printing the current runtime call stack. */
+  /** Debug code for printing the current run-time call stack. */
   public static void print_call_stack() {
     StackTraceElement[] stack_trace;
     stack_trace = Thread.currentThread().getStackTrace();
@@ -142,6 +148,19 @@ public class Instrument implements ClassFileTransformer {
         if (DynComp.verbose) System.out.printf("Skipping is_dcomp class %s%n", className);
         return null;
       }
+
+      // Don't instrument other byte code transformers
+      if (is_transformer(className)) {
+        if (DynComp.verbose) System.out.printf("Skipping is_transformer class %s%n", className);
+        if (!transformer_seen) {
+          transformer_seen = true;
+          System.out.printf(
+              "DynComp warning: This program uses a Java byte code transformer: %s%n", className);
+          System.out.printf(
+              "This may interfere with the DynComp transformer and cause DynComp to fail.%n");
+        }
+        return null;
+      }
     }
 
     if (DynComp.verbose) {
@@ -189,6 +208,9 @@ public class Instrument implements ClassFileTransformer {
   /**
    * Returns whether or not the specified class is part of dcomp itself (and thus should not be
    * instrumented). Some Daikon classes that are used by DynComp are included here as well.
+   *
+   * @param classname class to be checked
+   * @return true if classname is a part of DynComp
    */
   @Pure
   private static boolean is_dcomp(String classname) {
@@ -201,6 +223,28 @@ public class Instrument implements ClassFileTransformer {
       return true;
     }
     if (classname.startsWith("daikon/plumelib")) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Returns whether or not the specified class is part of a tool known to do Java byte code
+   * transformation. We need to warn user this may not work correctly.
+   *
+   * @param classname class to be checked
+   * @return true if classname is a known transformer
+   */
+  @Pure
+  protected static boolean is_transformer(String classname) {
+
+    if (classname.startsWith("org/mockito")) {
+      return true;
+    }
+    if (classname.startsWith("org/objenesis")) {
+      return true;
+    }
+    if (classname.contains("ByMockito")) {
       return true;
     }
     return false;
