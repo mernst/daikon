@@ -438,6 +438,8 @@ all_directly: ../utils/plume-scripts ${AUTO_GENERATED_FILES} java_files.txt
 	rm -f `find daikon -name "*.class" -print`
 	echo "CLASSPATH = ${CLASSPATH}"
 	echo "DAIKON_CLASSPATH = ${DAIKON_CLASSPATH}"
+	echo "JAVA_RELEASE_NUMBER = ${JAVA_RELEASE_NUMBER}"
+	echo "JAVA_RELEASE_NUMBER_WITH_EA = ${JAVA_RELEASE_NUMBER_WITH_EA}"
 	${JAVAC} -version
 	${JAVAC_COMMAND} @java_files.txt
 	rm -f java_files.txt
