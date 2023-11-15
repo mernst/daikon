@@ -19,8 +19,8 @@ Further documentation can be found in:
    It is also available at http://plse.cs.washington.edu/daikon/download/api/ .
 
 
-Version 5.8.18 (??? ?, 2023)
-============================
+Version 5.8.18 (June 23, 2023)
+==============================
 
 Support Rocky Linux.
 

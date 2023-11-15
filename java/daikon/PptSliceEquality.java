@@ -21,15 +21,11 @@ import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /** Holds Equality invariants. */
 public class PptSliceEquality extends PptSlice {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20021231L;
 
   // Variables starting with dkconfig_ should only be set via the
@@ -68,18 +64,24 @@ public class PptSliceEquality extends PptSlice {
   // Not valid for this type of slice.  Always pretend there are enough.
   @Override
   public int num_samples(@UnknownInitialization @GuardSatisfied PptSliceEquality this) {
-    if (true) throw new Error();
+    if (true) {
+      throw new Error();
+    }
     return Integer.MAX_VALUE;
   }
 
   public int num_mod_samples() {
-    if (true) throw new Error();
+    if (true) {
+      throw new Error();
+    }
     return Integer.MAX_VALUE;
   }
 
   @Override
   public int num_values() {
-    if (true) throw new Error();
+    if (true) {
+      throw new Error();
+    }
     return Integer.MAX_VALUE;
   }
 
@@ -93,7 +95,7 @@ public class PptSliceEquality extends PptSlice {
 
     @Pure
     @Override
-    public int hashCode(@GuardSatisfied @UnknownSignedness VarInfoAndComparability this) {
+    public int hashCode(@GuardSatisfied VarInfoAndComparability this) {
       // This is very coarse but is about as good as we can do it.  Can't do hashcode of
       // the comparability because two comparabilities may be
       // comparable and yet be not the same.
@@ -181,7 +183,9 @@ public class PptSliceEquality extends PptSlice {
           debug.fine("   vi: " + vi + " aux : " + vi.aux);
         }
       }
-      if (Debug.logOn()) Debug.log(getClass(), parent, Debug.vis(eq.leader()), "Created");
+      if (Debug.logOn()) {
+        Debug.log(getClass(), parent, Debug.vis(eq.leader()), "Created");
+      }
       invCount++;
     }
     // Ensure determinism
@@ -229,7 +233,9 @@ public class PptSliceEquality extends PptSlice {
       List<VarInfo> vlist = varmap.computeIfAbsent(v, Collections::singletonList);
       Equality eq = new Equality(vlist, this);
       Integer sample_cnt = sample_cnt_map.get(v);
-      if (sample_cnt != null) eq.setSamples(sample_cnt.intValue());
+      if (sample_cnt != null) {
+        eq.setSamples(sample_cnt.intValue());
+      }
       v.equalitySet = eq;
       newInvs.add(eq);
     }
@@ -501,7 +507,9 @@ public class PptSliceEquality extends PptSlice {
             }
           }
         }
-        if (slice.invs.size() == 0) i.remove();
+        if (slice.invs.size() == 0) {
+          i.remove();
+        }
       }
     }
 

@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
@@ -152,7 +151,9 @@ public class DeclWriter extends DaikonWriter implements ComparabilityProvider {
     print_class_ppt(cinfo, cinfo.class_name + ":::CLASS", comp_info);
     print_object_ppt(cinfo, classObjectName(cinfo.clazz), comp_info);
 
-    if (debug) System.out.println("Exit printDeclClass");
+    if (debug) {
+      System.out.println("Exit printDeclClass");
+    }
   }
 
   /**
@@ -192,7 +193,9 @@ public class DeclWriter extends DaikonWriter implements ComparabilityProvider {
 
     // Print each variable
     for (DaikonVariableInfo childOfRoot : root) {
-      if (debug) System.out.println("method var: " + childOfRoot.getName());
+      if (debug) {
+        System.out.println("method var: " + childOfRoot.getName());
+      }
       traverse_decl(
           null,
           mi.is_static(),
@@ -205,7 +208,9 @@ public class DeclWriter extends DaikonWriter implements ComparabilityProvider {
 
     outFile.println();
 
-    if (debug) System.out.println("Exit print_method ");
+    if (debug) {
+      System.out.println("Exit print_method ");
+    }
   }
 
   /**
@@ -232,7 +237,9 @@ public class DeclWriter extends DaikonWriter implements ComparabilityProvider {
 
       // Print out the static fields
       for (DaikonVariableInfo childOfRoot : RootInfo.getClassPpt(cinfo, Runtime.nesting_depth)) {
-        if (debug) System.out.println("class var: " + childOfRoot.getName());
+        if (debug) {
+          System.out.println("class var: " + childOfRoot.getName());
+        }
         traverse_decl(
             null,
             false,
@@ -246,7 +253,9 @@ public class DeclWriter extends DaikonWriter implements ComparabilityProvider {
       outFile.println();
     }
 
-    if (debug) System.out.println("Exit print_class_ppt");
+    if (debug) {
+      System.out.println("Exit print_class_ppt");
+    }
   }
 
   /**
@@ -289,7 +298,9 @@ public class DeclWriter extends DaikonWriter implements ComparabilityProvider {
 
     // Write out the variables
     for (DaikonVariableInfo childOfRoot : root) {
-      if (debug) System.out.println("object var: " + childOfRoot.getName());
+      if (debug) {
+        System.out.println("object var: " + childOfRoot.getName());
+      }
       traverse_decl(
           cinfo,
           false,
@@ -302,7 +313,9 @@ public class DeclWriter extends DaikonWriter implements ComparabilityProvider {
 
     outFile.println();
 
-    if (debug) System.out.println("Exit print_object_ppt");
+    if (debug) {
+      System.out.println("Exit print_object_ppt");
+    }
   }
 
   /**
@@ -401,7 +414,7 @@ public class DeclWriter extends DaikonWriter implements ComparabilityProvider {
 
     @Override
     @Pure
-    public int hashCode(@GuardSatisfied @UnknownSignedness VarRelation this) {
+    public int hashCode(@GuardSatisfied VarRelation this) {
       return (parent_ppt_name.hashCode()
           + ((local_variable == null) ? 0 : local_variable.hashCode()));
     }
@@ -471,11 +484,15 @@ public class DeclWriter extends DaikonWriter implements ComparabilityProvider {
     // Go through all of the current node's children
     // and recurse
     for (DaikonVariableInfo child : var) {
-      if (debug) System.out.println("traverse var: " + child.getName());
+      if (debug) {
+        System.out.println("traverse var: " + child.getName());
+      }
       traverse_decl(cinfo, is_static_method, var, child, relation, relations, compare_ppt);
     }
 
-    if (debug) System.out.println("Exit traverse_decl");
+    if (debug) {
+      System.out.println("Exit traverse_decl");
+    }
   }
 
   /**
@@ -524,7 +541,9 @@ public class DeclWriter extends DaikonWriter implements ComparabilityProvider {
     if ((parent != null)
         && !var.isStatic()
         && !((relative_name != null) && relative_name.endsWith(".this"))) {
-      if (debug) System.out.println("traverse var parent: " + parent.getName());
+      if (debug) {
+        System.out.println("traverse var parent: " + parent.getName());
+      }
       outFile.println("  enclosing-var " + escape(parent.getName()));
     }
 
@@ -578,7 +597,9 @@ public class DeclWriter extends DaikonWriter implements ComparabilityProvider {
     if (compare_ppt != null) {
       comp_str = "-1";
       DeclReader.DeclVarInfo varinfo = compare_ppt.find_var(var.getName());
-      if (varinfo != null) comp_str = varinfo.get_comparability();
+      if (varinfo != null) {
+        comp_str = varinfo.get_comparability();
+      }
     } else {
       // Check to see if DynComp data is present.
       if (Runtime.comp_info != null) {

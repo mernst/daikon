@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,7 +35,6 @@ import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.StringsPlume;
@@ -58,9 +58,6 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
   /** Debugging Logger. */
   public static Logger debug = Logger.getLogger("daikon.VarInfoName");
 
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20020614L;
 
   /**
@@ -424,7 +421,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
    *
    * @return the name, in a debugging format
    */
-  public String repr(@GuardSatisfied @UnknownSignedness VarInfoName this) {
+  public String repr(@GuardSatisfied VarInfoName this) {
     // AAD: Used to be interned for space reasons, but removed during
     // profiling when it was determined that the interns are unique
     // anyway.
@@ -442,7 +439,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
    *
    * @return the name in a verbose debugging format
    */
-  protected abstract String repr_impl(@GuardSatisfied @UnknownSignedness VarInfoName this);
+  protected abstract String repr_impl(@GuardSatisfied VarInfoName this);
 
   // It would be nice if a generalized form of the mechanics of
   // interning were abstracted out somewhere.
@@ -583,8 +580,9 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
   /** Replace the first instance of node by replacement, in the data structure rooted at this. */
   public VarInfoName replace(
       @Interned VarInfoName this, VarInfoName node, VarInfoName replacement) {
-    if (node == replacement) // "interned": equality optimization pattern
-    return this;
+    if (node == replacement) { // "interned": equality optimization pattern
+      return this;
+    }
     Replacer r = new Replacer(node, replacement);
     return r.replace(this).intern();
   }
@@ -592,8 +590,9 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
   /** Replace all instances of node by replacement, in the data structure rooted at this. */
   public VarInfoName replaceAll(
       @Interned VarInfoName this, VarInfoName node, VarInfoName replacement) {
-    if (node == replacement) // "interned": equality optimization pattern
-    return this;
+    if (node == replacement) { // "interned": equality optimization pattern
+      return this;
+    }
 
     // assert ! replacement.hasNode(node); // no infinite loop
 
@@ -632,7 +631,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
   // returned string, so their hashCode()s should be the same.
   @Pure
   @Override
-  public int hashCode(@GuardSatisfied @UnknownSignedness VarInfoName this) {
+  public int hashCode(@GuardSatisfied VarInfoName this) {
     return repr().hashCode();
   }
 
@@ -660,13 +659,27 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
   // Manually re-intern any interned fields upon deserialization.
   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
     in.defaultReadObject();
-    if (name_cached != null) name_cached = name_cached.intern();
-    if (esc_name_cached != null) esc_name_cached = esc_name_cached.intern();
-    if (simplify_name_cached[0] != null) simplify_name_cached[0] = simplify_name_cached[0].intern();
-    if (simplify_name_cached[1] != null) simplify_name_cached[1] = simplify_name_cached[1].intern();
-    if (java_name_cached != null) java_name_cached = java_name_cached.intern();
-    if (jml_name_cached != null) jml_name_cached = jml_name_cached.intern();
-    if (dbc_name_cached != null) dbc_name_cached = dbc_name_cached.intern();
+    if (name_cached != null) {
+      name_cached = name_cached.intern();
+    }
+    if (esc_name_cached != null) {
+      esc_name_cached = esc_name_cached.intern();
+    }
+    if (simplify_name_cached[0] != null) {
+      simplify_name_cached[0] = simplify_name_cached[0].intern();
+    }
+    if (simplify_name_cached[1] != null) {
+      simplify_name_cached[1] = simplify_name_cached[1].intern();
+    }
+    if (java_name_cached != null) {
+      java_name_cached = java_name_cached.intern();
+    }
+    if (jml_name_cached != null) {
+      jml_name_cached = jml_name_cached.intern();
+    }
+    if (dbc_name_cached != null) {
+      dbc_name_cached = dbc_name_cached.intern();
+    }
   }
 
   // ============================================================
@@ -698,7 +711,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
     }
 
     @Override
-    protected String repr_impl(@GuardSatisfied @UnknownSignedness Simple this) {
+    protected String repr_impl(@GuardSatisfied Simple this) {
       return name;
     }
 
@@ -892,7 +905,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
     }
 
     @Override
-    protected String repr_impl(@GuardSatisfied @UnknownSignedness SizeOf this) {
+    protected String repr_impl(@GuardSatisfied SizeOf this) {
       return "SizeOf[" + sequence.repr() + "]";
     }
 
@@ -1044,7 +1057,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
     }
 
     @Override
-    protected String repr_impl(@GuardSatisfied @UnknownSignedness FunctionOf this) {
+    protected String repr_impl(@GuardSatisfied FunctionOf this) {
       return "FunctionOf{" + function + "}[" + argument.repr() + "]";
     }
 
@@ -1142,7 +1155,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
      *
      * @return a string representation of the elements of this
      */
-    private List<String> elts_repr(@GuardSatisfied @UnknownSignedness FunctionOfN this) {
+    private List<String> elts_repr(@GuardSatisfied FunctionOfN this) {
       List<String> elts = new ArrayList<>(args.size());
       for (VarInfoName vin : args) {
         elts.add(vin.repr());
@@ -1155,12 +1168,12 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
      *
      * @return comma-separated list of element names
      */
-    private String elts_repr_commas(@GuardSatisfied @UnknownSignedness FunctionOfN this) {
+    private String elts_repr_commas(@GuardSatisfied FunctionOfN this) {
       return String.join(", ", elts_repr());
     }
 
     @Override
-    protected String repr_impl(@GuardSatisfied @UnknownSignedness FunctionOfN this) {
+    protected String repr_impl(@GuardSatisfied FunctionOfN this) {
       return "FunctionOfN{" + function + "}[" + elts_repr_commas() + "]";
     }
 
@@ -1328,7 +1341,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
     }
 
     @Override
-    protected String repr_impl(@GuardSatisfied @UnknownSignedness Field this) {
+    protected String repr_impl(@GuardSatisfied Field this) {
       return "Field{" + field + "}[" + term.repr() + "]";
     }
 
@@ -1552,7 +1565,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
     }
 
     @Override
-    protected String repr_impl(@GuardSatisfied @UnknownSignedness TypeOf this) {
+    protected String repr_impl(@GuardSatisfied TypeOf this) {
       return "TypeOf[" + term.repr() + "]";
     }
 
@@ -1646,7 +1659,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
     }
 
     @Override
-    protected String repr_impl(@GuardSatisfied @UnknownSignedness Prestate this) {
+    protected String repr_impl(@GuardSatisfied Prestate this) {
       return "Prestate[" + term.repr() + "]";
     }
 
@@ -1756,7 +1769,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
     }
 
     @Override
-    protected String repr_impl(@GuardSatisfied @UnknownSignedness Poststate this) {
+    protected String repr_impl(@GuardSatisfied Poststate this) {
       return "Poststate[" + term.repr() + "]";
     }
 
@@ -1832,9 +1845,8 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
       return (amount < 0) ? String.valueOf(amount) : "+" + amount;
     }
 
-    @SuppressWarnings("signedness:method.invocation")
     @Override
-    protected String repr_impl(@GuardSatisfied @UnknownSignedness Add this) {
+    protected String repr_impl(@GuardSatisfied Add this) {
       return "Add{" + amount() + "}[" + term.repr() + "]";
     }
 
@@ -1927,7 +1939,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
     }
 
     @Override
-    protected String repr_impl(@GuardSatisfied @UnknownSignedness Elements this) {
+    protected String repr_impl(@GuardSatisfied Elements this) {
       return "Elements[" + term.repr() + "]";
     }
 
@@ -2108,7 +2120,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
     }
 
     @Override
-    protected String repr_impl(@GuardSatisfied @UnknownSignedness Subscript this) {
+    protected String repr_impl(@GuardSatisfied Subscript this) {
       return "Subscript{" + index.repr() + "}[" + sequence.repr() + "]";
     }
 
@@ -2223,7 +2235,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
     }
 
     @Override
-    protected String repr_impl(@GuardSatisfied @UnknownSignedness Slice this) {
+    protected String repr_impl(@GuardSatisfied Slice this) {
       return "Slice{"
           + ((i == null) ? "" : i.repr())
           + ","
@@ -3120,8 +3132,12 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
     public NoReturnValue visitSlice(Slice o) {
       result.add(o);
       o.sequence.accept(this);
-      if (o.i != null) o.i.accept(this);
-      if (o.j != null) o.j.accept(this);
+      if (o.i != null) {
+        o.i.accept(this);
+      }
+      if (o.j != null) {
+        o.j.accept(this);
+      }
       return null;
     }
   }
@@ -3324,7 +3340,7 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
       }
 
       @Override
-      protected String repr_impl(@GuardSatisfied @UnknownSignedness FreeVar this) {
+      protected String repr_impl(@GuardSatisfied FreeVar this) {
         return "Free[" + super.repr_impl() + "]";
       }
 
@@ -3423,7 +3439,9 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
         VarInfoName index_vin;
         if (index_base != null) {
           index_vin = index_base;
-          if (index_off != 0) index_vin = index_vin.applyAdd(index_off);
+          if (index_off != 0) {
+            index_vin = index_vin.applyAdd(index_off);
+          }
         } else {
           index_vin = new Simple(Integer.toString(index_off)).intern();
         }
@@ -3449,7 +3467,9 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
       } else if (unquants.size() == 1) {
         VarInfoName index_vin;
         if (index_base != null) {
-          if (index_off != 0) index_base += "+" + index_off;
+          if (index_off != 0) {
+            index_base += "+" + index_off;
+          }
           if (free) {
             index_vin = new FreeVar(index_base);
           } else {
@@ -3835,44 +3855,39 @@ public abstract @Interned class VarInfoName implements Serializable, Comparable<
 
       // build the forall predicate
       String[] result = new String[(includeIndex ? 2 : 1) * roots.length + 2];
-      StringBuilder int_list, conditions;
+
+      StringJoiner int_list, conditions;
       {
         // "i j ..."
-        int_list = new StringBuilder();
+        int_list = new StringJoiner(" ");
         // "(AND (<= ai i) (<= i bi) (<= aj j) (<= j bj) ...)"
         // if elementwise, also insert "(EQ (- i ai) (- j aj)) ..."
-        conditions = new StringBuilder();
+        conditions = new StringJoiner(" ");
         for (int i = 0; i < qret.bound_vars.size(); i++) {
           VarInfoName[] boundv = qret.bound_vars.get(i);
           VarInfoName idx = boundv[0], low = boundv[1], high = boundv[2];
-          if (i != 0) {
-            int_list.append(" ");
-            conditions.append(" ");
-          }
-          int_list.append(idx.simplify_name());
-          conditions.append("(<= " + low.simplify_name() + " " + idx.simplify_name() + ")");
-          conditions.append(" (<= " + idx.simplify_name() + " " + high.simplify_name() + ")");
+          int_list.add(idx.simplify_name());
+          conditions.add("(<= " + low.simplify_name() + " " + idx.simplify_name() + ")");
+          conditions.add("(<= " + idx.simplify_name() + " " + high.simplify_name() + ")");
           if (elementwise && (i >= 1)) {
             VarInfoName[] _boundv = qret.bound_vars.get(i - 1);
             VarInfoName _idx = _boundv[0], _low = _boundv[1];
             if (_low.simplify_name().equals(low.simplify_name())) {
-              conditions.append(" (EQ " + _idx.simplify_name() + " " + idx.simplify_name() + ")");
+              conditions.add("(EQ " + _idx.simplify_name() + " " + idx.simplify_name() + ")");
             } else {
-              conditions.append(
-                  " (EQ (- " + _idx.simplify_name() + " " + _low.simplify_name() + ")");
-              conditions.append(" (- " + idx.simplify_name() + " " + low.simplify_name() + "))");
+              conditions.add(" (EQ (- " + _idx.simplify_name() + " " + _low.simplify_name() + ")");
+              conditions.add("(- " + idx.simplify_name() + " " + low.simplify_name() + "))");
             }
           }
           if (i == 1 && (adjacent || distinct)) {
             VarInfoName[] _boundv = qret.bound_vars.get(i - 1);
             VarInfoName prev_idx = _boundv[0];
             if (adjacent) {
-              conditions.append(
-                  " (EQ (+ " + prev_idx.simplify_name() + " 1) " + idx.simplify_name() + ")");
+              conditions.add(
+                  "(EQ (+ " + prev_idx.simplify_name() + " 1) " + idx.simplify_name() + ")");
             }
             if (distinct) {
-              conditions.append(
-                  " (NEQ " + prev_idx.simplify_name() + " " + idx.simplify_name() + ")");
+              conditions.add("(NEQ " + prev_idx.simplify_name() + " " + idx.simplify_name() + ")");
             }
           }
         }

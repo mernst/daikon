@@ -66,7 +66,6 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signedness.qual.PolySigned;
-import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.ArraysPlume;
@@ -83,9 +82,6 @@ import org.plumelib.util.ArraysPlume;
   "interning"
 })
 public final @Interned class VarInfo implements Cloneable, Serializable {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20060815L;
 
   /**
@@ -127,7 +123,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
    */
   private @Interned String str_name; // interned
 
-  /** returns the interned name of the variable */
+  /** returns the interned name of the variable. */
   @Pure
   public @Interned String name(@GuardSatisfied VarInfo this) {
     if (FileIO.new_decl_format) {
@@ -890,7 +886,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     VarInfo[] a_new = new VarInfo[len];
     for (int i = 0; i < len; i++) {
       a_new[i] = new VarInfo(a_old[i]);
-      if (a_old[i].derived != null) assert a_new[i].derived != null;
+      if (a_old[i].derived != null) {
+        assert a_new[i].derived != null;
+      }
       a_new[i].varinfo_index = a_old[i].varinfo_index;
       a_new[i].value_index = a_old[i].value_index;
     }
@@ -920,9 +918,8 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
    * @param o a reference
    * @return the argument or, if it is null, {@code "null"}
    */
-  @SuppressWarnings("signedness:cast.unsafe") // this cast should be considered safe
   private @PolySigned Object checkNull(
-      @GuardSatisfied @UnknownSignedness VarInfo this, @Nullable @PolySigned Object o) {
+      @GuardSatisfied VarInfo this, @Nullable @PolySigned Object o) {
     return (o == null) ? (@PolySigned Object) "null" : o;
   }
 
@@ -931,7 +928,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
    *
    * @return a complete string description of the variable
    */
-  public String repr(@UnknownSignedness VarInfo this) {
+  public String repr() {
     return "<VarInfo "
         + var_info_name // vin ok
         + ": "
@@ -1027,7 +1024,11 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     return (derived != null);
   }
 
-  /** returns the depth of derivation */
+  /**
+   * Returns the depth of derivation.
+   *
+   * @return the depth of derivation
+   */
   public int derivedDepth() {
     if (derived == null) {
       return 0;
@@ -1041,8 +1042,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
    *
    * @return all derived variables that build off this one
    */
-  @SuppressWarnings("signedness:argument") // needs ArraysPlume annotations
-  public List<Derivation> derivees(@UnknownSignedness VarInfo this) {
+  public List<Derivation> derivees() {
     ArrayList<Derivation> result = new ArrayList<>();
     // This method is only called from the debugging routine 'repr()'.
     // So let's protect ourselves from a mistake somewhere else.
@@ -1560,7 +1560,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
    * @return true if this VarInfo is the leader of its equality set
    */
   @Pure
-  public boolean isCanonical(@UnknownSignedness VarInfo this) {
+  public boolean isCanonical() {
     if (equalitySet == null) {
       return true;
     }
@@ -2274,7 +2274,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
       }
     }
 
-    if (relative_name != null) relative_name = relative_name.intern();
+    if (relative_name != null) {
+      relative_name = relative_name.intern();
+    }
   }
 
   // /**
@@ -2379,8 +2381,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
         // System.out.printf("viname = %s, applyPreMaybe=%s, findvar=%s%n",
         //                   viname, applyPreMaybe(viname),
         //                   ppt.findVar(applyPreMaybe(viname)));
-        if (Daikon.dkconfig_guardNulls == "always") // interned
-        return true;
+        if (Daikon.dkconfig_guardNulls == "always") { // interned
+          return true;
+        }
         if (Daikon.dkconfig_guardNulls == "missing") { // interned
           VarInfo vi = ppt.find_var_by_name(applyPreMaybe(viname).name());
           // Don't guard variables that don't exist.  This happends when
@@ -2556,8 +2559,12 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
         List<VarInfo> result = new ArrayList<>();
         if (shouldBeGuarded(o)) {
           result.addAll(o.sequence.accept(this));
-          if (o.i != null) result.addAll(o.i.accept(this));
-          if (o.j != null) result.addAll(o.j.accept(this));
+          if (o.i != null) {
+            result.addAll(o.i.accept(this));
+          }
+          if (o.j != null) {
+            result.addAll(o.j.accept(this));
+          }
         }
         // No call to addVar:  derived variable
         if (Invariant.debugGuarding.isLoggable(Level.FINE)) {
@@ -2644,8 +2651,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     } else { // new format
       List<VarInfo> result = new ArrayList<>();
 
-      if (Daikon.dkconfig_guardNulls == "never") // interned
-      return result;
+      if (Daikon.dkconfig_guardNulls == "never") { // interned
+        return result;
+      }
 
       // If this is never missing, nothing to guard
       if ((Daikon.dkconfig_guardNulls == "missing") // interned
@@ -2781,7 +2789,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
 
     @Pure
     @Override
-    public int hashCode(@GuardSatisfied @UnknownSignedness Pair this) {
+    public int hashCode(@GuardSatisfied Pair this) {
       return v1.hashCode() + v2.hashCode();
     }
 
@@ -2886,7 +2894,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     if (set) {
       set_is_param();
     } else {
-      if (FileIO.new_decl_format) var_flags.remove(VarFlags.IS_PARAM);
+      if (FileIO.new_decl_format) {
+        var_flags.remove(VarFlags.IS_PARAM);
+      }
       aux = aux.setValue(VarInfoAux.IS_PARAM, VarInfoAux.FALSE); // VIN
     }
   }
@@ -3655,7 +3665,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     String complete_index;
     if (!free) {
       int index = 0;
-      if (simplify_index_name != null) index = Integer.decode(simplify_index_name);
+      if (simplify_index_name != null) {
+        index = Integer.decode(simplify_index_name);
+      }
       index += index_off;
       complete_index = String.format("%d", index);
     } else {
@@ -3697,7 +3709,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     String complete_index;
     Quantify.Term lower = get_lower_bound();
     String lower_name = lower.simplify_name();
-    if (!(lower instanceof Quantify.Constant)) lower_name = String.format("|%s|", lower_name);
+    if (!(lower instanceof Quantify.Constant)) {
+      lower_name = String.format("|%s|", lower_name);
+    }
     if (index_off != 0) {
       if (lower instanceof Quantify.Constant) {
         complete_index = String.format("%d", ((Quantify.Constant) lower).get_value() + index_off);
@@ -3754,7 +3768,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     }
 
     // Get a free variable for each variable
-    if (vars.length == 1) vars = new VarInfo[] {vars[0], vars[0]};
+    if (vars.length == 1) {
+      vars = new VarInfo[] {vars[0], vars[0]};
+    }
     QuantifyReturn qret[] = Quantify.quantify(vars);
     return new String[] {qret[0].index.simplify_name(), qret[1].index.simplify_name()};
   }
@@ -3856,7 +3872,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
         }
       }
     } else {
-      if (isPrestate()) cnt++;
+      if (isPrestate()) {
+        cnt++;
+      }
       for (VarInfo vi = this; vi != null; vi = vi.enclosing_var) {
         cnt++;
       }
@@ -4053,8 +4071,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
       VarInfo seq, @Nullable VarInfo begin, int begin_shift, @Nullable VarInfo end, int end_shift) {
 
     String begin_str = inside_name(begin, seq.isPrestate(), begin_shift);
-    if (begin_str.equals("")) // interned if the null string, not interned otherwise
-    begin_str = "0";
+    if (begin_str.equals("")) { // interned if the null string, not interned otherwise
+      begin_str = "0";
+    }
     String end_str = inside_name(end, seq.isPrestate(), end_shift);
 
     VarInfoName begin_name;
@@ -4208,7 +4227,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
             subscript_parent = ((Prestate) VarInfoName.parse(subscript_parent)).term.name_impl();
           }
 
-          if (index_shift == -1) subscript_parent = subscript_parent + "-1";
+          if (index_shift == -1) {
+            subscript_parent = subscript_parent + "-1";
+          }
         }
         parent.parent_variable = apply_subscript(seq.parent_var_name(rid), subscript_parent);
       }
@@ -4252,7 +4273,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
       String func_name, @Nullable ProglangType type, VarInfo seq, int shift) {
 
     VarInfoName viname = seq.var_info_name.applyFunction(func_name);
-    if (func_name.equals("size")) viname = seq.var_info_name.applySize();
+    if (func_name.equals("size")) {
+      viname = seq.var_info_name.applySize();
+    }
     String shift_name = "";
     if (shift == -1) {
       viname = viname.applyDecrement();
