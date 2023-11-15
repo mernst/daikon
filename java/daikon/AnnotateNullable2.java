@@ -11,6 +11,7 @@ public class AnnotateNullable2 {
     @NonNull String method = ppt.ppt_name.getMethodName();
     @SuppressWarnings("nullness") // Java method, so getSignature() != null
     @NonNull String java_sig = ppt.ppt_name.getSignature();
+    @SuppressWarnings("UnusedVariable")
     String java_args = java_sig.replace(method, "");
     // System.out.printf("m/s/a = %s %s %s%n", method, java_sig, java_args);
     if (method.equals(ppt.ppt_name.getShortClassName())) {
