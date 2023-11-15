@@ -25,6 +25,7 @@ JAVA_VERSION_STRING_WITH_EA := $(shell javac -version 2>&1 | head -1 | cut "-d "
 JAVA_VERSION_STRING := $(shell javac -version 2>&1 | head -1 | cut "-d " -f2 | sed 's/-ea//')
 ifneq (,$(findstring start1.8,start$(JAVA_VERSION_STRING)))
   JAVA8 := 1
+  JAVA_RELEASE_NUMBER := 8
 else
   JAVA8 := 0
   JAVA_RELEASE_NUMBER := $(shell echo $(JAVA_VERSION_STRING) | sed 's/\([0-9]*\)\..*/\1/')
@@ -32,7 +33,7 @@ endif
 
 # Problem: Release 21-ea does not contain the "this-escape" lint flag.
 ifeq (${JAVA_RELEASE_NUMBER}, 21)
-  ifneq (${JAVA_RELEASE_NUMBER_WITH_EA}, 21-ea)
+  ifneq (${JAVA_VERSION_STRING_WITH_EA}, 21-ea)
     LINT_THIS_ESCAPE=-Xlint:-this-escape
   endif
 endif
@@ -439,7 +440,7 @@ all_directly: ../utils/plume-scripts ${AUTO_GENERATED_FILES} java_files.txt
 	echo "CLASSPATH = ${CLASSPATH}"
 	echo "DAIKON_CLASSPATH = ${DAIKON_CLASSPATH}"
 	echo "JAVA_RELEASE_NUMBER = ${JAVA_RELEASE_NUMBER}"
-	echo "JAVA_RELEASE_NUMBER_WITH_EA = ${JAVA_RELEASE_NUMBER_WITH_EA}"
+	echo "JAVA_VERSION_STRING_WITH_EA = ${JAVA_VERSION_STRING_WITH_EA}"
 	${JAVAC} -version
 	${JAVAC_COMMAND} @java_files.txt
 	rm -f java_files.txt
