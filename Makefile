@@ -586,7 +586,8 @@ daikon.jar: $(DAIKON_JAVA_FILES) $(patsubst %,java/%,$(DAIKON_RESOURCE_FILES))
 	cd java && find . \( -name "dcomp-rt*" \) -prune -o -name '*.class' -print \
 		| sort | xargs '-I{}' ${RSYNC_AR} '{}' ${TMPDIR}/daikon-jar
 
-	for filename in $(JAR_DIR)/java/lib/*.jar ; do cd ${TMPDIR}/daikon-jar; jar xf $$filename ; done
+	# make hamcrest and junit4 overwrite junit5 to get our special versions
+	for filename in $(JAR_DIR)/java/lib/*.jar $(JAR_DIR)/java/lib/hamcrest*.jar $(JAR_DIR)/java/lib/junit-4*.jar; do cd ${TMPDIR}/daikon-jar; jar xf $$filename ; done
 	(cd java; ${RSYNC_AR} $(DAIKON_RESOURCE_FILES) ${TMPDIR}/daikon-jar)
 	(cd java; ${RSYNC_AR} daikon/tools/runtimechecker/Main.doc daikon/tools/runtimechecker/InstrumentHandler.doc ${TMPDIR}/daikon-jar)
 	cd ${TMPDIR}/daikon-jar && \
@@ -718,16 +719,19 @@ showvars:
 	@echo "NEW_RELEASE_NAME =" $(NEW_RELEASE_NAME)
 	${MAKE} -C java showvars
 
-# If .git does not exist, then directory was created from a daikon archive file.
-update-libs: update-bibtex2web update-checklink update-html-tools update-plume-scripts update-run-google-java-format
-.PHONY: update-libs update-bibtex2web update-checklink update-html-tools update-plume-scripts update-run-google-java-format
+# If .git does not exist, then the directory was created from a Daikon archive file.
+update-libs: update-bibtex2web update-checklink update-git-scripts update-html-tools update-plume-scripts update-run-google-java-format
+.PHONY: update-libs update-bibtex2web update-checklink update-git-scripts update-html-tools update-plume-scripts update-run-google-java-format
+
+# Unfortunately, I don't see a way for the below not to output lots of "remote:" lines to the log.
+# But, I can avoid doing local output.
 
 update-bibtex2web:
 ifndef NONETWORK
 	if test -d utils/bibtex2web/.git ; then \
 	  (cd utils/bibtex2web && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/bibtex2web ; then \
-	  (mkdir -p utils && (git clone -q --depth 1 https://github.com/mernst/bibtex2web.git utils/bibtex2web || (sleep 1m && git clone -q --depth 1 https://github.com/mernst/bibtex2web.git utils/bibtex2web))) \
+	  (mkdir -p utils && (git clone -q --filter=blob:none https://github.com/mernst/bibtex2web.git utils/bibtex2web || (sleep 1m && git clone -q --filter=blob:none https://github.com/mernst/bibtex2web.git utils/bibtex2web))) \
 	fi
 endif
 
@@ -736,7 +740,16 @@ ifndef NONETWORK
 	if test -d utils/checklink/.git ; then \
 	  (cd utils/checklink && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/checklink ; then \
-	  (mkdir -p utils && (git clone -q --depth 1 https://github.com/plume-lib/checklink.git utils/checklink || (sleep 1m && git clone -q --depth 1 https://github.com/plume-lib/checklink.git utils/checklink))) \
+	  (mkdir -p utils && (git clone -q --filter=blob:none https://github.com/plume-lib/checklink.git utils/checklink || (sleep 1m && git clone -q --filter=blob:none https://github.com/plume-lib/checklink.git utils/checklink))) \
+	fi
+endif
+
+update-git-scripts:
+ifndef NONETWORK
+	if test -d utils/git-scripts/.git ; then \
+	  (cd utils/git-scripts && (git pull -q || (sleep 1m && (git pull || true)))) \
+	elif ! test -d utils/git-scripts ; then \
+	  (mkdir -p utils && (git clone -q --filter=blob:none https://github.com/plume-lib/git-scripts.git utils/git-scripts || (sleep 1m && git clone -q --filter=blob:none https://github.com/plume-lib/git-scripts.git utils/git-scripts))) \
 	fi
 endif
 
@@ -745,7 +758,7 @@ ifndef NONETWORK
 	if test -d utils/html-tools/.git ; then \
 	  (cd utils/html-tools && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/html-tools ; then \
-	  (mkdir -p utils && (git clone -q --depth 1 https://github.com/plume-lib/html-tools.git utils/html-tools || (sleep 1m && git clone -q --depth 1 https://github.com/plume-lib/html-tools.git utils/html-tools))) \
+	  (mkdir -p utils && (git clone -q --filter=blob:none https://github.com/plume-lib/html-tools.git utils/html-tools || (sleep 1m && git clone -q --filter=blob:none https://github.com/plume-lib/html-tools.git utils/html-tools))) \
 	fi
 endif
 
@@ -754,7 +767,7 @@ ifndef NONETWORK
 	if test -d utils/plume-scripts/.git ; then \
 	  (cd utils/plume-scripts && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/plume-scripts ; then \
-	  (mkdir -p utils && (git clone -q --depth 1 https://github.com/plume-lib/plume-scripts.git utils/plume-scripts || (sleep 1m && git clone -q --depth 1 https://github.com/plume-lib/plume-scripts.git utils/plume-scripts))) \
+	  mkdir -p utils && (git clone -q --filter=blob:none --depth 1 https://github.com/plume-lib/plume-scripts.git utils/plume-scripts || (sleep 1m && git clone -q --filter=blob:none --depth 1 https://github.com/plume-lib/plume-scripts.git utils/plume-scripts)) \
 	fi
 endif
 
@@ -763,7 +776,7 @@ ifndef NONETWORK
 	if test -d utils/run-google-java-format/.git ; then \
 	  (cd utils/run-google-java-format && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/run-google-java-format ; then \
-	  (mkdir -p utils && (git clone -q --depth 1 https://github.com/plume-lib/run-google-java-format.git utils/run-google-java-format || (sleep 1m && git clone -q --depth 1 https://github.com/plume-lib/run-google-java-format.git utils/run-google-java-format))) \
+	  (mkdir -p utils && (git clone -q --filter=blob:none https://github.com/plume-lib/run-google-java-format.git utils/run-google-java-format || (sleep 1m && git clone -q --filter=blob:none https://github.com/plume-lib/run-google-java-format.git utils/run-google-java-format))) \
 	fi
 endif
 
