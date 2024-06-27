@@ -13,7 +13,6 @@ jobs:
     - nonquick_txt_diff_ubuntu_jdk21
     - non_txt_diff_ubuntu_jdk21
     - misc_ubuntu_jdk21
-    - misc_ubuntu_jdk20
     - kvasir_ubuntu_jdk21
     - typecheck_latest_jdk21
     - typecheck_bundled_jdk21
@@ -258,21 +257,6 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/daikon-ubuntu-jdk21-plus:latest
-  steps:
-  - checkout: self
-    fetchDepth: 25
-  - bash: make showvars
-    displayName: make showvars
-  - bash: ./scripts/test-misc.sh
-    displayName: test-misc.sh
-
-- job: misc_ubuntu_jdk20
-  dependsOn:
-#   - jdk21_jobs
-    - misc_ubuntu_jdk21
-  pool:
-    vmImage: 'ubuntu-latest'
-  container: mdernst/daikon-ubuntu-jdk20-plus:latest
   steps:
   - checkout: self
     fetchDepth: 25
