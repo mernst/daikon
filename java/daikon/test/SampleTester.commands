@@ -195,3 +195,17 @@ ppt: foo.f():::EXIT35
 
   data:  5 6 7
   assert: !inv("x == (java.lang.Math.min(y, z))", x, y, z)
+
+
+
+# Test Email together with nullness
+decl: daikon/test/SampleTester.decls
+ppt: foo.strings():::EXIT1
+  vars: s a[]
+  data: "foo@bar.com" ["foo@bar.com"]
+  data: "baz@a.b.edu" ["baz@a.b.edu" "baz@a.b.edu"]
+  data: "a@b.c.biz" []
+  data: "b@b.c.biz" ["a@b.c.biz"]
+  data: "c@b.c.biz" ["c@b.c.biz" "c@b.c.biz" "c@b.c.biz"]
+  data: - []
+  assert: inv(daikon.inv.unary.string.IsEmail, s);
