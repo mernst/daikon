@@ -198,7 +198,7 @@ ppt: foo.f():::EXIT35
 
 
 
-# Test Email together with nullness
+# Test Email
 decl: daikon/test/SampleTester.decls
 ppt: foo.strings():::EXIT1
   vars: s a[]
@@ -209,3 +209,17 @@ ppt: foo.strings():::EXIT1
   data: "c@b.c.biz" ["c@b.c.biz" "c@b.c.biz" "c@b.c.biz"]
   data: - []
   assert: inv(daikon.inv.unary.string.IsEmail, s);
+  assert: inv(daikon.inv.unary.stringsequence.SequenceStringElementsAreEmail, a[]);
+
+# Test Email together with nullness
+decl: daikon/test/SampleTester.decls
+ppt: foo.strings():::EXIT1
+  vars: s a[]
+  data: - ["foo@bar.com"]
+  data: "baz@a.b.edu" [null "baz@a.b.edu"]
+  data: - []
+  data: "b@b.c.biz" ["a@b.c.biz"]
+  data: "c@b.c.biz" ["c@b.c.biz" null "c@b.c.biz"]
+  data: - []
+  assert: inv(daikon.inv.unary.string.IsEmail, s);
+  assert: inv(daikon.inv.unary.stringsequence.SequenceStringElementsAreEmail, a[]);
