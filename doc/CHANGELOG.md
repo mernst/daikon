@@ -24,28 +24,28 @@ Version 5.9.0 (??)
 
 Daikon supports the following new invariants, over strings and sequences of
 strings; all of them are enabled by default:
- * IsUrl
  * FixedLengthString
- * IsNumeric
- * IsEmail
- * IsDateYYYYMMDD
  * IsDateDDMMYYYY
  * IsDateMMDDYYYY
+ * IsDateYYYYMMDD
+ * IsEmail
+ * IsNumeric
  * IsTimeOfDay
- * IsTimeOfDayWithSeconds
  * IsTimeOfDayAMPM
+ * IsTimeOfDayWithSeconds
  * IsTimestampYYYYMMHHThhmmssmm
+ * IsUrl
  * SequenceFixedLengthString
- * SequenceStringElementsAreUrl
- * SequenceStringElementsAreNumeric
- * SequenceStringElementsAreEmail
- * SequenceStringElementsAreDateYYYYMMDD
  * SequenceStringElementsAreDateDDMMYYYY
  * SequenceStringElementsAreDateMMDDYYYY
+ * SequenceStringElementsAreDateYYYYMMDD
+ * SequenceStringElementsAreEmail
+ * SequenceStringElementsAreNumeric
  * SequenceStringElementsAreTimeOfDay
- * SequenceStringElementsAreTimeOfDayWithSeconds
  * SequenceStringElementsAreTimeOfDayAMPM
+ * SequenceStringElementsAreTimeOfDayWithSeconds
  * SequenceStringElementsAreTimestampYYYYMMHHThhmmssmm
+ * SequenceStringElementsAreUrl
 
 
 Version 5.8.20 (May 14, 2024)
