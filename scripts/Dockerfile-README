@@ -47,11 +47,11 @@ function create_upload_docker_image {
     echo "Do not run within Emacs"
     return 1
   fi
-  DOCKERDIR=dockerdir-$IMAGENAME
+  DOCKERDIR=/tmp/dockerdir-$IMAGENAME
   (rm -rf $DOCKERDIR && \
   mkdir -p $DOCKERDIR && \
+  \cp -pf Dockerfile-$OS-$JDKVER $DOCKERDIR/Dockerfile && \
   cd $DOCKERDIR && \
-  \cp -pf ../Dockerfile-$OS-$JDKVER Dockerfile && \
   docker build -t $DOCKERIMAGE . && \
   docker push $DOCKERIMAGE && \
   cd .. &&

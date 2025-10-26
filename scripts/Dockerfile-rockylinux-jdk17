@@ -1,6 +1,6 @@
 # Create a Docker image that is ready to run the Daikon tests.
 
-FROM rockylinux:9
+FROM rockylinux/rockylinux:10
 LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>"
 
 # According to
@@ -32,6 +32,10 @@ RUN dnf -q -y upgrade && dnf -q -y install \
   which
 
 # Install the JDK.
+RUN dnf -q -y upgrade && dnf -q -y install \
+  java-21-openjdk \
+  java-21-openjdk-devel
+ENV JAVA21_HOME=/usr/lib/jvm/java-21
 RUN dnf -q -y upgrade && dnf -q -y install \
   java-17-openjdk \
   java-17-openjdk-devel

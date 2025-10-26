@@ -22,6 +22,10 @@ fi
 # Use a version of the Checker Framework cloned from a GitHub
 # repository, NOT the version checked in at java/lib/checker-framework/.
 utils/git-scripts/git-clone-related typetools checker-framework
+JAVA_VER=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
+if test "${JAVA_VER}" -lt 21; then
+  export ORG_GRADLE_PROJECT_useJdk21Compiler=true
+fi
 (cd ../checker-framework && ./gradlew assembleForJavac --console=plain -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000)
 CHECKERFRAMEWORK=$(realpath ../checker-framework)
 export CHECKERFRAMEWORK

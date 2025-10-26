@@ -803,8 +803,11 @@ endif
 ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -lt 17; echo $$?),0)
   error-prone-version = 2.31.0
   extra-error-prone-args-1 =
-else
+ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -le 21; echo $$?),0)
   error-prone-version = 2.42.0
+  extra-error-prone-args-1 = --should-stop=ifError=FLOW
+else
+  error-prone-version = 2.43.0
   extra-error-prone-args-1 = --should-stop=ifError=FLOW
 endif
 
