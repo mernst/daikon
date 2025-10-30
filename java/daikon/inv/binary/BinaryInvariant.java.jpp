@@ -10,7 +10,7 @@
   #define PRIMITIVE double
   #define PRIMITIVENONCOMMENT double
   #define EXAMPLE_INVARIANT An example is {@code y = abs(x)}.
-  #define GET_VAL(obj) (((Double) obj).doubleValue())
+  #define GET_VAL(obj) ((Double) obj).doubleValue()
   #define BASE_IS_TYPE baseIsFloat()
 #elif defined(TYPELONG)
   #define PACKAGE twoScalar
@@ -18,7 +18,7 @@
   #define PRIMITIVE long
   #define PRIMITIVENONCOMMENT long
   #define EXAMPLE_INVARIANT An example is {@code y = abs(x)}.
-  #define GET_VAL(obj) (((Long) obj).longValue())
+  #define GET_VAL(obj) ((Long) obj).longValue()
   #define BASE_IS_TYPE baseIsScalar()
 #elif defined(TYPESTRING)
   #define PACKAGE twoString
@@ -97,9 +97,6 @@ import typequals.prototype.qual.Prototype;
  * to return the correct class.
  */
 public abstract class CLASSNAME extends BinaryInvariant {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20040113L;
 
   // if true, swap the order of the invariant variables
@@ -113,7 +110,6 @@ public abstract class CLASSNAME extends BinaryInvariant {
     super();
   }
 
-  /** Returns whether or not the specified types are valid. */
   @Override
   final public boolean valid_types(VarInfo[] vis) {
 
@@ -127,10 +123,10 @@ public abstract class CLASSNAME extends BinaryInvariant {
       boolean dim_ok = vis[0].file_rep_type.isArray() && vis[1].file_rep_type.isArray();
     #endif
 
-    return (dim_ok && vis[0].file_rep_type.BASE_IS_TYPE && vis[1].file_rep_type.BASE_IS_TYPE);
+    return dim_ok && vis[0].file_rep_type.BASE_IS_TYPE && vis[1].file_rep_type.BASE_IS_TYPE;
   }
 
-  /** Returns whether or not the variable order is currently swapped for this invariant. */
+  /** Returns true if the variable order is currently swapped for this invariant. */
   @Override
   public boolean get_swap() {
     return swap;
@@ -265,7 +261,7 @@ public abstract class CLASSNAME extends BinaryInvariant {
    * @param count how many identical samples were observed in a row. For example, three calls to
    *     check_modified with a count parameter of 1 is equivalent to one call to check_modified with
    *     a count parameter of 3.
-   * @return whether or not the sample is consistent with the invariant
+   * @return true if the sample is consistent with the invariant
    */
   public abstract InvariantStatus check_modified(PRIMITIVE v1, PRIMITIVE v2, int count);
 
@@ -275,7 +271,7 @@ public abstract class CLASSNAME extends BinaryInvariant {
 
   /** Default implementation simply calls check. Subclasses can override. */
   public InvariantStatus add_modified(PRIMITIVE v1, PRIMITIVE v2, int count) {
-    return (check_modified(v1, v2, count));
+    return check_modified(v1, v2, count);
   }
 
   /** By default, do nothing if the value hasn't been seen yet. Subclasses can override this. */
@@ -291,14 +287,14 @@ public abstract class CLASSNAME extends BinaryInvariant {
   }
 
   /**
-   * Return true if both invariants are the same class and the order of the variables (swap) is the
+   * Returns true if both invariants are the same class and the order of the variables (swap) is the
    * same.
    */
   @Pure
   @Override
   public boolean isSameFormula(Invariant other) {
     CLASSNAME inv = (CLASSNAME) other;
-    return ((this.getClass() == inv.getClass()) && (this.swap == inv.swap));
+    return (this.getClass() == inv.getClass()) && (this.swap == inv.swap);
   }
 
   @Override

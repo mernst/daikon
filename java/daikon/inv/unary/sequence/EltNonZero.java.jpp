@@ -9,7 +9,7 @@ The correct way to build the system is to run 'make'.
 #endif
 
 #if defined(TYPELONG)
-  #define EQUAL(a,b) ((a) == (b))
+  #define EQUAL(a,b) (a == b)
   #define CLASSNAME EltNonZero
   #define CLASSSTRING "EltNonZero"
   #define SUPERCLASS SingleScalarSequence
@@ -79,9 +79,6 @@ public final class CLASSNAME extends SUPERCLASS {
   public static final Logger debug =
     Logger.getLogger("daikon.inv.unary.sequence." + CLASSSTRING);
 
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20030822L;
 
   // Variables starting with dkconfig_ should only be set via the
@@ -104,22 +101,20 @@ public final class CLASSNAME extends SUPERCLASS {
     return proto;
   }
 
-  /** returns whether or not this invariant is enabled */
   @Override
   public boolean enabled() {
     return dkconfig_enabled;
   }
 
-  /** instantiate an invariant on the specified slice */
   @Override
   protected CLASSNAME instantiate_dyn(@Prototype CLASSNAME this, PptSlice slice) {
     return new CLASSNAME(slice);
   }
 
-  /** Returns whether or not the variable is a pointer. */
+  /** Returns true if the variable is a pointer. */
   @Pure
   private boolean is_pointer(@GuardSatisfied CLASSNAME this) {
-    return (!ppt.var_infos[0].type.BASEISTYPE);
+    return !ppt.var_infos[0].type.BASEISTYPE;
   }
 
   @Override
@@ -238,7 +233,7 @@ public final class CLASSNAME extends SUPERCLASS {
     //  log ("max=" + vs.max() + " array=" + Arrays.toString (a));
     // }
 
-    return (check_modified(a, count));
+    return check_modified(a, count);
   }
 
   @Override
@@ -396,7 +391,7 @@ public final class CLASSNAME extends SUPERCLASS {
   /** returns the ni-suppressions for CLASSNAME */
   @Pure
   @Override
-  public @NonNull NISuppressionSet get_ni_suppressions() {
+  public NISuppressionSet get_ni_suppressions() {
     if (suppressions == null) {
       NISuppressee suppressee = new NISuppressee(CLASSNAME.class, 1);
 

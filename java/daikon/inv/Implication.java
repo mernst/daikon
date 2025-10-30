@@ -5,13 +5,13 @@ import daikon.PptTopLevel;
 import daikon.VarInfo;
 import daikon.split.PptSplitter;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -26,9 +26,6 @@ import typequals.prototype.qual.Prototype;
  * only true when certain other conditions are also true (splitting).
  */
 public class Implication extends Joiner {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20030822L;
 
   // orig_left and orig_right are the original invariants, in the original
@@ -38,6 +35,7 @@ public class Implication extends Joiner {
   // and orig_right is used in isObvious*.
   /** The original predicate invariant from its original conditional ppt. */
   private Invariant orig_left;
+
   /**
    * The original consequent invariant from its original conditional ppt. Or, right itself if right
    * is a DummyInvariant from a splitter file.
@@ -184,7 +182,7 @@ public class Implication extends Joiner {
   }
 
   /**
-   * Return true if the right side of the implication and some equality combinations of its member
+   * Returns true if the right side of the implication and some equality combinations of its member
    * variables are statically obvious. For example, if a == b, and f(a) is obvious, then so is f(b).
    * We use the someInEquality (or least interesting) method during printing so we only print an
    * invariant if all its variables are interesting, since a single, static, non interesting
@@ -209,7 +207,7 @@ public class Implication extends Joiner {
   }
 
   /**
-   * Return true if the rightr side of the implication some equality combinations of its member
+   * Returns true if the rightr side of the implication some equality combinations of its member
    * variables are dynamically obvious. For example, a == b, and f(a) is obvious, so is f(b). We use
    * the someInEquality (or least interesting) method during printing so we only print an invariant
    * if all its variables are interesting, since a single, dynamic, non interesting occurance means
@@ -230,8 +228,8 @@ public class Implication extends Joiner {
     // created, but somehow that creates other implications.  See the
     // disabled code in PptSplitter.add_implication()
     if (orig_right.is_ni_suppressed()) {
-      return (new DiscardInfo(
-          this, DiscardCode.obvious, "consequent " + orig_right.format() + " is ni suppressed"));
+      return new DiscardInfo(
+          this, DiscardCode.obvious, "consequent " + orig_right.format() + " is ni suppressed");
     }
 
     return orig_right.isObviousDynamically_SomeInEquality();
@@ -244,9 +242,9 @@ public class Implication extends Joiner {
 
   @Pure
   @Override
-  public boolean isSameFormula(@NonNull Invariant other) {
+  public boolean isSameFormula(Invariant other) {
     Implication other_implic = (Implication) other;
-    return ((iff == other_implic.iff) && super.isSameFormula(other_implic));
+    return (iff == other_implic.iff) && super.isSameFormula(other_implic);
   }
 
   @EnsuresNonNullIf(result = true, expression = "#1")
@@ -306,27 +304,23 @@ public class Implication extends Joiner {
    * Logs a description of the invariant and the specified msg via the logger as described in {@code
    * daikon.Debug#log(Logger, Class, Ppt, VarInfo[], String)}. Uses the consequent as the logger.
    *
-   * @return whether or not it logged anything
+   * @return true if it logged anything
    */
   @Override
   @FormatMethod
   @SuppressWarnings({
-    "nullness:override.receiver.invalid", // sound overriding, not expressible in Checker Framework
+    "nullness:override.receiver", // sound overriding, not expressible in Checker Framework
   })
   public boolean log(
       @UnknownInitialization(Implication.class) Implication this,
       String format,
       @Nullable Object... args) {
     String msg = (args.length == 0) ? format : String.format(format, args);
-    @SuppressWarnings("nullness:method.invocation.invalid")
+    @SuppressWarnings("nullness:method.invocation")
     String formatted = format();
-    return (right.log(
-        msg
-            + " [for implication "
-            + formatted
-            + " ("
-            + (orig_right == null ? "null" : orig_right.format())
-            + ")]"));
+    return right.log(
+        "%s [for implication %s (%s)]",
+        msg, formatted, (orig_right == null ? "null" : orig_right.format()));
   }
 
   @Override
@@ -342,5 +336,11 @@ public class Implication extends Joiner {
   @Override
   protected @NonPrototype Invariant instantiate_dyn(@Prototype Implication this, PptSlice slice) {
     throw new Error("do not invoke " + getClass() + ".instantiate_dyn()");
+  }
+
+  @Override
+  public @Nullable @NonPrototype Implication merge(
+      @Prototype Implication this, List<@NonPrototype Invariant> invs, PptSlice parent_ppt) {
+    throw new Error("do not merge implications");
   }
 }

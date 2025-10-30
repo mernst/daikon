@@ -25,11 +25,11 @@ import org.plumelib.util.CollectionsPlume;
 // Why doesn't this implement Map<String,PptTopLevel> or extend
 // LinkedHashMap<String,PptTopLevel>?
 public class PptMap implements Serializable {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
+  /** If you add or remove fields, change this number to the current date. */
   static final long serialVersionUID = 20040921L;
 
+  /** The map that represents this PptMap. */
+  @SuppressWarnings("serial")
   private final Map<String, PptTopLevel> nameToPpt = new LinkedHashMap<>();
 
   public void add(PptTopLevel ppt) {
@@ -43,8 +43,8 @@ public class PptMap implements Serializable {
   }
 
   /**
-   * Get the pptname named 'name' from the map. Note that conditional program points are not stored
-   * in the map by name. They are only available through their parent.
+   * Returns the pptname named 'name' from the map. Note that conditional program points are not
+   * stored in the map by name. They are only available through their parent.
    */
   @Pure
   public @Nullable PptTopLevel get(String name) {
@@ -52,8 +52,8 @@ public class PptMap implements Serializable {
   }
 
   /**
-   * Get the pptname 'name' from the map. Note that conditional program points are not stored in the
-   * map by name. They are only available through their parent.
+   * Returns the pptname 'name' from the map. Note that conditional program points are not stored in
+   * the map by name. They are only available through their parent.
    */
   @Pure
   public @Nullable PptTopLevel get(PptName name) {
@@ -61,8 +61,8 @@ public class PptMap implements Serializable {
   }
 
   /**
-   * Returns whether or not 'name' is the name of a Ppt in the map. Note that conditional program
-   * points are not stored in the map by name. They are only available through their parent.
+   * Returns true if 'name' is the name of a Ppt in the map. Note that conditional program points
+   * are not stored in the map by name. They are only available through their parent.
    */
   @Pure
   @SuppressWarnings("nullness") // postcondition: linked maps
@@ -74,7 +74,7 @@ public class PptMap implements Serializable {
 
   /** Returns all of the program points in the map. */
   public Collection<PptTopLevel> all_ppts() {
-    return (nameToPpt.values());
+    return nameToPpt.values();
   }
 
   /**
@@ -103,7 +103,7 @@ public class PptMap implements Serializable {
    * <p>If you wish to merely iterate over the result in a foreach loop, use {@link #pptIterable()}
    * instead.
    *
-   * @return an iterator over the PptTopLevels in this, sorted by Ppt.NameComparator on their names.
+   * @return an iterator over the PptTopLevels in this, sorted by Ppt.NameComparator on their names
    * @see #pptIterable()
    */
   // See https://bugs.openjdk.java.net/browse/JDK-8195645 and
@@ -143,7 +143,7 @@ public class PptMap implements Serializable {
    *
    * <p>It is a wrapper around {@link #pptIterator()} that can be used in a foreach loop.
    *
-   * @return an iterable over the PptTopLevels in this, sorted by Ppt.NameComparator on their names.
+   * @return an iterable over the PptTopLevels in this, sorted by Ppt.NameComparator on their names
    * @see #pptIterator()
    */
   public Iterable<PptTopLevel> pptIterable() {
@@ -157,7 +157,7 @@ public class PptMap implements Serializable {
    * <p>If you wish to merely iterate over the result in a Java new-style for loop ("foreach loop"),
    * use {@link #ppt_all_iterable()} instead.
    *
-   * @return an iterator over the PptTopLevels in this, sorted by Ppt.NameComparator on their names.
+   * @return an iterator over the PptTopLevels in this, sorted by Ppt.NameComparator on their names
    * @see #ppt_all_iterable()
    */
   // See https://bugs.openjdk.java.net/browse/JDK-8195645 and
@@ -186,11 +186,13 @@ public class PptMap implements Serializable {
       @Override
       public PptTopLevel next(/*! >>>@GuardSatisfied Iterator<PptTopLevel> this*/ ) {
         if ((cond_iterator != null) && cond_iterator.hasNext()) {
-          return (cond_iterator.next());
+          return cond_iterator.next();
         }
         iter_view.next(); // to check for concurrent modifications
         PptTopLevel ppt = iter_sort.next();
-        if ((ppt != null) && ppt.has_splitters()) cond_iterator = ppt.cond_iterator();
+        if ((ppt != null) && ppt.has_splitters()) {
+          cond_iterator = ppt.cond_iterator();
+        }
         return ppt;
       }
 
@@ -255,7 +257,9 @@ public class PptMap implements Serializable {
     Iterator<PptTopLevel> iter = nameToPpt.values().iterator();
     while (iter.hasNext()) {
       PptTopLevel ppt = iter.next();
-      if ((ppt.num_samples() == 0) && !FileIO.has_unmatched_procedure_entry(ppt)) iter.remove();
+      if ((ppt.num_samples() == 0) && !FileIO.has_unmatched_procedure_entry(ppt)) {
+        iter.remove();
+      }
     }
   }
 }

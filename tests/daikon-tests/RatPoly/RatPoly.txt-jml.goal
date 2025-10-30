@@ -377,7 +377,6 @@ PolyCalc.RatPoly.RatPoly(PolyCalc.RatTermVec):::EXIT
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() rt rt.wrapped rt.wrapped[] rt.wrapped[].getClass().getName() orig(rt) orig(rt.wrapped) orig(rt.wrapped[]) orig(rt.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(rt.wrapped[]) size(rt.wrapped[])-1 orig(size(rt.wrapped[])) orig(size(rt.wrapped[]))-1
 this.terms == \old(rt)
 this.terms.wrapped == rt.wrapped
-daikon.Quant.pairwiseEqual(this.terms.wrapped, rt.wrapped)
 rt.wrapped == \old(rt.wrapped)
 daikon.Quant.pairwiseEqual(rt.wrapped, \old(rt.wrapped))
 rt.wrapped != null
@@ -390,14 +389,9 @@ PolyCalc.RatPoly.RatPoly(int, int):::ENTER
 e >= 0
 ===========================================================================
 PolyCalc.RatPoly.RatPoly(int, int):::EXIT
-    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() c e orig(c) orig(e) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 this.terms.wrapped[c] this.terms.wrapped[c-1] this.terms.wrapped[c..] this.terms.wrapped[c+1..] this.terms.wrapped[0..c] this.terms.wrapped[0..c-1] this.terms.wrapped[e] this.terms.wrapped[e-1] this.terms.wrapped[e..] this.terms.wrapped[e+1..] this.terms.wrapped[0..e] this.terms.wrapped[0..e-1] this.terms.wrapped[orig(c)] this.terms.wrapped[orig(c)-1] this.terms.wrapped[orig(c)..] this.terms.wrapped[orig(c)+1..] this.terms.wrapped[0..orig(c)] this.terms.wrapped[0..orig(c)-1] this.terms.wrapped[orig(e)] this.terms.wrapped[orig(e)-1] this.terms.wrapped[orig(e)..] this.terms.wrapped[orig(e)+1..] this.terms.wrapped[0..orig(e)] this.terms.wrapped[0..orig(e)-1]
+    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() c e orig(c) orig(e) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.terms.wrapped), new String[] {  }) || daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 daikon.Quant.size(this.terms.wrapped) == 0 || daikon.Quant.size(this.terms.wrapped) == 1
-(!(\old(c) == 0)) || (daikon.Quant.size(this.terms.wrapped) == 0)
-(!(daikon.Quant.size(this.terms.wrapped) == 0)) || (\old(c) == 0)
-(\old(c) & daikon.Quant.size(this.terms.wrapped)-1) == 0
-\old(c) != daikon.Quant.size(this.terms.wrapped)-1
-\old(e) >= daikon.Quant.size(this.terms.wrapped)-1
 ===========================================================================
 PolyCalc.RatPoly.add(PolyCalc.RatPoly):::ENTER
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1
@@ -412,29 +406,25 @@ PolyCalc.RatPoly.add(PolyCalc.RatPoly):::EXIT350
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
 this.terms == \result.terms
 this.terms.wrapped == \result.terms.wrapped
-daikon.Quant.pairwiseEqual(this.terms.wrapped, \result.terms.wrapped)
 \result == \old(this)
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(p.terms.wrapped), new String[] {  }) || daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(p.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
+daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(\result.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 daikon.Quant.size(this.terms.wrapped) == 1
 daikon.Quant.size(p.terms.wrapped) == 0 || daikon.Quant.size(p.terms.wrapped) == 1
-daikon.Quant.size(this.terms.wrapped) >= daikon.Quant.size(p.terms.wrapped)
-daikon.Quant.size(this.terms.wrapped)-1 <= daikon.Quant.size(p.terms.wrapped)
-daikon.Quant.size(this.terms.wrapped)-1 >= daikon.Quant.size(p.terms.wrapped)-1
+daikon.Quant.size(\result.terms.wrapped) == 1
 ===========================================================================
 PolyCalc.RatPoly.add(PolyCalc.RatPoly):::EXIT354
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
 p.terms == \result.terms
 p.terms.wrapped == \result.terms.wrapped
-daikon.Quant.pairwiseEqual(p.terms.wrapped, \result.terms.wrapped)
 \result == \old(p)
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.terms.wrapped), new String[] {  }) || daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(p.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
+daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(\result.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 daikon.Quant.size(this.terms.wrapped) == 0 || daikon.Quant.size(this.terms.wrapped) == 1
 daikon.Quant.size(p.terms.wrapped) == 1
-daikon.Quant.size(this.terms.wrapped) <= daikon.Quant.size(p.terms.wrapped)
-daikon.Quant.size(this.terms.wrapped) >= daikon.Quant.size(p.terms.wrapped)-1
-daikon.Quant.size(this.terms.wrapped)-1 <= daikon.Quant.size(p.terms.wrapped)-1
+daikon.Quant.size(\result.terms.wrapped) == 1
 ===========================================================================
 PolyCalc.RatPoly.add(PolyCalc.RatPoly):::EXIT363
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
@@ -458,7 +448,6 @@ daikon.Quant.eltsEqual(daikon.Quant.typeArray(p.terms.wrapped), "PolyCalc.RatTer
 daikon.Quant.noDups(\result.terms.wrapped)
 daikon.Quant.eltsNotEqual(\result.terms.wrapped, null)
 daikon.Quant.eltsEqual(daikon.Quant.typeArray(\result.terms.wrapped), "PolyCalc.RatTerm")
-daikon.Quant.size(p.terms.wrapped)-1 <= daikon.Quant.size(\result.terms.wrapped)
 ===========================================================================
 PolyCalc.RatPoly.appendTerm(java.lang.StringBuffer, PolyCalc.RatTerm):::ENTER
     Variables: sb rt rt.coeff rt.coeff.numer rt.coeff.denom rt.expt
@@ -512,75 +501,56 @@ this.terms.wrapped == \old(this.terms.wrapped)
 daikon.Quant.pairwiseEqual(this.terms.wrapped, \old(this.terms.wrapped))
 ===========================================================================
 PolyCalc.RatPoly.coeff(int):::ENTER
-    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() deg size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 this.terms.wrapped[deg] this.terms.wrapped[deg-1] this.terms.wrapped[deg..] this.terms.wrapped[deg+1..] this.terms.wrapped[0..deg] this.terms.wrapped[0..deg-1]
+    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() deg size(this.terms.wrapped[]) size(this.terms.wrapped[])-1
 ===========================================================================
 PolyCalc.RatPoly.coeff(int):::EXIT120
-    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() deg return return.numer return.denom orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(deg) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 this.terms.wrapped[deg] this.terms.wrapped[deg-1] this.terms.wrapped[deg..] this.terms.wrapped[deg+1..] this.terms.wrapped[0..deg] this.terms.wrapped[0..deg-1] this.terms.wrapped[return.numer] this.terms.wrapped[return.numer-1] this.terms.wrapped[return.numer..] this.terms.wrapped[return.numer+1..] this.terms.wrapped[0..return.numer] this.terms.wrapped[0..return.numer-1] this.terms.wrapped[return.denom] this.terms.wrapped[return.denom-1] this.terms.wrapped[return.denom..] this.terms.wrapped[return.denom+1..] this.terms.wrapped[0..return.denom] this.terms.wrapped[0..return.denom-1] this.terms.wrapped[orig(deg)] this.terms.wrapped[orig(deg)-1] this.terms.wrapped[orig(deg)..] this.terms.wrapped[orig(deg)+1..] this.terms.wrapped[0..orig(deg)] this.terms.wrapped[0..orig(deg)-1] orig(this.terms.wrapped[post(deg)]) orig(this.terms.wrapped[post(deg)-1]) orig(this.terms.wrapped[post(deg)..]) orig(this.terms.wrapped[post(deg)+1..]) orig(this.terms.wrapped[0..post(deg)]) orig(this.terms.wrapped[0..post(deg)-1]) orig(this.terms.wrapped[post(return.numer)]) orig(this.terms.wrapped[post(return.numer)-1]) orig(this.terms.wrapped[post(return.numer)..]) orig(this.terms.wrapped[post(return.numer)+1..]) orig(this.terms.wrapped[0..post(return.numer)]) orig(this.terms.wrapped[0..post(return.numer)-1]) orig(this.terms.wrapped[post(return.denom)]) orig(this.terms.wrapped[post(return.denom)-1]) orig(this.terms.wrapped[post(return.denom)..]) orig(this.terms.wrapped[post(return.denom)+1..]) orig(this.terms.wrapped[0..post(return.denom)]) orig(this.terms.wrapped[0..post(return.denom)-1]) orig(this.terms.wrapped[deg]) orig(this.terms.wrapped[deg-1]) orig(this.terms.wrapped[deg..]) orig(this.terms.wrapped[deg+1..]) orig(this.terms.wrapped[0..deg]) orig(this.terms.wrapped[0..deg-1])
+    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() deg return return.numer return.denom orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(deg) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1
 \result.numer != 0
 \old(deg) >= 0
 daikon.Quant.size(this.terms.wrapped) >= 1
 ===========================================================================
 PolyCalc.RatPoly.coeff(int):::EXIT124
-    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() deg return return.numer return.denom orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(deg) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 this.terms.wrapped[deg] this.terms.wrapped[deg-1] this.terms.wrapped[deg..] this.terms.wrapped[deg+1..] this.terms.wrapped[0..deg] this.terms.wrapped[0..deg-1] this.terms.wrapped[return.numer] this.terms.wrapped[return.numer-1] this.terms.wrapped[return.numer..] this.terms.wrapped[return.numer+1..] this.terms.wrapped[0..return.numer] this.terms.wrapped[0..return.numer-1] this.terms.wrapped[return.denom] this.terms.wrapped[return.denom-1] this.terms.wrapped[return.denom..] this.terms.wrapped[return.denom+1..] this.terms.wrapped[0..return.denom] this.terms.wrapped[0..return.denom-1] this.terms.wrapped[orig(deg)] this.terms.wrapped[orig(deg)-1] this.terms.wrapped[orig(deg)..] this.terms.wrapped[orig(deg)+1..] this.terms.wrapped[0..orig(deg)] this.terms.wrapped[0..orig(deg)-1] orig(this.terms.wrapped[post(deg)]) orig(this.terms.wrapped[post(deg)-1]) orig(this.terms.wrapped[post(deg)..]) orig(this.terms.wrapped[post(deg)+1..]) orig(this.terms.wrapped[0..post(deg)]) orig(this.terms.wrapped[0..post(deg)-1]) orig(this.terms.wrapped[post(return.numer)]) orig(this.terms.wrapped[post(return.numer)-1]) orig(this.terms.wrapped[post(return.numer)..]) orig(this.terms.wrapped[post(return.numer)+1..]) orig(this.terms.wrapped[0..post(return.numer)]) orig(this.terms.wrapped[0..post(return.numer)-1]) orig(this.terms.wrapped[post(return.denom)]) orig(this.terms.wrapped[post(return.denom)-1]) orig(this.terms.wrapped[post(return.denom)..]) orig(this.terms.wrapped[post(return.denom)+1..]) orig(this.terms.wrapped[0..post(return.denom)]) orig(this.terms.wrapped[0..post(return.denom)-1]) orig(this.terms.wrapped[deg]) orig(this.terms.wrapped[deg-1]) orig(this.terms.wrapped[deg..]) orig(this.terms.wrapped[deg+1..]) orig(this.terms.wrapped[0..deg]) orig(this.terms.wrapped[0..deg-1])
+    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() deg return return.numer return.denom orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(deg) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1
 \result.numer == 0
 \result.denom == 1
-("oneOf.java.jpp: SEQUENCE unimplemented" != null)
-\result.numer <= daikon.Quant.size(this.terms.wrapped)
 ===========================================================================
 PolyCalc.RatPoly.coeff(int):::EXIT
-    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() deg return return.numer return.denom orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(deg) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 this.terms.wrapped[deg] this.terms.wrapped[deg-1] this.terms.wrapped[deg..] this.terms.wrapped[deg+1..] this.terms.wrapped[0..deg] this.terms.wrapped[0..deg-1] this.terms.wrapped[return.numer] this.terms.wrapped[return.numer-1] this.terms.wrapped[return.numer..] this.terms.wrapped[return.numer+1..] this.terms.wrapped[0..return.numer] this.terms.wrapped[0..return.numer-1] this.terms.wrapped[return.denom] this.terms.wrapped[return.denom-1] this.terms.wrapped[return.denom..] this.terms.wrapped[return.denom+1..] this.terms.wrapped[0..return.denom] this.terms.wrapped[0..return.denom-1] this.terms.wrapped[orig(deg)] this.terms.wrapped[orig(deg)-1] this.terms.wrapped[orig(deg)..] this.terms.wrapped[orig(deg)+1..] this.terms.wrapped[0..orig(deg)] this.terms.wrapped[0..orig(deg)-1] orig(this.terms.wrapped[post(deg)]) orig(this.terms.wrapped[post(deg)-1]) orig(this.terms.wrapped[post(deg)..]) orig(this.terms.wrapped[post(deg)+1..]) orig(this.terms.wrapped[0..post(deg)]) orig(this.terms.wrapped[0..post(deg)-1]) orig(this.terms.wrapped[post(return.numer)]) orig(this.terms.wrapped[post(return.numer)-1]) orig(this.terms.wrapped[post(return.numer)..]) orig(this.terms.wrapped[post(return.numer)+1..]) orig(this.terms.wrapped[0..post(return.numer)]) orig(this.terms.wrapped[0..post(return.numer)-1]) orig(this.terms.wrapped[post(return.denom)]) orig(this.terms.wrapped[post(return.denom)-1]) orig(this.terms.wrapped[post(return.denom)..]) orig(this.terms.wrapped[post(return.denom)+1..]) orig(this.terms.wrapped[0..post(return.denom)]) orig(this.terms.wrapped[0..post(return.denom)-1]) orig(this.terms.wrapped[deg]) orig(this.terms.wrapped[deg-1]) orig(this.terms.wrapped[deg..]) orig(this.terms.wrapped[deg+1..]) orig(this.terms.wrapped[0..deg]) orig(this.terms.wrapped[0..deg-1])
+    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() deg return return.numer return.denom orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(deg) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1
 this.terms == \old(this.terms)
 this.terms.wrapped == \old(this.terms.wrapped)
 daikon.Quant.pairwiseEqual(this.terms.wrapped, \old(this.terms.wrapped))
 (\result.numer != 0)  ==>  (\old(deg) >= 0)
 (\result.numer != 0)  ==>  (daikon.Quant.size(this.terms.wrapped) >= 1)
-(\result.numer == 0)  ==>  (("oneOf.java.jpp: SEQUENCE unimplemented" != null))
-(\result.numer == 0)  ==>  (daikon.Quant.noDups(\old(daikon.Quant.slice(this.terms.wrapped, \new(\result.numer), daikon.Quant.size(this.terms.wrapped)))))
-(\result.numer == 0)  ==>  (daikon.Quant.eltsNotEqual(\old(daikon.Quant.slice(this.terms.wrapped, \new(\result.numer), daikon.Quant.size(this.terms.wrapped))), null))
 (\result.numer == 0)  ==>  (\result.denom == 1)
 (\result.numer == 0)  ==>  (\result.numer < \result.denom)
-(\result.numer == 0)  ==>  (\result.numer <= daikon.Quant.size(this.terms.wrapped))
 (\result.numer == 0)  ==>  (\result.numer is a pointer)
-(\result.numer == 0)  ==>  (("oneOf.java.jpp: SEQUENCE unimplemented" != null))
-(\result.numer == 0)  ==>  (daikon.Quant.noDups(daikon.Quant.slice(this.terms.wrapped, \result.numer, daikon.Quant.size(this.terms.wrapped))))
-(\result.numer == 0)  ==>  (daikon.Quant.eltsNotEqual(daikon.Quant.slice(this.terms.wrapped, \result.numer, daikon.Quant.size(this.terms.wrapped)), null))
 \result != null
-(!(daikon.Quant.size(this.terms.wrapped) == 0)) || (\result.numer == 0)
 (!(\result.denom == 0)) || (\old(deg) == 0)
-(!(\result.denom == 0)) || (daikon.Quant.size(this.terms.wrapped)-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.degree():::ENTER
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() size(this.terms.wrapped[]) size(this.terms.wrapped[])-1
 ===========================================================================
 PolyCalc.RatPoly.degree():::EXIT102
-    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() return orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 this.terms.wrapped[return] this.terms.wrapped[return-1] this.terms.wrapped[return..] this.terms.wrapped[return+1..] this.terms.wrapped[0..return] this.terms.wrapped[0..return-1] orig(this.terms.wrapped[post(return)]) orig(this.terms.wrapped[post(return)-1]) orig(this.terms.wrapped[post(return)..]) orig(this.terms.wrapped[post(return)+1..]) orig(this.terms.wrapped[0..post(return)]) orig(this.terms.wrapped[0..post(return)-1])
+    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() return orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1
 daikon.Quant.size(this.terms.wrapped) >= 1
-(!(\result == 0)) || (daikon.Quant.size(this.terms.wrapped)-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.degree():::EXIT105
-    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() return orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 this.terms.wrapped[return] this.terms.wrapped[return-1] this.terms.wrapped[return..] this.terms.wrapped[return+1..] this.terms.wrapped[0..return] this.terms.wrapped[0..return-1] orig(this.terms.wrapped[post(return)]) orig(this.terms.wrapped[post(return)-1]) orig(this.terms.wrapped[post(return)..]) orig(this.terms.wrapped[post(return)+1..]) orig(this.terms.wrapped[0..post(return)]) orig(this.terms.wrapped[0..post(return)-1])
-\result == daikon.Quant.size(this.terms.wrapped)
-\result == \old(daikon.Quant.size(this.terms.wrapped))
+    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() return orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1
 ("oneOf.java.jpp: SEQUENCE unimplemented" != null)
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.terms.wrapped), new String[] {  })
+\result == 0
 ===========================================================================
 PolyCalc.RatPoly.degree():::EXIT
-    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() return orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 this.terms.wrapped[return] this.terms.wrapped[return-1] this.terms.wrapped[return..] this.terms.wrapped[return+1..] this.terms.wrapped[0..return] this.terms.wrapped[0..return-1] orig(this.terms.wrapped[post(return)]) orig(this.terms.wrapped[post(return)-1]) orig(this.terms.wrapped[post(return)..]) orig(this.terms.wrapped[post(return)+1..]) orig(this.terms.wrapped[0..post(return)]) orig(this.terms.wrapped[0..post(return)-1])
+    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() return orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1
 this.terms == \old(this.terms)
 this.terms.wrapped == \old(this.terms.wrapped)
 daikon.Quant.pairwiseEqual(this.terms.wrapped, \old(this.terms.wrapped))
-(daikon.Quant.size(this.terms.wrapped) == 0)  ==>  (("oneOf.java.jpp: SEQUENCE unimplemented" != null))
-(daikon.Quant.size(this.terms.wrapped) == 0)  ==>  (("oneOf.java.jpp: SEQUENCE unimplemented" != null))
-(daikon.Quant.size(this.terms.wrapped) == 0)  ==>  (\result == daikon.Quant.size(this.terms.wrapped))
+(daikon.Quant.size(this.terms.wrapped) == 0)  ==>  (\result == 0)
 (daikon.Quant.size(this.terms.wrapped) == 0)  ==>  (\result is a pointer)
 (daikon.Quant.size(this.terms.wrapped) == 0)  ==>  (daikon.Quant.size(this.terms.wrapped) is a pointer)
 (daikon.Quant.size(this.terms.wrapped) == 0)  ==>  (("oneOf.java.jpp: SEQUENCE unimplemented" != null))
-(daikon.Quant.size(this.terms.wrapped) == 0)  ==>  (("oneOf.java.jpp: SEQUENCE unimplemented" != null))
 (daikon.Quant.size(this.terms.wrapped) == 0)  ==>  (daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.terms.wrapped), new String[] {  }))
-(daikon.Quant.size(this.terms.wrapped) == 0)  ==>  (("oneOf.java.jpp: SEQUENCE unimplemented" != null))
 \result >= 0
-(!(daikon.Quant.size(this.terms.wrapped) == 0)) || (\result == 0)
-\result >= daikon.Quant.size(this.terms.wrapped)-1
 ===========================================================================
 PolyCalc.RatPoly.div(PolyCalc.RatPoly):::ENTER
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1
@@ -590,8 +560,6 @@ p.terms.wrapped != null
 daikon.Quant.noDups(p.terms.wrapped)
 daikon.Quant.eltsNotEqual(p.terms.wrapped, null)
 daikon.Quant.eltsEqual(daikon.Quant.typeArray(p.terms.wrapped), "PolyCalc.RatTerm")
-(!(daikon.Quant.size(this.terms.wrapped) == 0)) || (daikon.Quant.size(p.terms.wrapped)-1 == 0)
-(!(daikon.Quant.size(p.terms.wrapped) == 0)) || (daikon.Quant.size(this.terms.wrapped)-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.div(PolyCalc.RatPoly):::EXIT435
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
@@ -601,21 +569,10 @@ daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(\result.terms.wrapped), new St
 daikon.Quant.size(this.terms.wrapped) == 0 || daikon.Quant.size(this.terms.wrapped) == 1
 daikon.Quant.size(p.terms.wrapped) == 0 || daikon.Quant.size(p.terms.wrapped) == 1
 daikon.Quant.size(\result.terms.wrapped) == 1
-daikon.Quant.size(this.terms.wrapped) >= daikon.Quant.size(p.terms.wrapped)-1
-daikon.Quant.size(this.terms.wrapped) <= daikon.Quant.size(\result.terms.wrapped)
-daikon.Quant.size(this.terms.wrapped) >= daikon.Quant.size(\result.terms.wrapped)-1
-daikon.Quant.size(this.terms.wrapped)-1 <= daikon.Quant.size(p.terms.wrapped)
-daikon.Quant.size(this.terms.wrapped)-1 <= daikon.Quant.size(\result.terms.wrapped)-1
-daikon.Quant.size(p.terms.wrapped) <= daikon.Quant.size(\result.terms.wrapped)
-daikon.Quant.size(p.terms.wrapped) >= daikon.Quant.size(\result.terms.wrapped)-1
-daikon.Quant.size(p.terms.wrapped)-1 <= daikon.Quant.size(\result.terms.wrapped)-1
 ===========================================================================
 PolyCalc.RatPoly.div(PolyCalc.RatPoly):::EXIT438
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
 daikon.Quant.size(p.terms.wrapped) >= 1
-(!(daikon.Quant.size(this.terms.wrapped) == 0)) || (daikon.Quant.size(\result.terms.wrapped) == 0)
-daikon.Quant.size(this.terms.wrapped) != daikon.Quant.size(\result.terms.wrapped)-1
-(!(daikon.Quant.size(\result.terms.wrapped)-1 == 0)) || (daikon.Quant.size(p.terms.wrapped)-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.div(PolyCalc.RatPoly):::EXIT
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
@@ -636,10 +593,6 @@ daikon.Quant.eltsEqual(daikon.Quant.typeArray(p.terms.wrapped), "PolyCalc.RatTer
 daikon.Quant.noDups(\result.terms.wrapped)
 daikon.Quant.eltsNotEqual(\result.terms.wrapped, null)
 daikon.Quant.eltsEqual(daikon.Quant.typeArray(\result.terms.wrapped), "PolyCalc.RatTerm")
-(!(daikon.Quant.size(this.terms.wrapped) == 0)) || (daikon.Quant.size(p.terms.wrapped)-1 == 0)
-(!(daikon.Quant.size(p.terms.wrapped) == 0)) || (daikon.Quant.size(this.terms.wrapped)-1 == 0)
-(!(daikon.Quant.size(p.terms.wrapped) == 0)) || (daikon.Quant.size(\result.terms.wrapped)-1 == 0)
-(!(daikon.Quant.size(\result.terms.wrapped) == 0)) || (daikon.Quant.size(p.terms.wrapped)-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.divAndRem(PolyCalc.RatPoly):::ENTER
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1
@@ -649,7 +602,6 @@ p.terms.wrapped != null
 daikon.Quant.eltsNotEqual(p.terms.wrapped, null)
 daikon.Quant.eltsEqual(daikon.Quant.typeArray(p.terms.wrapped), "PolyCalc.RatTerm")
 daikon.Quant.size(p.terms.wrapped) >= 1
-(!(daikon.Quant.size(this.terms.wrapped) == 0)) || (daikon.Quant.size(p.terms.wrapped)-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.divAndRem(PolyCalc.RatPoly):::EXIT
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.getClass().getName() return[] return[].terms return[].terms.wrapped orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return[]) size(return[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
@@ -670,8 +622,6 @@ daikon.Quant.eltsNotEqual(daikon.Quant.collectObject(\result, "terms"), null)
 daikon.Quant.eltsNotEqual(daikon.Quant.collectObject(\result, "terms.wrapped"), null)
 daikon.Quant.size(p.terms.wrapped) >= 1
 daikon.Quant.size(\result) == 2
-(!(daikon.Quant.size(this.terms.wrapped) == 0)) || (daikon.Quant.size(p.terms.wrapped)-1 == 0)
-daikon.Quant.size(p.terms.wrapped) >= daikon.Quant.size(\result)-1
 ===========================================================================
 PolyCalc.RatPoly.eval(double):::ENTER
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() d size(this.terms.wrapped[]) size(this.terms.wrapped[])-1
@@ -688,7 +638,7 @@ daikon.Quant.size(this.terms.wrapped) == 0 || daikon.Quant.size(this.terms.wrapp
 (daikon.Quant.size(this.terms.wrapped) & daikon.Quant.size(this.terms.wrapped)-1) == 0
 ===========================================================================
 PolyCalc.RatPoly.findTermIndex(PolyCalc.RatTermVec, int):::ENTER
-    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() expt size(ts.wrapped[]) size(ts.wrapped[])-1 ts.wrapped[expt] ts.wrapped[expt-1] ts.wrapped[expt..] ts.wrapped[expt+1..] ts.wrapped[0..expt] ts.wrapped[0..expt-1]
+    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() expt size(ts.wrapped[]) size(ts.wrapped[])-1
 ts != null
 ts.wrapped != null
 daikon.Quant.noDups(ts.wrapped)
@@ -698,23 +648,17 @@ expt >= 0
 daikon.Quant.size(ts.wrapped) >= 1
 ===========================================================================
 PolyCalc.RatPoly.findTermIndex(PolyCalc.RatTermVec, int):::EXIT521
-    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() expt return orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(expt) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1 ts.wrapped[expt] ts.wrapped[expt-1] ts.wrapped[expt..] ts.wrapped[expt+1..] ts.wrapped[0..expt] ts.wrapped[0..expt-1] ts.wrapped[return] ts.wrapped[return-1] ts.wrapped[return..] ts.wrapped[return+1..] ts.wrapped[0..return] ts.wrapped[0..return-1] ts.wrapped[orig(expt)] ts.wrapped[orig(expt)-1] ts.wrapped[orig(expt)..] ts.wrapped[orig(expt)+1..] ts.wrapped[0..orig(expt)] ts.wrapped[0..orig(expt)-1] orig(ts.wrapped[post(expt)]) orig(ts.wrapped[post(expt)-1]) orig(ts.wrapped[post(expt)..]) orig(ts.wrapped[post(expt)+1..]) orig(ts.wrapped[0..post(expt)]) orig(ts.wrapped[0..post(expt)-1]) orig(ts.wrapped[post(return)]) orig(ts.wrapped[post(return)-1]) orig(ts.wrapped[post(return)..]) orig(ts.wrapped[post(return)+1..]) orig(ts.wrapped[0..post(return)]) orig(ts.wrapped[0..post(return)-1]) orig(ts.wrapped[expt]) orig(ts.wrapped[expt-1]) orig(ts.wrapped[expt..]) orig(ts.wrapped[expt+1..]) orig(ts.wrapped[0..expt]) orig(ts.wrapped[0..expt-1])
-(!(daikon.Quant.size(ts.wrapped)-1 == 0)) || (\result == 0)
-\result <= daikon.Quant.size(ts.wrapped)-1
+    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() expt return orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(expt) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1
 ===========================================================================
 PolyCalc.RatPoly.findTermIndex(PolyCalc.RatTermVec, int):::EXIT523
-    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() expt return orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(expt) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1 ts.wrapped[expt] ts.wrapped[expt-1] ts.wrapped[expt..] ts.wrapped[expt+1..] ts.wrapped[0..expt] ts.wrapped[0..expt-1] ts.wrapped[return] ts.wrapped[return-1] ts.wrapped[return..] ts.wrapped[return+1..] ts.wrapped[0..return] ts.wrapped[0..return-1] ts.wrapped[orig(expt)] ts.wrapped[orig(expt)-1] ts.wrapped[orig(expt)..] ts.wrapped[orig(expt)+1..] ts.wrapped[0..orig(expt)] ts.wrapped[0..orig(expt)-1] orig(ts.wrapped[post(expt)]) orig(ts.wrapped[post(expt)-1]) orig(ts.wrapped[post(expt)..]) orig(ts.wrapped[post(expt)+1..]) orig(ts.wrapped[0..post(expt)]) orig(ts.wrapped[0..post(expt)-1]) orig(ts.wrapped[post(return)]) orig(ts.wrapped[post(return)-1]) orig(ts.wrapped[post(return)..]) orig(ts.wrapped[post(return)+1..]) orig(ts.wrapped[0..post(return)]) orig(ts.wrapped[0..post(return)-1]) orig(ts.wrapped[expt]) orig(ts.wrapped[expt-1]) orig(ts.wrapped[expt..]) orig(ts.wrapped[expt+1..]) orig(ts.wrapped[0..expt]) orig(ts.wrapped[0..expt-1])
-\result <= daikon.Quant.size(ts.wrapped)-1
+    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() expt return orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(expt) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1
 ===========================================================================
 PolyCalc.RatPoly.findTermIndex(PolyCalc.RatTermVec, int):::EXIT526
-    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() expt return orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(expt) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1 ts.wrapped[expt] ts.wrapped[expt-1] ts.wrapped[expt..] ts.wrapped[expt+1..] ts.wrapped[0..expt] ts.wrapped[0..expt-1] ts.wrapped[return] ts.wrapped[return-1] ts.wrapped[return..] ts.wrapped[return+1..] ts.wrapped[0..return] ts.wrapped[0..return-1] ts.wrapped[orig(expt)] ts.wrapped[orig(expt)-1] ts.wrapped[orig(expt)..] ts.wrapped[orig(expt)+1..] ts.wrapped[0..orig(expt)] ts.wrapped[0..orig(expt)-1] orig(ts.wrapped[post(expt)]) orig(ts.wrapped[post(expt)-1]) orig(ts.wrapped[post(expt)..]) orig(ts.wrapped[post(expt)+1..]) orig(ts.wrapped[0..post(expt)]) orig(ts.wrapped[0..post(expt)-1]) orig(ts.wrapped[post(return)]) orig(ts.wrapped[post(return)-1]) orig(ts.wrapped[post(return)..]) orig(ts.wrapped[post(return)+1..]) orig(ts.wrapped[0..post(return)]) orig(ts.wrapped[0..post(return)-1]) orig(ts.wrapped[expt]) orig(ts.wrapped[expt-1]) orig(ts.wrapped[expt..]) orig(ts.wrapped[expt+1..]) orig(ts.wrapped[0..expt]) orig(ts.wrapped[0..expt-1])
-\result == daikon.Quant.size(ts.wrapped)
-\result == \old(daikon.Quant.size(ts.wrapped))
+    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() expt return orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(expt) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1
 \result >= 1
-("oneOf.java.jpp: SEQUENCE unimplemented" != null)
 ===========================================================================
 PolyCalc.RatPoly.findTermIndex(PolyCalc.RatTermVec, int):::EXIT
-    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() expt return orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(expt) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1 ts.wrapped[expt] ts.wrapped[expt-1] ts.wrapped[expt..] ts.wrapped[expt+1..] ts.wrapped[0..expt] ts.wrapped[0..expt-1] ts.wrapped[return] ts.wrapped[return-1] ts.wrapped[return..] ts.wrapped[return+1..] ts.wrapped[0..return] ts.wrapped[0..return-1] ts.wrapped[orig(expt)] ts.wrapped[orig(expt)-1] ts.wrapped[orig(expt)..] ts.wrapped[orig(expt)+1..] ts.wrapped[0..orig(expt)] ts.wrapped[0..orig(expt)-1] orig(ts.wrapped[post(expt)]) orig(ts.wrapped[post(expt)-1]) orig(ts.wrapped[post(expt)..]) orig(ts.wrapped[post(expt)+1..]) orig(ts.wrapped[0..post(expt)]) orig(ts.wrapped[0..post(expt)-1]) orig(ts.wrapped[post(return)]) orig(ts.wrapped[post(return)-1]) orig(ts.wrapped[post(return)..]) orig(ts.wrapped[post(return)+1..]) orig(ts.wrapped[0..post(return)]) orig(ts.wrapped[0..post(return)-1]) orig(ts.wrapped[expt]) orig(ts.wrapped[expt-1]) orig(ts.wrapped[expt..]) orig(ts.wrapped[expt+1..]) orig(ts.wrapped[0..expt]) orig(ts.wrapped[0..expt-1])
+    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() expt return orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(expt) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1
 ts.wrapped == \old(ts.wrapped)
 daikon.Quant.pairwiseEqual(ts.wrapped, \old(ts.wrapped))
 ts.wrapped != null
@@ -723,10 +667,9 @@ daikon.Quant.eltsNotEqual(ts.wrapped, null)
 daikon.Quant.eltsEqual(daikon.Quant.typeArray(ts.wrapped), "PolyCalc.RatTerm")
 \result >= 0
 daikon.Quant.size(ts.wrapped) >= 1
-\result <= daikon.Quant.size(ts.wrapped)
 ===========================================================================
 PolyCalc.RatPoly.hintedGet(PolyCalc.RatTermVec, int, int):::ENTER
-    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() i expt size(ts.wrapped[]) size(ts.wrapped[])-1 ts.wrapped[i] ts.wrapped[i-1] ts.wrapped[i..] ts.wrapped[i+1..] ts.wrapped[0..i] ts.wrapped[0..i-1] ts.wrapped[expt] ts.wrapped[expt-1] ts.wrapped[expt..] ts.wrapped[expt+1..] ts.wrapped[0..expt] ts.wrapped[0..expt-1]
+    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() i expt size(ts.wrapped[]) size(ts.wrapped[])-1
 ts != null
 ts.wrapped != null
 daikon.Quant.noDups(ts.wrapped)
@@ -735,70 +678,27 @@ daikon.Quant.eltsEqual(daikon.Quant.typeArray(ts.wrapped), "PolyCalc.RatTerm")
 i >= 0
 expt >= 0
 daikon.Quant.size(ts.wrapped) >= 1
-i <= daikon.Quant.size(ts.wrapped)
 ===========================================================================
 PolyCalc.RatPoly.hintedGet(PolyCalc.RatTermVec, int, int):::EXIT534
-    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() i expt return return.coeff return.coeff.numer return.coeff.denom return.expt orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(i) orig(expt) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1 ts.wrapped[i] ts.wrapped[i-1] ts.wrapped[i..] ts.wrapped[i+1..] ts.wrapped[0..i] ts.wrapped[0..i-1] ts.wrapped[expt] ts.wrapped[expt-1] ts.wrapped[expt..] ts.wrapped[expt+1..] ts.wrapped[0..expt] ts.wrapped[0..expt-1] ts.wrapped[return.coeff.numer] ts.wrapped[return.coeff.numer-1] ts.wrapped[return.coeff.numer..] ts.wrapped[return.coeff.numer+1..] ts.wrapped[0..return.coeff.numer] ts.wrapped[0..return.coeff.numer-1] ts.wrapped[return.coeff.denom] ts.wrapped[return.coeff.denom-1] ts.wrapped[return.coeff.denom..] ts.wrapped[return.coeff.denom+1..] ts.wrapped[0..return.coeff.denom] ts.wrapped[0..return.coeff.denom-1] ts.wrapped[return.expt] ts.wrapped[return.expt-1] ts.wrapped[return.expt..] ts.wrapped[return.expt+1..] ts.wrapped[0..return.expt] ts.wrapped[0..return.expt-1] ts.wrapped[orig(i)] ts.wrapped[orig(i)-1] ts.wrapped[orig(i)..] ts.wrapped[orig(i)+1..] ts.wrapped[0..orig(i)] ts.wrapped[0..orig(i)-1] ts.wrapped[orig(expt)] ts.wrapped[orig(expt)-1] ts.wrapped[orig(expt)..] ts.wrapped[orig(expt)+1..] ts.wrapped[0..orig(expt)] ts.wrapped[0..orig(expt)-1] orig(ts.wrapped[post(i)]) orig(ts.wrapped[post(i)-1]) orig(ts.wrapped[post(i)..]) orig(ts.wrapped[post(i)+1..]) orig(ts.wrapped[0..post(i)]) orig(ts.wrapped[0..post(i)-1]) orig(ts.wrapped[post(expt)]) orig(ts.wrapped[post(expt)-1]) orig(ts.wrapped[post(expt)..]) orig(ts.wrapped[post(expt)+1..]) orig(ts.wrapped[0..post(expt)]) orig(ts.wrapped[0..post(expt)-1]) orig(ts.wrapped[post(return.coeff.numer)]) orig(ts.wrapped[post(return.coeff.numer)-1]) orig(ts.wrapped[post(return.coeff.numer)..]) orig(ts.wrapped[post(return.coeff.numer)+1..]) orig(ts.wrapped[0..post(return.coeff.numer)]) orig(ts.wrapped[0..post(return.coeff.numer)-1]) orig(ts.wrapped[post(return.coeff.denom)]) orig(ts.wrapped[post(return.coeff.denom)-1]) orig(ts.wrapped[post(return.coeff.denom)..]) orig(ts.wrapped[post(return.coeff.denom)+1..]) orig(ts.wrapped[0..post(return.coeff.denom)]) orig(ts.wrapped[0..post(return.coeff.denom)-1]) orig(ts.wrapped[post(return.expt)]) orig(ts.wrapped[post(return.expt)-1]) orig(ts.wrapped[post(return.expt)..]) orig(ts.wrapped[post(return.expt)+1..]) orig(ts.wrapped[0..post(return.expt)]) orig(ts.wrapped[0..post(return.expt)-1]) orig(ts.wrapped[i]) orig(ts.wrapped[i-1]) orig(ts.wrapped[i..]) orig(ts.wrapped[i+1..]) orig(ts.wrapped[0..i]) orig(ts.wrapped[0..i-1]) orig(ts.wrapped[expt]) orig(ts.wrapped[expt-1]) orig(ts.wrapped[expt..]) orig(ts.wrapped[expt+1..]) orig(ts.wrapped[0..expt]) orig(ts.wrapped[0..expt-1])
-\result == daikon.Quant.getElement_Object(ts.wrapped, \old(i))
-daikon.Quant.memberOf(\result , ts.wrapped )
-daikon.Quant.memberOf(\result , daikon.Quant.slice(ts.wrapped, \old(i), daikon.Quant.size(ts.wrapped)) )
-daikon.Quant.memberOf(\result , daikon.Quant.slice(ts.wrapped, 0, \old(i)) )
-(!(daikon.Quant.size(ts.wrapped)-1 == 0)) || (\old(i) == 0)
-\old(i) <= daikon.Quant.size(ts.wrapped)-1
+    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() i expt return return.coeff return.coeff.numer return.coeff.denom return.expt orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(i) orig(expt) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1
 ===========================================================================
 PolyCalc.RatPoly.hintedGet(PolyCalc.RatTermVec, int, int):::EXIT537
-    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() i expt return return.coeff return.coeff.numer return.coeff.denom return.expt orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(i) orig(expt) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1 ts.wrapped[i] ts.wrapped[i-1] ts.wrapped[i..] ts.wrapped[i+1..] ts.wrapped[0..i] ts.wrapped[0..i-1] ts.wrapped[expt] ts.wrapped[expt-1] ts.wrapped[expt..] ts.wrapped[expt+1..] ts.wrapped[0..expt] ts.wrapped[0..expt-1] ts.wrapped[return.coeff.numer] ts.wrapped[return.coeff.numer-1] ts.wrapped[return.coeff.numer..] ts.wrapped[return.coeff.numer+1..] ts.wrapped[0..return.coeff.numer] ts.wrapped[0..return.coeff.numer-1] ts.wrapped[return.coeff.denom] ts.wrapped[return.coeff.denom-1] ts.wrapped[return.coeff.denom..] ts.wrapped[return.coeff.denom+1..] ts.wrapped[0..return.coeff.denom] ts.wrapped[0..return.coeff.denom-1] ts.wrapped[return.expt] ts.wrapped[return.expt-1] ts.wrapped[return.expt..] ts.wrapped[return.expt+1..] ts.wrapped[0..return.expt] ts.wrapped[0..return.expt-1] ts.wrapped[orig(i)] ts.wrapped[orig(i)-1] ts.wrapped[orig(i)..] ts.wrapped[orig(i)+1..] ts.wrapped[0..orig(i)] ts.wrapped[0..orig(i)-1] ts.wrapped[orig(expt)] ts.wrapped[orig(expt)-1] ts.wrapped[orig(expt)..] ts.wrapped[orig(expt)+1..] ts.wrapped[0..orig(expt)] ts.wrapped[0..orig(expt)-1] orig(ts.wrapped[post(i)]) orig(ts.wrapped[post(i)-1]) orig(ts.wrapped[post(i)..]) orig(ts.wrapped[post(i)+1..]) orig(ts.wrapped[0..post(i)]) orig(ts.wrapped[0..post(i)-1]) orig(ts.wrapped[post(expt)]) orig(ts.wrapped[post(expt)-1]) orig(ts.wrapped[post(expt)..]) orig(ts.wrapped[post(expt)+1..]) orig(ts.wrapped[0..post(expt)]) orig(ts.wrapped[0..post(expt)-1]) orig(ts.wrapped[post(return.coeff.numer)]) orig(ts.wrapped[post(return.coeff.numer)-1]) orig(ts.wrapped[post(return.coeff.numer)..]) orig(ts.wrapped[post(return.coeff.numer)+1..]) orig(ts.wrapped[0..post(return.coeff.numer)]) orig(ts.wrapped[0..post(return.coeff.numer)-1]) orig(ts.wrapped[post(return.coeff.denom)]) orig(ts.wrapped[post(return.coeff.denom)-1]) orig(ts.wrapped[post(return.coeff.denom)..]) orig(ts.wrapped[post(return.coeff.denom)+1..]) orig(ts.wrapped[0..post(return.coeff.denom)]) orig(ts.wrapped[0..post(return.coeff.denom)-1]) orig(ts.wrapped[post(return.expt)]) orig(ts.wrapped[post(return.expt)-1]) orig(ts.wrapped[post(return.expt)..]) orig(ts.wrapped[post(return.expt)+1..]) orig(ts.wrapped[0..post(return.expt)]) orig(ts.wrapped[0..post(return.expt)-1]) orig(ts.wrapped[i]) orig(ts.wrapped[i-1]) orig(ts.wrapped[i..]) orig(ts.wrapped[i+1..]) orig(ts.wrapped[0..i]) orig(ts.wrapped[0..i-1]) orig(ts.wrapped[expt]) orig(ts.wrapped[expt-1]) orig(ts.wrapped[expt..]) orig(ts.wrapped[expt+1..]) orig(ts.wrapped[0..expt]) orig(ts.wrapped[0..expt-1])
-daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.numer) == daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.denom-1)
-daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.numer) == \old(daikon.Quant.getElement_Object(ts.wrapped, \new(\result.coeff.denom)-1))
+    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() i expt return return.coeff return.coeff.numer return.coeff.denom return.expt orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(i) orig(expt) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1
 \result.coeff.numer == 0
 \result.coeff.denom == 1
 \old(i) >= 1
-("oneOf.java.jpp: SEQUENCE unimplemented" != null)
 \result.coeff.numer <= \result.expt
-\result.coeff.numer < \old(i)
-\result.coeff.numer <= daikon.Quant.size(ts.wrapped)-1
-\result.coeff.denom <= \old(i)
-\result.coeff.denom <= daikon.Quant.size(ts.wrapped)
-daikon.Quant.eltsEqual(daikon.Quant.slice(ts.wrapped, 0, \result.coeff.numer), daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.numer))
 ===========================================================================
 PolyCalc.RatPoly.hintedGet(PolyCalc.RatTermVec, int, int):::EXIT
-    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() i expt return return.coeff return.coeff.numer return.coeff.denom return.expt orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(i) orig(expt) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1 ts.wrapped[i] ts.wrapped[i-1] ts.wrapped[i..] ts.wrapped[i+1..] ts.wrapped[0..i] ts.wrapped[0..i-1] ts.wrapped[expt] ts.wrapped[expt-1] ts.wrapped[expt..] ts.wrapped[expt+1..] ts.wrapped[0..expt] ts.wrapped[0..expt-1] ts.wrapped[return.coeff.numer] ts.wrapped[return.coeff.numer-1] ts.wrapped[return.coeff.numer..] ts.wrapped[return.coeff.numer+1..] ts.wrapped[0..return.coeff.numer] ts.wrapped[0..return.coeff.numer-1] ts.wrapped[return.coeff.denom] ts.wrapped[return.coeff.denom-1] ts.wrapped[return.coeff.denom..] ts.wrapped[return.coeff.denom+1..] ts.wrapped[0..return.coeff.denom] ts.wrapped[0..return.coeff.denom-1] ts.wrapped[return.expt] ts.wrapped[return.expt-1] ts.wrapped[return.expt..] ts.wrapped[return.expt+1..] ts.wrapped[0..return.expt] ts.wrapped[0..return.expt-1] ts.wrapped[orig(i)] ts.wrapped[orig(i)-1] ts.wrapped[orig(i)..] ts.wrapped[orig(i)+1..] ts.wrapped[0..orig(i)] ts.wrapped[0..orig(i)-1] ts.wrapped[orig(expt)] ts.wrapped[orig(expt)-1] ts.wrapped[orig(expt)..] ts.wrapped[orig(expt)+1..] ts.wrapped[0..orig(expt)] ts.wrapped[0..orig(expt)-1] orig(ts.wrapped[post(i)]) orig(ts.wrapped[post(i)-1]) orig(ts.wrapped[post(i)..]) orig(ts.wrapped[post(i)+1..]) orig(ts.wrapped[0..post(i)]) orig(ts.wrapped[0..post(i)-1]) orig(ts.wrapped[post(expt)]) orig(ts.wrapped[post(expt)-1]) orig(ts.wrapped[post(expt)..]) orig(ts.wrapped[post(expt)+1..]) orig(ts.wrapped[0..post(expt)]) orig(ts.wrapped[0..post(expt)-1]) orig(ts.wrapped[post(return.coeff.numer)]) orig(ts.wrapped[post(return.coeff.numer)-1]) orig(ts.wrapped[post(return.coeff.numer)..]) orig(ts.wrapped[post(return.coeff.numer)+1..]) orig(ts.wrapped[0..post(return.coeff.numer)]) orig(ts.wrapped[0..post(return.coeff.numer)-1]) orig(ts.wrapped[post(return.coeff.denom)]) orig(ts.wrapped[post(return.coeff.denom)-1]) orig(ts.wrapped[post(return.coeff.denom)..]) orig(ts.wrapped[post(return.coeff.denom)+1..]) orig(ts.wrapped[0..post(return.coeff.denom)]) orig(ts.wrapped[0..post(return.coeff.denom)-1]) orig(ts.wrapped[post(return.expt)]) orig(ts.wrapped[post(return.expt)-1]) orig(ts.wrapped[post(return.expt)..]) orig(ts.wrapped[post(return.expt)+1..]) orig(ts.wrapped[0..post(return.expt)]) orig(ts.wrapped[0..post(return.expt)-1]) orig(ts.wrapped[i]) orig(ts.wrapped[i-1]) orig(ts.wrapped[i..]) orig(ts.wrapped[i+1..]) orig(ts.wrapped[0..i]) orig(ts.wrapped[0..i-1]) orig(ts.wrapped[expt]) orig(ts.wrapped[expt-1]) orig(ts.wrapped[expt..]) orig(ts.wrapped[expt+1..]) orig(ts.wrapped[0..expt]) orig(ts.wrapped[0..expt-1])
+    Variables: ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() i expt return return.coeff return.coeff.numer return.coeff.denom return.expt orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(i) orig(expt) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1
 ts.wrapped == \old(ts.wrapped)
 daikon.Quant.pairwiseEqual(ts.wrapped, \old(ts.wrapped))
 \result.expt == \old(expt)
 (\result.coeff.numer == 0)  ==>  (\old(i) >= 1)
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(\old(daikon.Quant.slice(ts.wrapped, 0, \new(\result.coeff.denom)-1)), \old(daikon.Quant.getElement_Object(ts.wrapped, \new(\result.coeff.denom)-1))))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(\old(daikon.Quant.slice(ts.wrapped, 0, \new(\result.coeff.denom)-1)), \old(daikon.Quant.getElement_Object(ts.wrapped, \new(\result.coeff.numer)))))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(\old(daikon.Quant.slice(ts.wrapped, 0, \new(\result.coeff.denom)-1)), daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.denom-1)))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(\old(daikon.Quant.slice(ts.wrapped, 0, \new(\result.coeff.denom)-1)), daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.numer)))
-(\result.coeff.numer == 0)  ==>  (("oneOf.java.jpp: SEQUENCE unimplemented" != null))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(\old(daikon.Quant.slice(ts.wrapped, 0, \new(\result.coeff.numer))), \old(daikon.Quant.getElement_Object(ts.wrapped, \new(\result.coeff.denom)-1))))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(\old(daikon.Quant.slice(ts.wrapped, 0, \new(\result.coeff.numer))), \old(daikon.Quant.getElement_Object(ts.wrapped, \new(\result.coeff.numer)))))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(\old(daikon.Quant.slice(ts.wrapped, 0, \new(\result.coeff.numer))), daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.denom-1)))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(\old(daikon.Quant.slice(ts.wrapped, 0, \new(\result.coeff.numer))), daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.numer)))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.noDups(\old(daikon.Quant.slice(ts.wrapped, \new(\result.coeff.numer), daikon.Quant.size(ts.wrapped)))))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsNotEqual(\old(daikon.Quant.slice(ts.wrapped, \new(\result.coeff.numer), daikon.Quant.size(ts.wrapped))), null))
-(\result.coeff.numer == 0)  ==>  (\result.coeff.denom <= \old(i))
-(\result.coeff.numer == 0)  ==>  (\result.coeff.denom <= daikon.Quant.size(ts.wrapped))
 (\result.coeff.numer == 0)  ==>  (\result.coeff.denom == 1)
-(\result.coeff.numer == 0)  ==>  (\result.coeff.numer < \old(i))
 (\result.coeff.numer == 0)  ==>  (\result.coeff.numer < \result.coeff.denom)
 (\result.coeff.numer == 0)  ==>  (\result.coeff.numer <= \result.expt)
-(\result.coeff.numer == 0)  ==>  (\result.coeff.numer <= daikon.Quant.size(ts.wrapped)-1)
 (\result.coeff.numer == 0)  ==>  (\result.coeff.numer is a pointer)
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(daikon.Quant.slice(ts.wrapped, 0, \result.coeff.denom-1), \old(daikon.Quant.getElement_Object(ts.wrapped, \new(\result.coeff.denom)-1))))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(daikon.Quant.slice(ts.wrapped, 0, \result.coeff.denom-1), \old(daikon.Quant.getElement_Object(ts.wrapped, \new(\result.coeff.numer)))))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(daikon.Quant.slice(ts.wrapped, 0, \result.coeff.denom-1), daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.denom-1)))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(daikon.Quant.slice(ts.wrapped, 0, \result.coeff.denom-1), daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.numer)))
-(\result.coeff.numer == 0)  ==>  (("oneOf.java.jpp: SEQUENCE unimplemented" != null))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(daikon.Quant.slice(ts.wrapped, 0, \result.coeff.numer), \old(daikon.Quant.getElement_Object(ts.wrapped, \new(\result.coeff.denom)-1))))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(daikon.Quant.slice(ts.wrapped, 0, \result.coeff.numer), \old(daikon.Quant.getElement_Object(ts.wrapped, \new(\result.coeff.numer)))))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(daikon.Quant.slice(ts.wrapped, 0, \result.coeff.numer), daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.denom-1)))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsEqual(daikon.Quant.slice(ts.wrapped, 0, \result.coeff.numer), daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.numer)))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.noDups(daikon.Quant.slice(ts.wrapped, \result.coeff.numer, daikon.Quant.size(ts.wrapped))))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.eltsNotEqual(daikon.Quant.slice(ts.wrapped, \result.coeff.numer, daikon.Quant.size(ts.wrapped)), null))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.numer) == \old(daikon.Quant.getElement_Object(ts.wrapped, \new(\result.coeff.denom)-1)))
-(\result.coeff.numer == 0)  ==>  (daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.numer) == daikon.Quant.getElement_Object(ts.wrapped, \result.coeff.denom-1))
 ts.wrapped != null
 daikon.Quant.noDups(ts.wrapped)
 daikon.Quant.eltsNotEqual(ts.wrapped, null)
@@ -808,10 +708,9 @@ daikon.Quant.eltsEqual(daikon.Quant.typeArray(ts.wrapped), "PolyCalc.RatTerm")
 \result.coeff.denom >= 1
 \result.expt >= 0
 daikon.Quant.size(ts.wrapped) >= 1
-\old(i) <= daikon.Quant.size(ts.wrapped)
 ===========================================================================
 PolyCalc.RatPoly.incremExpt(PolyCalc.RatTermVec, int):::ENTER
-    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() degree size(vec.wrapped[]) size(vec.wrapped[])-1 vec.wrapped[degree] vec.wrapped[degree-1] vec.wrapped[degree..] vec.wrapped[degree+1..] vec.wrapped[0..degree] vec.wrapped[0..degree-1]
+    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() degree size(vec.wrapped[]) size(vec.wrapped[])-1
 vec != null
 vec.wrapped != null
 daikon.Quant.noDups(vec.wrapped)
@@ -821,7 +720,7 @@ degree >= 0
 daikon.Quant.size(vec.wrapped) >= 1
 ===========================================================================
 PolyCalc.RatPoly.incremExpt(PolyCalc.RatTermVec, int):::EXIT
-    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() degree orig(vec) orig(vec.wrapped) orig(vec.wrapped[]) orig(vec.wrapped[].getClass().getName()) orig(degree) size(vec.wrapped[]) size(vec.wrapped[])-1 orig(size(vec.wrapped[])) orig(size(vec.wrapped[]))-1 vec.wrapped[degree] vec.wrapped[degree-1] vec.wrapped[degree..] vec.wrapped[degree+1..] vec.wrapped[0..degree] vec.wrapped[0..degree-1] vec.wrapped[orig(degree)] vec.wrapped[orig(degree)-1] vec.wrapped[orig(degree)..] vec.wrapped[orig(degree)+1..] vec.wrapped[0..orig(degree)] vec.wrapped[0..orig(degree)-1] orig(vec.wrapped[post(degree)]) orig(vec.wrapped[post(degree)-1]) orig(vec.wrapped[post(degree)..]) orig(vec.wrapped[post(degree)+1..]) orig(vec.wrapped[0..post(degree)]) orig(vec.wrapped[0..post(degree)-1]) orig(vec.wrapped[degree]) orig(vec.wrapped[degree-1]) orig(vec.wrapped[degree..]) orig(vec.wrapped[degree+1..]) orig(vec.wrapped[0..degree]) orig(vec.wrapped[0..degree-1])
+    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() degree orig(vec) orig(vec.wrapped) orig(vec.wrapped[]) orig(vec.wrapped[].getClass().getName()) orig(degree) size(vec.wrapped[]) size(vec.wrapped[])-1 orig(size(vec.wrapped[])) orig(size(vec.wrapped[]))-1
 assignable vec.wrapped[*]
 vec.wrapped == \old(vec.wrapped)
 daikon.Quant.size(vec.wrapped) == \old(daikon.Quant.size(vec.wrapped))
@@ -866,38 +765,28 @@ PolyCalc.RatPoly.mul(PolyCalc.RatPoly):::EXIT390
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
 this.terms == \result.terms
 this.terms.wrapped == \result.terms.wrapped
-daikon.Quant.pairwiseEqual(this.terms.wrapped, \result.terms.wrapped)
 \result == \old(this)
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(p.terms.wrapped), new String[] {  }) || daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(p.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
+daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(\result.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 daikon.Quant.size(this.terms.wrapped) == 1
 daikon.Quant.size(p.terms.wrapped) == 0 || daikon.Quant.size(p.terms.wrapped) == 1
-daikon.Quant.size(this.terms.wrapped) >= daikon.Quant.size(p.terms.wrapped)
-daikon.Quant.size(this.terms.wrapped)-1 <= daikon.Quant.size(p.terms.wrapped)
-daikon.Quant.size(this.terms.wrapped)-1 >= daikon.Quant.size(p.terms.wrapped)-1
+daikon.Quant.size(\result.terms.wrapped) == 1
 ===========================================================================
 PolyCalc.RatPoly.mul(PolyCalc.RatPoly):::EXIT394
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
 p.terms == \result.terms
 p.terms.wrapped == \result.terms.wrapped
-daikon.Quant.pairwiseEqual(p.terms.wrapped, \result.terms.wrapped)
 \result == \old(p)
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.terms.wrapped), new String[] {  }) || daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(p.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
+daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(\result.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 daikon.Quant.size(this.terms.wrapped) == 0 || daikon.Quant.size(this.terms.wrapped) == 1
 daikon.Quant.size(p.terms.wrapped) == 1
-daikon.Quant.size(this.terms.wrapped) <= daikon.Quant.size(p.terms.wrapped)
-daikon.Quant.size(this.terms.wrapped) >= daikon.Quant.size(p.terms.wrapped)-1
-daikon.Quant.size(this.terms.wrapped)-1 <= daikon.Quant.size(p.terms.wrapped)-1
+daikon.Quant.size(\result.terms.wrapped) == 1
 ===========================================================================
 PolyCalc.RatPoly.mul(PolyCalc.RatPoly):::EXIT404
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
-(!(daikon.Quant.size(p.terms.wrapped) == 0)) || (daikon.Quant.size(this.terms.wrapped) == 0)
-(!(daikon.Quant.size(this.terms.wrapped) == 0)) || (daikon.Quant.size(\result.terms.wrapped) == 0)
-(!(daikon.Quant.size(this.terms.wrapped)-1 == 0)) || (daikon.Quant.size(p.terms.wrapped)-1 == 0)
-(!(daikon.Quant.size(\result.terms.wrapped)-1 == 0)) || (daikon.Quant.size(this.terms.wrapped)-1 == 0)
-(!(daikon.Quant.size(p.terms.wrapped) == 0)) || (daikon.Quant.size(\result.terms.wrapped) == 0)
-(!(daikon.Quant.size(\result.terms.wrapped)-1 == 0)) || (daikon.Quant.size(p.terms.wrapped)-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.mul(PolyCalc.RatPoly):::EXIT
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
@@ -918,10 +807,6 @@ daikon.Quant.eltsEqual(daikon.Quant.typeArray(p.terms.wrapped), "PolyCalc.RatTer
 daikon.Quant.noDups(\result.terms.wrapped)
 daikon.Quant.eltsNotEqual(\result.terms.wrapped, null)
 daikon.Quant.eltsEqual(daikon.Quant.typeArray(\result.terms.wrapped), "PolyCalc.RatTerm")
-(!(daikon.Quant.size(\result.terms.wrapped) == 0)) || (daikon.Quant.size(this.terms.wrapped) == 0)
-daikon.Quant.size(this.terms.wrapped)-1 != daikon.Quant.size(\result.terms.wrapped)
-(!(daikon.Quant.size(this.terms.wrapped)-1 == 0)) || (daikon.Quant.size(\result.terms.wrapped)-1 == 0)
-daikon.Quant.size(p.terms.wrapped)-1 <= daikon.Quant.size(\result.terms.wrapped)
 ===========================================================================
 PolyCalc.RatPoly.negate():::ENTER
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() size(this.terms.wrapped[]) size(this.terms.wrapped[])-1
@@ -933,13 +818,15 @@ PolyCalc.RatPoly.negate():::EXIT
 this.terms == \old(this.terms)
 this.terms.wrapped == \old(this.terms.wrapped)
 daikon.Quant.pairwiseEqual(this.terms.wrapped, \old(this.terms.wrapped))
-daikon.Quant.size(this.terms.wrapped) == daikon.Quant.size(\result.terms.wrapped)
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.terms.wrapped), new String[] {  }) || daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 \result != null
 \result.terms != null
 \result.terms.wrapped != null
 daikon.Quant.eltsNotEqual(\result.terms.wrapped, null)
+daikon.Quant.eltsEqual(daikon.Quant.typeArray(\result.terms.wrapped), "PolyCalc.RatTerm")
+daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(\result.terms.wrapped), new String[] {  }) || daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(\result.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 daikon.Quant.size(this.terms.wrapped) == 0 || daikon.Quant.size(this.terms.wrapped) == 1
+daikon.Quant.size(\result.terms.wrapped) == 0 || daikon.Quant.size(\result.terms.wrapped) == 1
 ===========================================================================
 PolyCalc.RatPoly.parse(java.lang.String):::ENTER
     Variables: polyStr polyStr.toString
@@ -958,7 +845,7 @@ daikon.Quant.eltsNotEqual(\result.terms.wrapped, null)
 daikon.Quant.eltsEqual(daikon.Quant.typeArray(\result.terms.wrapped), "PolyCalc.RatTerm")
 ===========================================================================
 PolyCalc.RatPoly.replaceExpt(PolyCalc.RatTerm, PolyCalc.RatTermVec, int):::ENTER
-    Variables: term term.coeff term.coeff.numer term.coeff.denom term.expt ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() index size(ts.wrapped[]) size(ts.wrapped[])-1 ts.wrapped[term.coeff.numer] ts.wrapped[term.coeff.numer-1] ts.wrapped[term.coeff.numer..] ts.wrapped[term.coeff.numer+1..] ts.wrapped[0..term.coeff.numer] ts.wrapped[0..term.coeff.numer-1] ts.wrapped[term.coeff.denom] ts.wrapped[term.coeff.denom-1] ts.wrapped[term.coeff.denom..] ts.wrapped[term.coeff.denom+1..] ts.wrapped[0..term.coeff.denom] ts.wrapped[0..term.coeff.denom-1] ts.wrapped[term.expt] ts.wrapped[term.expt-1] ts.wrapped[term.expt..] ts.wrapped[term.expt+1..] ts.wrapped[0..term.expt] ts.wrapped[0..term.expt-1] ts.wrapped[index] ts.wrapped[index-1] ts.wrapped[index..] ts.wrapped[index+1..] ts.wrapped[0..index] ts.wrapped[0..index-1]
+    Variables: term term.coeff term.coeff.numer term.coeff.denom term.expt ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() index size(ts.wrapped[]) size(ts.wrapped[])-1
 term != null
 term.coeff != null
 term.coeff.denom >= 1
@@ -970,20 +857,15 @@ daikon.Quant.eltsNotEqual(ts.wrapped, null)
 daikon.Quant.eltsEqual(daikon.Quant.typeArray(ts.wrapped), "PolyCalc.RatTerm")
 index >= 1
 daikon.Quant.size(ts.wrapped) >= 1
-index <= daikon.Quant.size(ts.wrapped)
 ===========================================================================
 PolyCalc.RatPoly.replaceExpt(PolyCalc.RatTerm, PolyCalc.RatTermVec, int):::EXIT
-    Variables: term term.coeff term.coeff.numer term.coeff.denom term.expt ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() index orig(term) orig(term.coeff) orig(term.coeff.numer) orig(term.coeff.denom) orig(term.expt) orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(index) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1 ts.wrapped[term.coeff.numer] ts.wrapped[term.coeff.numer-1] ts.wrapped[term.coeff.numer..] ts.wrapped[term.coeff.numer+1..] ts.wrapped[0..term.coeff.numer] ts.wrapped[0..term.coeff.numer-1] orig(ts.wrapped[post(term.coeff.numer)]) orig(ts.wrapped[post(term.coeff.numer)-1]) orig(ts.wrapped[post(term.coeff.numer)..]) orig(ts.wrapped[post(term.coeff.numer)+1..]) orig(ts.wrapped[0..post(term.coeff.numer)]) orig(ts.wrapped[0..post(term.coeff.numer)-1]) ts.wrapped[term.coeff.denom] ts.wrapped[term.coeff.denom-1] ts.wrapped[term.coeff.denom..] ts.wrapped[term.coeff.denom+1..] ts.wrapped[0..term.coeff.denom] ts.wrapped[0..term.coeff.denom-1] orig(ts.wrapped[post(term.coeff.denom)]) orig(ts.wrapped[post(term.coeff.denom)-1]) orig(ts.wrapped[post(term.coeff.denom)..]) orig(ts.wrapped[post(term.coeff.denom)+1..]) orig(ts.wrapped[0..post(term.coeff.denom)]) orig(ts.wrapped[0..post(term.coeff.denom)-1]) ts.wrapped[term.expt] ts.wrapped[term.expt-1] ts.wrapped[term.expt..] ts.wrapped[term.expt+1..] ts.wrapped[0..term.expt] ts.wrapped[0..term.expt-1] orig(ts.wrapped[post(term.expt)]) orig(ts.wrapped[post(term.expt)-1]) orig(ts.wrapped[post(term.expt)..]) orig(ts.wrapped[post(term.expt)+1..]) orig(ts.wrapped[0..post(term.expt)]) orig(ts.wrapped[0..post(term.expt)-1]) ts.wrapped[index] ts.wrapped[index-1] ts.wrapped[index..] ts.wrapped[index+1..] ts.wrapped[0..index] ts.wrapped[0..index-1] ts.wrapped[orig(term.coeff.numer)] ts.wrapped[orig(term.coeff.numer)-1] ts.wrapped[orig(term.coeff.numer)..] ts.wrapped[orig(term.coeff.numer)+1..] ts.wrapped[0..orig(term.coeff.numer)] ts.wrapped[0..orig(term.coeff.numer)-1] ts.wrapped[orig(term.coeff.denom)] ts.wrapped[orig(term.coeff.denom)-1] ts.wrapped[orig(term.coeff.denom)..] ts.wrapped[orig(term.coeff.denom)+1..] ts.wrapped[0..orig(term.coeff.denom)] ts.wrapped[0..orig(term.coeff.denom)-1] ts.wrapped[orig(term.expt)] ts.wrapped[orig(term.expt)-1] ts.wrapped[orig(term.expt)..] ts.wrapped[orig(term.expt)+1..] ts.wrapped[0..orig(term.expt)] ts.wrapped[0..orig(term.expt)-1] ts.wrapped[orig(index)] ts.wrapped[orig(index)-1] ts.wrapped[orig(index)..] ts.wrapped[orig(index)+1..] ts.wrapped[0..orig(index)] ts.wrapped[0..orig(index)-1] orig(ts.wrapped[post(index)]) orig(ts.wrapped[post(index)-1]) orig(ts.wrapped[post(index)..]) orig(ts.wrapped[post(index)+1..]) orig(ts.wrapped[0..post(index)]) orig(ts.wrapped[0..post(index)-1]) orig(ts.wrapped[term.coeff.numer]) orig(ts.wrapped[term.coeff.numer-1]) orig(ts.wrapped[term.coeff.numer..]) orig(ts.wrapped[term.coeff.numer+1..]) orig(ts.wrapped[0..term.coeff.numer]) orig(ts.wrapped[0..term.coeff.numer-1]) orig(ts.wrapped[term.coeff.denom]) orig(ts.wrapped[term.coeff.denom-1]) orig(ts.wrapped[term.coeff.denom..]) orig(ts.wrapped[term.coeff.denom+1..]) orig(ts.wrapped[0..term.coeff.denom]) orig(ts.wrapped[0..term.coeff.denom-1]) orig(ts.wrapped[term.expt]) orig(ts.wrapped[term.expt-1]) orig(ts.wrapped[term.expt..]) orig(ts.wrapped[term.expt+1..]) orig(ts.wrapped[0..term.expt]) orig(ts.wrapped[0..term.expt-1]) orig(ts.wrapped[index]) orig(ts.wrapped[index-1]) orig(ts.wrapped[index..]) orig(ts.wrapped[index+1..]) orig(ts.wrapped[0..index]) orig(ts.wrapped[0..index-1])
-assignable ts.wrapped[*], ts.wrapped[term.coeff.numer], ts.wrapped[term.coeff.numer-1], ts.wrapped[term.coeff.numer..], ts.wrapped[term.coeff.numer+1..], ts.wrapped[0..term.coeff.numer], ts.wrapped[0..term.coeff.numer-1], ts.wrapped[term.coeff.denom], ts.wrapped[term.coeff.denom-1], ts.wrapped[term.coeff.denom..], ts.wrapped[term.coeff.denom+1..], ts.wrapped[0..term.coeff.denom], ts.wrapped[0..term.coeff.denom-1], ts.wrapped[term.expt], ts.wrapped[term.expt-1], ts.wrapped[term.expt..], ts.wrapped[term.expt+1..], ts.wrapped[0..term.expt], ts.wrapped[0..term.expt-1]
+    Variables: term term.coeff term.coeff.numer term.coeff.denom term.expt ts ts.wrapped ts.wrapped[] ts.wrapped[].getClass().getName() index orig(term) orig(term.coeff) orig(term.coeff.numer) orig(term.coeff.denom) orig(term.expt) orig(ts) orig(ts.wrapped) orig(ts.wrapped[]) orig(ts.wrapped[].getClass().getName()) orig(index) size(ts.wrapped[]) size(ts.wrapped[])-1 orig(size(ts.wrapped[])) orig(size(ts.wrapped[]))-1
+assignable ts.wrapped[*]
 term.coeff == \old(term.coeff)
 term.coeff.numer == \old(term.coeff.numer)
 term.coeff.denom == \old(term.coeff.denom)
 term.expt == \old(term.expt)
 ts.wrapped == \old(ts.wrapped)
-daikon.Quant.getElement_Object(ts.wrapped, \old(index)-1) == \old(daikon.Quant.getElement_Object(ts.wrapped, \new(index)-1))
-daikon.Quant.getElement_Object(ts.wrapped, \old(index)-1) == \old(daikon.Quant.getElement_Object(ts.wrapped, index-1))
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(ts.wrapped, 0, \old(index)-1), \old(daikon.Quant.slice(ts.wrapped, 0, \new(index)-1)))
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(ts.wrapped, 0, \old(index)-1), \old(daikon.Quant.slice(ts.wrapped, 0, index-1)))
 term.coeff != null
 term.coeff.denom >= 1
 term.expt >= 0
@@ -992,15 +874,13 @@ daikon.Quant.noDups(ts.wrapped)
 daikon.Quant.eltsNotEqual(ts.wrapped, null)
 daikon.Quant.eltsEqual(daikon.Quant.typeArray(ts.wrapped), "PolyCalc.RatTerm")
 daikon.Quant.size(ts.wrapped) >= 1
-(!(daikon.Quant.size(ts.wrapped)-1 == 0)) || (term.coeff.numer == 0)
-\old(index) <= daikon.Quant.size(ts.wrapped)
 (\old(daikon.Quant.size(ts.wrapped)) >> daikon.Quant.size(ts.wrapped) == 0)
 daikon.Quant.size(ts.wrapped) >= \old(daikon.Quant.size(ts.wrapped))-1
 daikon.Quant.size(ts.wrapped)-1 <= \old(daikon.Quant.size(ts.wrapped))
 (!(daikon.Quant.size(ts.wrapped)-1 == 0)) || (\old(daikon.Quant.size(ts.wrapped))-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.scaleBy(PolyCalc.RatTerm):::ENTER
-    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() scalar scalar.coeff scalar.coeff.numer scalar.coeff.denom scalar.expt size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 this.terms.wrapped[scalar.coeff.numer] this.terms.wrapped[scalar.coeff.numer-1] this.terms.wrapped[scalar.coeff.numer..] this.terms.wrapped[scalar.coeff.numer+1..] this.terms.wrapped[0..scalar.coeff.numer] this.terms.wrapped[0..scalar.coeff.numer-1] this.terms.wrapped[scalar.coeff.denom] this.terms.wrapped[scalar.coeff.denom-1] this.terms.wrapped[scalar.coeff.denom..] this.terms.wrapped[scalar.coeff.denom+1..] this.terms.wrapped[0..scalar.coeff.denom] this.terms.wrapped[0..scalar.coeff.denom-1] this.terms.wrapped[scalar.expt] this.terms.wrapped[scalar.expt-1] this.terms.wrapped[scalar.expt..] this.terms.wrapped[scalar.expt+1..] this.terms.wrapped[0..scalar.expt] this.terms.wrapped[0..scalar.expt-1]
+    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() scalar scalar.coeff scalar.coeff.numer scalar.coeff.denom scalar.expt size(this.terms.wrapped[]) size(this.terms.wrapped[])-1
 scalar != null
 scalar.coeff != null
 scalar.coeff.denom >= 1
@@ -1008,8 +888,7 @@ scalar.expt >= 0
 daikon.Quant.size(this.terms.wrapped) >= 1
 ===========================================================================
 PolyCalc.RatPoly.scaleBy(PolyCalc.RatTerm):::EXIT
-    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() scalar scalar.coeff scalar.coeff.numer scalar.coeff.denom scalar.expt return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(scalar) orig(scalar.coeff) orig(scalar.coeff.numer) orig(scalar.coeff.denom) orig(scalar.expt) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 this.terms.wrapped[scalar.coeff.numer] this.terms.wrapped[scalar.coeff.numer-1] this.terms.wrapped[scalar.coeff.numer..] this.terms.wrapped[scalar.coeff.numer+1..] this.terms.wrapped[0..scalar.coeff.numer] this.terms.wrapped[0..scalar.coeff.numer-1] this.terms.wrapped[scalar.coeff.denom] this.terms.wrapped[scalar.coeff.denom-1] this.terms.wrapped[scalar.coeff.denom..] this.terms.wrapped[scalar.coeff.denom+1..] this.terms.wrapped[0..scalar.coeff.denom] this.terms.wrapped[0..scalar.coeff.denom-1] this.terms.wrapped[scalar.expt] this.terms.wrapped[scalar.expt-1] this.terms.wrapped[scalar.expt..] this.terms.wrapped[scalar.expt+1..] this.terms.wrapped[0..scalar.expt] this.terms.wrapped[0..scalar.expt-1] this.terms.wrapped[orig(scalar.coeff.numer)] this.terms.wrapped[orig(scalar.coeff.numer)-1] this.terms.wrapped[orig(scalar.coeff.numer)..] this.terms.wrapped[orig(scalar.coeff.numer)+1..] this.terms.wrapped[0..orig(scalar.coeff.numer)] this.terms.wrapped[0..orig(scalar.coeff.numer)-1] this.terms.wrapped[orig(scalar.coeff.denom)] this.terms.wrapped[orig(scalar.coeff.denom)-1] this.terms.wrapped[orig(scalar.coeff.denom)..] this.terms.wrapped[orig(scalar.coeff.denom)+1..] this.terms.wrapped[0..orig(scalar.coeff.denom)] this.terms.wrapped[0..orig(scalar.coeff.denom)-1] this.terms.wrapped[orig(scalar.expt)] this.terms.wrapped[orig(scalar.expt)-1] this.terms.wrapped[orig(scalar.expt)..] this.terms.wrapped[orig(scalar.expt)+1..] this.terms.wrapped[0..orig(scalar.expt)] this.terms.wrapped[0..orig(scalar.expt)-1] return.terms.wrapped[scalar.coeff.numer] return.terms.wrapped[scalar.coeff.numer-1] return.terms.wrapped[scalar.coeff.numer..] return.terms.wrapped[scalar.coeff.numer+1..] return.terms.wrapped[0..scalar.coeff.numer] return.terms.wrapped[0..scalar.coeff.numer-1] orig(this.terms.wrapped[post(scalar.coeff.numer)]) orig(this.terms.wrapped[post(scalar.coeff.numer)-1]) orig(this.terms.wrapped[post(scalar.coeff.numer)..]) orig(this.terms.wrapped[post(scalar.coeff.numer)+1..]) orig(this.terms.wrapped[0..post(scalar.coeff.numer)]) orig(this.terms.wrapped[0..post(scalar.coeff.numer)-1]) return.terms.wrapped[scalar.coeff.denom] return.terms.wrapped[scalar.coeff.denom-1] return.terms.wrapped[scalar.coeff.denom..] return.terms.wrapped[scalar.coeff.denom+1..] return.terms.wrapped[0..scalar.coeff.denom] return.terms.wrapped[0..scalar.coeff.denom-1] orig(this.terms.wrapped[post(scalar.coeff.denom)]) orig(this.terms.wrapped[post(scalar.coeff.denom)-1]) orig(this.terms.wrapped[post(scalar.coeff.denom)..]) orig(this.terms.wrapped[post(scalar.coeff.denom)+1..]) orig(this.terms.wrapped[0..post(scalar.coeff.denom)]) orig(this.terms.wrapped[0..post(scalar.coeff.denom)-1]) return.terms.wrapped[scalar.expt] return.terms.wrapped[scalar.expt-1] return.terms.wrapped[scalar.expt..] return.terms.wrapped[scalar.expt+1..] return.terms.wrapped[0..scalar.expt] return.terms.wrapped[0..scalar.expt-1] orig(this.terms.wrapped[post(scalar.expt)]) orig(this.terms.wrapped[post(scalar.expt)-1]) orig(this.terms.wrapped[post(scalar.expt)..]) orig(this.terms.wrapped[post(scalar.expt)+1..]) orig(this.terms.wrapped[0..post(scalar.expt)]) orig(this.terms.wrapped[0..post(scalar.expt)-1]) return.terms.wrapped[orig(scalar.coeff.numer)] return.terms.wrapped[orig(scalar.coeff.numer)-1] return.terms.wrapped[orig(scalar.coeff.numer)..] return.terms.wrapped[orig(scalar.coeff.numer)+1..] return.terms.wrapped[0..orig(scalar.coeff.numer)] return.terms.wrapped[0..orig(scalar.coeff.numer)-1] return.terms.wrapped[orig(scalar.coeff.denom)] return.terms.wrapped[orig(scalar.coeff.denom)-1] return.terms.wrapped[orig(scalar.coeff.denom)..] return.terms.wrapped[orig(scalar.coeff.denom)+1..] return.terms.wrapped[0..orig(scalar.coeff.denom)] return.terms.wrapped[0..orig(scalar.coeff.denom)-1] return.terms.wrapped[orig(scalar.expt)] return.terms.wrapped[orig(scalar.expt)-1] return.terms.wrapped[orig(scalar.expt)..] return.terms.wrapped[orig(scalar.expt)+1..] return.terms.wrapped[0..orig(scalar.expt)] return.terms.wrapped[0..orig(scalar.expt)-1] orig(this.terms.wrapped[scalar.coeff.numer]) orig(this.terms.wrapped[scalar.coeff.numer-1]) orig(this.terms.wrapped[scalar.coeff.numer..]) orig(this.terms.wrapped[scalar.coeff.numer+1..]) orig(this.terms.wrapped[0..scalar.coeff.numer]) orig(this.terms.wrapped[0..scalar.coeff.numer-1]) orig(this.terms.wrapped[scalar.coeff.denom]) orig(this.terms.wrapped[scalar.coeff.denom-1]) orig(this.terms.wrapped[scalar.coeff.denom..]) orig(this.terms.wrapped[scalar.coeff.denom+1..]) orig(this.terms.wrapped[0..scalar.coeff.denom]) orig(this.terms.wrapped[0..scalar.coeff.denom-1]) orig(this.terms.wrapped[scalar.expt]) orig(this.terms.wrapped[scalar.expt-1]) orig(this.terms.wrapped[scalar.expt..]) orig(this.terms.wrapped[scalar.expt+1..]) orig(this.terms.wrapped[0..scalar.expt]) orig(this.terms.wrapped[0..scalar.expt-1])
-assignable this.terms.wrapped[scalar.coeff.numer], this.terms.wrapped[scalar.coeff.numer-1], this.terms.wrapped[scalar.coeff.numer..], this.terms.wrapped[scalar.coeff.numer+1..], this.terms.wrapped[0..scalar.coeff.numer], this.terms.wrapped[0..scalar.coeff.numer-1], this.terms.wrapped[scalar.coeff.denom], this.terms.wrapped[scalar.coeff.denom-1], this.terms.wrapped[scalar.coeff.denom..], this.terms.wrapped[scalar.coeff.denom+1..], this.terms.wrapped[0..scalar.coeff.denom], this.terms.wrapped[0..scalar.coeff.denom-1], this.terms.wrapped[scalar.expt], this.terms.wrapped[scalar.expt-1], this.terms.wrapped[scalar.expt..], this.terms.wrapped[scalar.expt+1..], this.terms.wrapped[0..scalar.expt], this.terms.wrapped[0..scalar.expt-1]
+    Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() scalar scalar.coeff scalar.coeff.numer scalar.coeff.denom scalar.expt return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(scalar) orig(scalar.coeff) orig(scalar.coeff.numer) orig(scalar.coeff.denom) orig(scalar.expt) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1
 this.terms == \old(this.terms)
 this.terms.wrapped == \old(this.terms.wrapped)
 daikon.Quant.pairwiseEqual(this.terms.wrapped, \old(this.terms.wrapped))
@@ -1017,7 +896,6 @@ scalar.coeff == \old(scalar.coeff)
 scalar.coeff.numer == \old(scalar.coeff.numer)
 scalar.coeff.denom == \old(scalar.coeff.denom)
 scalar.expt == \old(scalar.expt)
-daikon.Quant.size(this.terms.wrapped) == daikon.Quant.size(\result.terms.wrapped)
 scalar.coeff != null
 scalar.coeff.denom >= 1
 scalar.expt >= 0
@@ -1026,10 +904,12 @@ scalar.expt >= 0
 \result.terms.wrapped != null
 daikon.Quant.noDups(\result.terms.wrapped)
 daikon.Quant.eltsNotEqual(\result.terms.wrapped, null)
+daikon.Quant.eltsEqual(daikon.Quant.typeArray(\result.terms.wrapped), "PolyCalc.RatTerm")
 daikon.Quant.size(this.terms.wrapped) >= 1
+daikon.Quant.size(\result.terms.wrapped) >= 1
 ===========================================================================
 PolyCalc.RatPoly.scaleCoeff(PolyCalc.RatTermVec, PolyCalc.RatNum):::ENTER
-    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() scalar scalar.numer scalar.denom size(vec.wrapped[]) size(vec.wrapped[])-1 vec.wrapped[scalar.numer] vec.wrapped[scalar.numer-1] vec.wrapped[scalar.numer..] vec.wrapped[scalar.numer+1..] vec.wrapped[0..scalar.numer] vec.wrapped[0..scalar.numer-1] vec.wrapped[scalar.denom] vec.wrapped[scalar.denom-1] vec.wrapped[scalar.denom..] vec.wrapped[scalar.denom+1..] vec.wrapped[0..scalar.denom] vec.wrapped[0..scalar.denom-1]
+    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() scalar scalar.numer scalar.denom size(vec.wrapped[]) size(vec.wrapped[])-1
 vec != null
 vec.wrapped != null
 daikon.Quant.noDups(vec.wrapped)
@@ -1039,8 +919,8 @@ scalar != null
 scalar.denom >= 1
 ===========================================================================
 PolyCalc.RatPoly.scaleCoeff(PolyCalc.RatTermVec, PolyCalc.RatNum):::EXIT
-    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() scalar scalar.numer scalar.denom orig(vec) orig(vec.wrapped) orig(vec.wrapped[]) orig(vec.wrapped[].getClass().getName()) orig(scalar) orig(scalar.numer) orig(scalar.denom) size(vec.wrapped[]) size(vec.wrapped[])-1 orig(size(vec.wrapped[])) orig(size(vec.wrapped[]))-1 vec.wrapped[scalar.numer] vec.wrapped[scalar.numer-1] vec.wrapped[scalar.numer..] vec.wrapped[scalar.numer+1..] vec.wrapped[0..scalar.numer] vec.wrapped[0..scalar.numer-1] vec.wrapped[scalar.denom] vec.wrapped[scalar.denom-1] vec.wrapped[scalar.denom..] vec.wrapped[scalar.denom+1..] vec.wrapped[0..scalar.denom] vec.wrapped[0..scalar.denom-1] vec.wrapped[orig(scalar.numer)] vec.wrapped[orig(scalar.numer)-1] vec.wrapped[orig(scalar.numer)..] vec.wrapped[orig(scalar.numer)+1..] vec.wrapped[0..orig(scalar.numer)] vec.wrapped[0..orig(scalar.numer)-1] vec.wrapped[orig(scalar.denom)] vec.wrapped[orig(scalar.denom)-1] vec.wrapped[orig(scalar.denom)..] vec.wrapped[orig(scalar.denom)+1..] vec.wrapped[0..orig(scalar.denom)] vec.wrapped[0..orig(scalar.denom)-1] orig(vec.wrapped[post(scalar.numer)]) orig(vec.wrapped[post(scalar.numer)-1]) orig(vec.wrapped[post(scalar.numer)..]) orig(vec.wrapped[post(scalar.numer)+1..]) orig(vec.wrapped[0..post(scalar.numer)]) orig(vec.wrapped[0..post(scalar.numer)-1]) orig(vec.wrapped[post(scalar.denom)]) orig(vec.wrapped[post(scalar.denom)-1]) orig(vec.wrapped[post(scalar.denom)..]) orig(vec.wrapped[post(scalar.denom)+1..]) orig(vec.wrapped[0..post(scalar.denom)]) orig(vec.wrapped[0..post(scalar.denom)-1]) orig(vec.wrapped[scalar.numer]) orig(vec.wrapped[scalar.numer-1]) orig(vec.wrapped[scalar.numer..]) orig(vec.wrapped[scalar.numer+1..]) orig(vec.wrapped[0..scalar.numer]) orig(vec.wrapped[0..scalar.numer-1]) orig(vec.wrapped[scalar.denom]) orig(vec.wrapped[scalar.denom-1]) orig(vec.wrapped[scalar.denom..]) orig(vec.wrapped[scalar.denom+1..]) orig(vec.wrapped[0..scalar.denom]) orig(vec.wrapped[0..scalar.denom-1])
-assignable vec.wrapped[*], vec.wrapped[scalar.numer], vec.wrapped[scalar.numer-1], vec.wrapped[scalar.numer..], vec.wrapped[scalar.numer+1..], vec.wrapped[0..scalar.numer], vec.wrapped[0..scalar.numer-1], vec.wrapped[scalar.denom], vec.wrapped[scalar.denom-1], vec.wrapped[scalar.denom..], vec.wrapped[scalar.denom+1..], vec.wrapped[0..scalar.denom], vec.wrapped[0..scalar.denom-1]
+    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() scalar scalar.numer scalar.denom orig(vec) orig(vec.wrapped) orig(vec.wrapped[]) orig(vec.wrapped[].getClass().getName()) orig(scalar) orig(scalar.numer) orig(scalar.denom) size(vec.wrapped[]) size(vec.wrapped[])-1 orig(size(vec.wrapped[])) orig(size(vec.wrapped[]))-1
+assignable vec.wrapped[*]
 vec.wrapped == \old(vec.wrapped)
 scalar.numer == \old(scalar.numer)
 scalar.denom == \old(scalar.denom)
@@ -1052,7 +932,7 @@ daikon.Quant.eltsEqual(daikon.Quant.typeArray(vec.wrapped), "PolyCalc.RatTerm")
 scalar.denom >= 1
 ===========================================================================
 PolyCalc.RatPoly.sortedAdd(PolyCalc.RatTermVec, PolyCalc.RatTerm):::ENTER
-    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() newTerm newTerm.coeff newTerm.coeff.numer newTerm.coeff.denom newTerm.expt size(vec.wrapped[]) size(vec.wrapped[])-1 vec.wrapped[newTerm.coeff.numer] vec.wrapped[newTerm.coeff.numer-1] vec.wrapped[newTerm.coeff.numer..] vec.wrapped[newTerm.coeff.numer+1..] vec.wrapped[0..newTerm.coeff.numer] vec.wrapped[0..newTerm.coeff.numer-1] vec.wrapped[newTerm.coeff.denom] vec.wrapped[newTerm.coeff.denom-1] vec.wrapped[newTerm.coeff.denom..] vec.wrapped[newTerm.coeff.denom+1..] vec.wrapped[0..newTerm.coeff.denom] vec.wrapped[0..newTerm.coeff.denom-1] vec.wrapped[newTerm.expt] vec.wrapped[newTerm.expt-1] vec.wrapped[newTerm.expt..] vec.wrapped[newTerm.expt+1..] vec.wrapped[0..newTerm.expt] vec.wrapped[0..newTerm.expt-1]
+    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() newTerm newTerm.coeff newTerm.coeff.numer newTerm.coeff.denom newTerm.expt size(vec.wrapped[]) size(vec.wrapped[])-1
 vec != null
 vec.wrapped != null
 daikon.Quant.noDups(vec.wrapped)
@@ -1065,33 +945,21 @@ newTerm.coeff.denom >= 1
 newTerm.expt >= 0
 ===========================================================================
 PolyCalc.RatPoly.sortedAdd(PolyCalc.RatTermVec, PolyCalc.RatTerm):::EXIT308
-    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() newTerm newTerm.coeff newTerm.coeff.numer newTerm.coeff.denom newTerm.expt orig(vec) orig(vec.wrapped) orig(vec.wrapped[]) orig(vec.wrapped[].getClass().getName()) orig(newTerm) orig(newTerm.coeff) orig(newTerm.coeff.numer) orig(newTerm.coeff.denom) orig(newTerm.expt) size(vec.wrapped[]) size(vec.wrapped[])-1 orig(size(vec.wrapped[])) orig(size(vec.wrapped[]))-1 vec.wrapped[newTerm.coeff.numer] vec.wrapped[newTerm.coeff.numer-1] vec.wrapped[newTerm.coeff.numer..] vec.wrapped[newTerm.coeff.numer+1..] vec.wrapped[0..newTerm.coeff.numer] vec.wrapped[0..newTerm.coeff.numer-1] vec.wrapped[newTerm.coeff.denom] vec.wrapped[newTerm.coeff.denom-1] vec.wrapped[newTerm.coeff.denom..] vec.wrapped[newTerm.coeff.denom+1..] vec.wrapped[0..newTerm.coeff.denom] vec.wrapped[0..newTerm.coeff.denom-1] vec.wrapped[newTerm.expt] vec.wrapped[newTerm.expt-1] vec.wrapped[newTerm.expt..] vec.wrapped[newTerm.expt+1..] vec.wrapped[0..newTerm.expt] vec.wrapped[0..newTerm.expt-1] vec.wrapped[orig(newTerm.coeff.numer)] vec.wrapped[orig(newTerm.coeff.numer)-1] vec.wrapped[orig(newTerm.coeff.numer)..] vec.wrapped[orig(newTerm.coeff.numer)+1..] vec.wrapped[0..orig(newTerm.coeff.numer)] vec.wrapped[0..orig(newTerm.coeff.numer)-1] vec.wrapped[orig(newTerm.coeff.denom)] vec.wrapped[orig(newTerm.coeff.denom)-1] vec.wrapped[orig(newTerm.coeff.denom)..] vec.wrapped[orig(newTerm.coeff.denom)+1..] vec.wrapped[0..orig(newTerm.coeff.denom)] vec.wrapped[0..orig(newTerm.coeff.denom)-1] vec.wrapped[orig(newTerm.expt)] vec.wrapped[orig(newTerm.expt)-1] vec.wrapped[orig(newTerm.expt)..] vec.wrapped[orig(newTerm.expt)+1..] vec.wrapped[0..orig(newTerm.expt)] vec.wrapped[0..orig(newTerm.expt)-1] orig(vec.wrapped[post(newTerm.coeff.numer)]) orig(vec.wrapped[post(newTerm.coeff.numer)-1]) orig(vec.wrapped[post(newTerm.coeff.numer)..]) orig(vec.wrapped[post(newTerm.coeff.numer)+1..]) orig(vec.wrapped[0..post(newTerm.coeff.numer)]) orig(vec.wrapped[0..post(newTerm.coeff.numer)-1]) orig(vec.wrapped[post(newTerm.coeff.denom)]) orig(vec.wrapped[post(newTerm.coeff.denom)-1]) orig(vec.wrapped[post(newTerm.coeff.denom)..]) orig(vec.wrapped[post(newTerm.coeff.denom)+1..]) orig(vec.wrapped[0..post(newTerm.coeff.denom)]) orig(vec.wrapped[0..post(newTerm.coeff.denom)-1]) orig(vec.wrapped[post(newTerm.expt)]) orig(vec.wrapped[post(newTerm.expt)-1]) orig(vec.wrapped[post(newTerm.expt)..]) orig(vec.wrapped[post(newTerm.expt)+1..]) orig(vec.wrapped[0..post(newTerm.expt)]) orig(vec.wrapped[0..post(newTerm.expt)-1]) orig(vec.wrapped[newTerm.coeff.numer]) orig(vec.wrapped[newTerm.coeff.numer-1]) orig(vec.wrapped[newTerm.coeff.numer..]) orig(vec.wrapped[newTerm.coeff.numer+1..]) orig(vec.wrapped[0..newTerm.coeff.numer]) orig(vec.wrapped[0..newTerm.coeff.numer-1]) orig(vec.wrapped[newTerm.coeff.denom]) orig(vec.wrapped[newTerm.coeff.denom-1]) orig(vec.wrapped[newTerm.coeff.denom..]) orig(vec.wrapped[newTerm.coeff.denom+1..]) orig(vec.wrapped[0..newTerm.coeff.denom]) orig(vec.wrapped[0..newTerm.coeff.denom-1]) orig(vec.wrapped[newTerm.expt]) orig(vec.wrapped[newTerm.expt-1]) orig(vec.wrapped[newTerm.expt..]) orig(vec.wrapped[newTerm.expt+1..]) orig(vec.wrapped[0..newTerm.expt]) orig(vec.wrapped[0..newTerm.expt-1])
-assignable vec.wrapped[*], vec.wrapped[newTerm.coeff.numer], vec.wrapped[newTerm.coeff.numer-1], vec.wrapped[newTerm.coeff.numer..], vec.wrapped[newTerm.coeff.numer+1..], vec.wrapped[0..newTerm.coeff.numer], vec.wrapped[0..newTerm.coeff.numer-1], vec.wrapped[newTerm.coeff.denom], vec.wrapped[newTerm.coeff.denom-1], vec.wrapped[newTerm.coeff.denom..], vec.wrapped[newTerm.coeff.denom+1..], vec.wrapped[0..newTerm.coeff.denom], vec.wrapped[0..newTerm.coeff.denom-1], vec.wrapped[newTerm.expt], vec.wrapped[newTerm.expt-1], vec.wrapped[newTerm.expt..], vec.wrapped[newTerm.expt+1..], vec.wrapped[0..newTerm.expt], vec.wrapped[0..newTerm.expt-1]
+    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() newTerm newTerm.coeff newTerm.coeff.numer newTerm.coeff.denom newTerm.expt orig(vec) orig(vec.wrapped) orig(vec.wrapped[]) orig(vec.wrapped[].getClass().getName()) orig(newTerm) orig(newTerm.coeff) orig(newTerm.coeff.numer) orig(newTerm.coeff.denom) orig(newTerm.expt) size(vec.wrapped[]) size(vec.wrapped[])-1 orig(size(vec.wrapped[])) orig(size(vec.wrapped[]))-1
+assignable vec.wrapped[*]
 daikon.Quant.size(vec.wrapped) == \old(daikon.Quant.size(vec.wrapped))-1
 newTerm.coeff.denom == 1
 daikon.Quant.subsetOf(vec.wrapped, \old(vec.wrapped))
-newTerm.coeff.numer != daikon.Quant.size(vec.wrapped)-1
-newTerm.coeff.numer != \old(daikon.Quant.size(vec.wrapped))
-newTerm.coeff.denom <= \old(daikon.Quant.size(vec.wrapped))
-daikon.Quant.eltsEqual(\old(daikon.Quant.slice(vec.wrapped, 0, newTerm.coeff.denom-1)), \old(daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.denom-1)))
 ===========================================================================
 PolyCalc.RatPoly.sortedAdd(PolyCalc.RatTermVec, PolyCalc.RatTerm):::EXIT312
-    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() newTerm newTerm.coeff newTerm.coeff.numer newTerm.coeff.denom newTerm.expt orig(vec) orig(vec.wrapped) orig(vec.wrapped[]) orig(vec.wrapped[].getClass().getName()) orig(newTerm) orig(newTerm.coeff) orig(newTerm.coeff.numer) orig(newTerm.coeff.denom) orig(newTerm.expt) size(vec.wrapped[]) size(vec.wrapped[])-1 orig(size(vec.wrapped[])) orig(size(vec.wrapped[]))-1 vec.wrapped[newTerm.coeff.numer] vec.wrapped[newTerm.coeff.numer-1] vec.wrapped[newTerm.coeff.numer..] vec.wrapped[newTerm.coeff.numer+1..] vec.wrapped[0..newTerm.coeff.numer] vec.wrapped[0..newTerm.coeff.numer-1] vec.wrapped[newTerm.coeff.denom] vec.wrapped[newTerm.coeff.denom-1] vec.wrapped[newTerm.coeff.denom..] vec.wrapped[newTerm.coeff.denom+1..] vec.wrapped[0..newTerm.coeff.denom] vec.wrapped[0..newTerm.coeff.denom-1] vec.wrapped[newTerm.expt] vec.wrapped[newTerm.expt-1] vec.wrapped[newTerm.expt..] vec.wrapped[newTerm.expt+1..] vec.wrapped[0..newTerm.expt] vec.wrapped[0..newTerm.expt-1] vec.wrapped[orig(newTerm.coeff.numer)] vec.wrapped[orig(newTerm.coeff.numer)-1] vec.wrapped[orig(newTerm.coeff.numer)..] vec.wrapped[orig(newTerm.coeff.numer)+1..] vec.wrapped[0..orig(newTerm.coeff.numer)] vec.wrapped[0..orig(newTerm.coeff.numer)-1] vec.wrapped[orig(newTerm.coeff.denom)] vec.wrapped[orig(newTerm.coeff.denom)-1] vec.wrapped[orig(newTerm.coeff.denom)..] vec.wrapped[orig(newTerm.coeff.denom)+1..] vec.wrapped[0..orig(newTerm.coeff.denom)] vec.wrapped[0..orig(newTerm.coeff.denom)-1] vec.wrapped[orig(newTerm.expt)] vec.wrapped[orig(newTerm.expt)-1] vec.wrapped[orig(newTerm.expt)..] vec.wrapped[orig(newTerm.expt)+1..] vec.wrapped[0..orig(newTerm.expt)] vec.wrapped[0..orig(newTerm.expt)-1] orig(vec.wrapped[post(newTerm.coeff.numer)]) orig(vec.wrapped[post(newTerm.coeff.numer)-1]) orig(vec.wrapped[post(newTerm.coeff.numer)..]) orig(vec.wrapped[post(newTerm.coeff.numer)+1..]) orig(vec.wrapped[0..post(newTerm.coeff.numer)]) orig(vec.wrapped[0..post(newTerm.coeff.numer)-1]) orig(vec.wrapped[post(newTerm.coeff.denom)]) orig(vec.wrapped[post(newTerm.coeff.denom)-1]) orig(vec.wrapped[post(newTerm.coeff.denom)..]) orig(vec.wrapped[post(newTerm.coeff.denom)+1..]) orig(vec.wrapped[0..post(newTerm.coeff.denom)]) orig(vec.wrapped[0..post(newTerm.coeff.denom)-1]) orig(vec.wrapped[post(newTerm.expt)]) orig(vec.wrapped[post(newTerm.expt)-1]) orig(vec.wrapped[post(newTerm.expt)..]) orig(vec.wrapped[post(newTerm.expt)+1..]) orig(vec.wrapped[0..post(newTerm.expt)]) orig(vec.wrapped[0..post(newTerm.expt)-1]) orig(vec.wrapped[newTerm.coeff.numer]) orig(vec.wrapped[newTerm.coeff.numer-1]) orig(vec.wrapped[newTerm.coeff.numer..]) orig(vec.wrapped[newTerm.coeff.numer+1..]) orig(vec.wrapped[0..newTerm.coeff.numer]) orig(vec.wrapped[0..newTerm.coeff.numer-1]) orig(vec.wrapped[newTerm.coeff.denom]) orig(vec.wrapped[newTerm.coeff.denom-1]) orig(vec.wrapped[newTerm.coeff.denom..]) orig(vec.wrapped[newTerm.coeff.denom+1..]) orig(vec.wrapped[0..newTerm.coeff.denom]) orig(vec.wrapped[0..newTerm.coeff.denom-1]) orig(vec.wrapped[newTerm.expt]) orig(vec.wrapped[newTerm.expt-1]) orig(vec.wrapped[newTerm.expt..]) orig(vec.wrapped[newTerm.expt+1..]) orig(vec.wrapped[0..newTerm.expt]) orig(vec.wrapped[0..newTerm.expt-1])
-assignable vec.wrapped[*], vec.wrapped[newTerm.coeff.numer], vec.wrapped[newTerm.coeff.numer-1], vec.wrapped[newTerm.coeff.numer..], vec.wrapped[newTerm.coeff.numer+1..], vec.wrapped[0..newTerm.coeff.numer], vec.wrapped[0..newTerm.coeff.numer-1], vec.wrapped[newTerm.coeff.denom], vec.wrapped[newTerm.coeff.denom-1], vec.wrapped[newTerm.coeff.denom..], vec.wrapped[newTerm.coeff.denom+1..], vec.wrapped[0..newTerm.coeff.denom], vec.wrapped[0..newTerm.coeff.denom-1], vec.wrapped[newTerm.expt], vec.wrapped[newTerm.expt-1], vec.wrapped[newTerm.expt..], vec.wrapped[newTerm.expt+1..], vec.wrapped[0..newTerm.expt], vec.wrapped[0..newTerm.expt-1]
+    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() newTerm newTerm.coeff newTerm.coeff.numer newTerm.coeff.denom newTerm.expt orig(vec) orig(vec.wrapped) orig(vec.wrapped[]) orig(vec.wrapped[].getClass().getName()) orig(newTerm) orig(newTerm.coeff) orig(newTerm.coeff.numer) orig(newTerm.coeff.denom) orig(newTerm.expt) size(vec.wrapped[]) size(vec.wrapped[])-1 orig(size(vec.wrapped[])) orig(size(vec.wrapped[]))-1
+assignable vec.wrapped[*]
 daikon.Quant.size(vec.wrapped) == \old(daikon.Quant.size(vec.wrapped))
 ===========================================================================
 PolyCalc.RatPoly.sortedAdd(PolyCalc.RatTermVec, PolyCalc.RatTerm):::EXIT319
-    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() newTerm newTerm.coeff newTerm.coeff.numer newTerm.coeff.denom newTerm.expt orig(vec) orig(vec.wrapped) orig(vec.wrapped[]) orig(vec.wrapped[].getClass().getName()) orig(newTerm) orig(newTerm.coeff) orig(newTerm.coeff.numer) orig(newTerm.coeff.denom) orig(newTerm.expt) size(vec.wrapped[]) size(vec.wrapped[])-1 orig(size(vec.wrapped[])) orig(size(vec.wrapped[]))-1 vec.wrapped[newTerm.coeff.numer] vec.wrapped[newTerm.coeff.numer-1] vec.wrapped[newTerm.coeff.numer..] vec.wrapped[newTerm.coeff.numer+1..] vec.wrapped[0..newTerm.coeff.numer] vec.wrapped[0..newTerm.coeff.numer-1] vec.wrapped[newTerm.coeff.denom] vec.wrapped[newTerm.coeff.denom-1] vec.wrapped[newTerm.coeff.denom..] vec.wrapped[newTerm.coeff.denom+1..] vec.wrapped[0..newTerm.coeff.denom] vec.wrapped[0..newTerm.coeff.denom-1] vec.wrapped[newTerm.expt] vec.wrapped[newTerm.expt-1] vec.wrapped[newTerm.expt..] vec.wrapped[newTerm.expt+1..] vec.wrapped[0..newTerm.expt] vec.wrapped[0..newTerm.expt-1] vec.wrapped[orig(newTerm.coeff.numer)] vec.wrapped[orig(newTerm.coeff.numer)-1] vec.wrapped[orig(newTerm.coeff.numer)..] vec.wrapped[orig(newTerm.coeff.numer)+1..] vec.wrapped[0..orig(newTerm.coeff.numer)] vec.wrapped[0..orig(newTerm.coeff.numer)-1] vec.wrapped[orig(newTerm.coeff.denom)] vec.wrapped[orig(newTerm.coeff.denom)-1] vec.wrapped[orig(newTerm.coeff.denom)..] vec.wrapped[orig(newTerm.coeff.denom)+1..] vec.wrapped[0..orig(newTerm.coeff.denom)] vec.wrapped[0..orig(newTerm.coeff.denom)-1] vec.wrapped[orig(newTerm.expt)] vec.wrapped[orig(newTerm.expt)-1] vec.wrapped[orig(newTerm.expt)..] vec.wrapped[orig(newTerm.expt)+1..] vec.wrapped[0..orig(newTerm.expt)] vec.wrapped[0..orig(newTerm.expt)-1] orig(vec.wrapped[post(newTerm.coeff.numer)]) orig(vec.wrapped[post(newTerm.coeff.numer)-1]) orig(vec.wrapped[post(newTerm.coeff.numer)..]) orig(vec.wrapped[post(newTerm.coeff.numer)+1..]) orig(vec.wrapped[0..post(newTerm.coeff.numer)]) orig(vec.wrapped[0..post(newTerm.coeff.numer)-1]) orig(vec.wrapped[post(newTerm.coeff.denom)]) orig(vec.wrapped[post(newTerm.coeff.denom)-1]) orig(vec.wrapped[post(newTerm.coeff.denom)..]) orig(vec.wrapped[post(newTerm.coeff.denom)+1..]) orig(vec.wrapped[0..post(newTerm.coeff.denom)]) orig(vec.wrapped[0..post(newTerm.coeff.denom)-1]) orig(vec.wrapped[post(newTerm.expt)]) orig(vec.wrapped[post(newTerm.expt)-1]) orig(vec.wrapped[post(newTerm.expt)..]) orig(vec.wrapped[post(newTerm.expt)+1..]) orig(vec.wrapped[0..post(newTerm.expt)]) orig(vec.wrapped[0..post(newTerm.expt)-1]) orig(vec.wrapped[newTerm.coeff.numer]) orig(vec.wrapped[newTerm.coeff.numer-1]) orig(vec.wrapped[newTerm.coeff.numer..]) orig(vec.wrapped[newTerm.coeff.numer+1..]) orig(vec.wrapped[0..newTerm.coeff.numer]) orig(vec.wrapped[0..newTerm.coeff.numer-1]) orig(vec.wrapped[newTerm.coeff.denom]) orig(vec.wrapped[newTerm.coeff.denom-1]) orig(vec.wrapped[newTerm.coeff.denom..]) orig(vec.wrapped[newTerm.coeff.denom+1..]) orig(vec.wrapped[0..newTerm.coeff.denom]) orig(vec.wrapped[0..newTerm.coeff.denom-1]) orig(vec.wrapped[newTerm.expt]) orig(vec.wrapped[newTerm.expt-1]) orig(vec.wrapped[newTerm.expt..]) orig(vec.wrapped[newTerm.expt+1..]) orig(vec.wrapped[0..newTerm.expt]) orig(vec.wrapped[0..newTerm.expt-1])
-assignable vec.wrapped[*], vec.wrapped[newTerm.coeff.numer], vec.wrapped[newTerm.coeff.numer-1], vec.wrapped[newTerm.coeff.numer..], vec.wrapped[newTerm.coeff.numer+1..], vec.wrapped[0..newTerm.coeff.numer], vec.wrapped[0..newTerm.coeff.numer-1], vec.wrapped[newTerm.coeff.denom], vec.wrapped[newTerm.coeff.denom..], vec.wrapped[newTerm.coeff.denom+1..], vec.wrapped[0..newTerm.coeff.denom], vec.wrapped[newTerm.expt], vec.wrapped[newTerm.expt-1], vec.wrapped[newTerm.expt..], vec.wrapped[newTerm.expt+1..], vec.wrapped[0..newTerm.expt], vec.wrapped[0..newTerm.expt-1]
+    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() newTerm newTerm.coeff newTerm.coeff.numer newTerm.coeff.denom newTerm.expt orig(vec) orig(vec.wrapped) orig(vec.wrapped[]) orig(vec.wrapped[].getClass().getName()) orig(newTerm) orig(newTerm.coeff) orig(newTerm.coeff.numer) orig(newTerm.coeff.denom) orig(newTerm.expt) size(vec.wrapped[]) size(vec.wrapped[])-1 orig(size(vec.wrapped[])) orig(size(vec.wrapped[]))-1
+assignable vec.wrapped[*]
 daikon.Quant.size(vec.wrapped)-1 == \old(daikon.Quant.size(vec.wrapped))
-daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.numer-1) == daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.denom)
-daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.denom) == daikon.Quant.getElement_Object(vec.wrapped, \old(newTerm.coeff.numer)-1)
-daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.denom-1) == \old(daikon.Quant.getElement_Object(vec.wrapped, \new(newTerm.coeff.denom)-1))
-daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.denom-1) == \old(daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.denom-1))
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(vec.wrapped, 0, newTerm.coeff.denom-1), \old(daikon.Quant.slice(vec.wrapped, 0, \new(newTerm.coeff.denom)-1)))
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(vec.wrapped, 0, newTerm.coeff.denom-1), \old(daikon.Quant.slice(vec.wrapped, 0, newTerm.coeff.denom-1)))
-\old(daikon.Quant.getElement_Object(vec.wrapped, \new(newTerm.coeff.numer)-1)) == \old(daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.denom))
-\old(daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.numer-1)) == \old(daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.denom))
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(vec.wrapped), new String[] { "PolyCalc.RatTerm", "PolyCalc.RatTerm", "PolyCalc.RatTerm", "PolyCalc.RatTerm", "PolyCalc.RatTerm" }) || daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(vec.wrapped), new String[] { "PolyCalc.RatTerm", "PolyCalc.RatTerm", "PolyCalc.RatTerm", "PolyCalc.RatTerm", "PolyCalc.RatTerm", "PolyCalc.RatTerm" })
 newTerm.coeff.numer == 2
 newTerm.coeff.denom == 1
@@ -1099,32 +967,18 @@ newTerm.expt == 4 || newTerm.expt == 6
 daikon.Quant.pairwiseEqual(\old(daikon.Quant.typeArray(vec.wrapped)), new String[] { "PolyCalc.RatTerm", "PolyCalc.RatTerm", "PolyCalc.RatTerm", "PolyCalc.RatTerm" }) || daikon.Quant.pairwiseEqual(\old(daikon.Quant.typeArray(vec.wrapped)), new String[] { "PolyCalc.RatTerm", "PolyCalc.RatTerm", "PolyCalc.RatTerm", "PolyCalc.RatTerm", "PolyCalc.RatTerm" })
 daikon.Quant.size(vec.wrapped) == 5 || daikon.Quant.size(vec.wrapped) == 6
 daikon.Quant.subsetOf(\old(vec.wrapped), vec.wrapped)
-daikon.Quant.memberOf(\old(newTerm) , vec.wrapped )
-daikon.Quant.memberOf(daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.numer) , \old(vec.wrapped) )
-daikon.Quant.memberOf(\old(newTerm) , daikon.Quant.slice(vec.wrapped, newTerm.coeff.denom, daikon.Quant.size(vec.wrapped)) )
-daikon.Quant.memberOf(daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.numer) , \old(daikon.Quant.slice(vec.wrapped, 0, newTerm.coeff.numer)) )
-daikon.Quant.memberOf(daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.numer) , \old(daikon.Quant.slice(vec.wrapped, newTerm.coeff.denom, daikon.Quant.size(vec.wrapped))) )
-daikon.Quant.memberOf(\old(daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.numer)) , daikon.Quant.slice(vec.wrapped, newTerm.coeff.numer, daikon.Quant.size(vec.wrapped)) )
-warning: method daikon.inv.binary.twoSequence.SuperSequence.format(OutputFormat:JML) needs to be implemented: orig(vec.wrapped[newTerm.coeff.numer+1..]) is a subsequence of vec.wrapped[newTerm.coeff.numer..]
-warning: method daikon.inv.binary.twoSequence.SuperSequence.format(OutputFormat:JML) needs to be implemented: orig(vec.wrapped[newTerm.coeff.numer+1..]) is a subsequence of vec.wrapped[newTerm.coeff.numer+1..]
-daikon.Quant.memberOf(\old(daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.denom)) , daikon.Quant.slice(vec.wrapped, 0, newTerm.coeff.numer) )
-daikon.Quant.eltsEqual(daikon.Quant.slice(vec.wrapped, 0, newTerm.coeff.denom-1), daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.denom-1))
-daikon.Quant.memberOf(\old(daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.numer)) , daikon.Quant.slice(vec.wrapped, newTerm.coeff.denom, daikon.Quant.size(vec.wrapped)) )
-warning: method daikon.inv.binary.twoSequence.SuperSequence.format(OutputFormat:JML) needs to be implemented: orig(vec.wrapped[newTerm.coeff.numer+1..]) is a subsequence of vec.wrapped[newTerm.coeff.denom..]
-daikon.Quant.memberOf(\old(daikon.Quant.getElement_Object(vec.wrapped, newTerm.coeff.denom)) , daikon.Quant.slice(vec.wrapped, newTerm.coeff.denom, daikon.Quant.size(vec.wrapped)) )
 ===========================================================================
 PolyCalc.RatPoly.sortedAdd(PolyCalc.RatTermVec, PolyCalc.RatTerm):::EXIT328
-    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() newTerm newTerm.coeff newTerm.coeff.numer newTerm.coeff.denom newTerm.expt orig(vec) orig(vec.wrapped) orig(vec.wrapped[]) orig(vec.wrapped[].getClass().getName()) orig(newTerm) orig(newTerm.coeff) orig(newTerm.coeff.numer) orig(newTerm.coeff.denom) orig(newTerm.expt) size(vec.wrapped[]) size(vec.wrapped[])-1 orig(size(vec.wrapped[])) orig(size(vec.wrapped[]))-1 vec.wrapped[newTerm.coeff.numer] vec.wrapped[newTerm.coeff.numer-1] vec.wrapped[newTerm.coeff.numer..] vec.wrapped[newTerm.coeff.numer+1..] vec.wrapped[0..newTerm.coeff.numer] vec.wrapped[0..newTerm.coeff.numer-1] vec.wrapped[newTerm.coeff.denom] vec.wrapped[newTerm.coeff.denom-1] vec.wrapped[newTerm.coeff.denom..] vec.wrapped[newTerm.coeff.denom+1..] vec.wrapped[0..newTerm.coeff.denom] vec.wrapped[0..newTerm.coeff.denom-1] vec.wrapped[newTerm.expt] vec.wrapped[newTerm.expt-1] vec.wrapped[newTerm.expt..] vec.wrapped[newTerm.expt+1..] vec.wrapped[0..newTerm.expt] vec.wrapped[0..newTerm.expt-1] vec.wrapped[orig(newTerm.coeff.numer)] vec.wrapped[orig(newTerm.coeff.numer)-1] vec.wrapped[orig(newTerm.coeff.numer)..] vec.wrapped[orig(newTerm.coeff.numer)+1..] vec.wrapped[0..orig(newTerm.coeff.numer)] vec.wrapped[0..orig(newTerm.coeff.numer)-1] vec.wrapped[orig(newTerm.coeff.denom)] vec.wrapped[orig(newTerm.coeff.denom)-1] vec.wrapped[orig(newTerm.coeff.denom)..] vec.wrapped[orig(newTerm.coeff.denom)+1..] vec.wrapped[0..orig(newTerm.coeff.denom)] vec.wrapped[0..orig(newTerm.coeff.denom)-1] vec.wrapped[orig(newTerm.expt)] vec.wrapped[orig(newTerm.expt)-1] vec.wrapped[orig(newTerm.expt)..] vec.wrapped[orig(newTerm.expt)+1..] vec.wrapped[0..orig(newTerm.expt)] vec.wrapped[0..orig(newTerm.expt)-1] orig(vec.wrapped[post(newTerm.coeff.numer)]) orig(vec.wrapped[post(newTerm.coeff.numer)-1]) orig(vec.wrapped[post(newTerm.coeff.numer)..]) orig(vec.wrapped[post(newTerm.coeff.numer)+1..]) orig(vec.wrapped[0..post(newTerm.coeff.numer)]) orig(vec.wrapped[0..post(newTerm.coeff.numer)-1]) orig(vec.wrapped[post(newTerm.coeff.denom)]) orig(vec.wrapped[post(newTerm.coeff.denom)-1]) orig(vec.wrapped[post(newTerm.coeff.denom)..]) orig(vec.wrapped[post(newTerm.coeff.denom)+1..]) orig(vec.wrapped[0..post(newTerm.coeff.denom)]) orig(vec.wrapped[0..post(newTerm.coeff.denom)-1]) orig(vec.wrapped[post(newTerm.expt)]) orig(vec.wrapped[post(newTerm.expt)-1]) orig(vec.wrapped[post(newTerm.expt)..]) orig(vec.wrapped[post(newTerm.expt)+1..]) orig(vec.wrapped[0..post(newTerm.expt)]) orig(vec.wrapped[0..post(newTerm.expt)-1]) orig(vec.wrapped[newTerm.coeff.numer]) orig(vec.wrapped[newTerm.coeff.numer-1]) orig(vec.wrapped[newTerm.coeff.numer..]) orig(vec.wrapped[newTerm.coeff.numer+1..]) orig(vec.wrapped[0..newTerm.coeff.numer]) orig(vec.wrapped[0..newTerm.coeff.numer-1]) orig(vec.wrapped[newTerm.coeff.denom]) orig(vec.wrapped[newTerm.coeff.denom-1]) orig(vec.wrapped[newTerm.coeff.denom..]) orig(vec.wrapped[newTerm.coeff.denom+1..]) orig(vec.wrapped[0..newTerm.coeff.denom]) orig(vec.wrapped[0..newTerm.coeff.denom-1]) orig(vec.wrapped[newTerm.expt]) orig(vec.wrapped[newTerm.expt-1]) orig(vec.wrapped[newTerm.expt..]) orig(vec.wrapped[newTerm.expt+1..]) orig(vec.wrapped[0..newTerm.expt]) orig(vec.wrapped[0..newTerm.expt-1])
-assignable vec.wrapped[*], vec.wrapped[newTerm.coeff.numer], vec.wrapped[newTerm.coeff.numer-1], vec.wrapped[newTerm.coeff.numer..], vec.wrapped[newTerm.coeff.numer+1..], vec.wrapped[0..newTerm.coeff.numer], vec.wrapped[0..newTerm.coeff.numer-1], vec.wrapped[newTerm.coeff.denom], vec.wrapped[newTerm.coeff.denom-1], vec.wrapped[newTerm.coeff.denom..], vec.wrapped[newTerm.coeff.denom+1..], vec.wrapped[0..newTerm.coeff.denom], vec.wrapped[0..newTerm.coeff.denom-1], vec.wrapped[newTerm.expt], vec.wrapped[newTerm.expt-1], vec.wrapped[newTerm.expt..], vec.wrapped[newTerm.expt+1..], vec.wrapped[0..newTerm.expt], vec.wrapped[0..newTerm.expt-1]
+    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() newTerm newTerm.coeff newTerm.coeff.numer newTerm.coeff.denom newTerm.expt orig(vec) orig(vec.wrapped) orig(vec.wrapped[]) orig(vec.wrapped[].getClass().getName()) orig(newTerm) orig(newTerm.coeff) orig(newTerm.coeff.numer) orig(newTerm.coeff.denom) orig(newTerm.expt) size(vec.wrapped[]) size(vec.wrapped[])-1 orig(size(vec.wrapped[])) orig(size(vec.wrapped[]))-1
+assignable vec.wrapped[*]
 daikon.Quant.size(vec.wrapped)-1 == \old(daikon.Quant.size(vec.wrapped))
 daikon.Quant.size(vec.wrapped) >= 1
 warning: method daikon.inv.binary.twoSequence.SuperSequence.format(OutputFormat:JML) needs to be implemented: orig(vec.wrapped[]) is a subsequence of vec.wrapped[]
 daikon.Quant.subsetOf(\old(vec.wrapped), vec.wrapped)
-daikon.Quant.memberOf(\old(newTerm) , vec.wrapped )
 ===========================================================================
 PolyCalc.RatPoly.sortedAdd(PolyCalc.RatTermVec, PolyCalc.RatTerm):::EXIT
-    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() newTerm newTerm.coeff newTerm.coeff.numer newTerm.coeff.denom newTerm.expt orig(vec) orig(vec.wrapped) orig(vec.wrapped[]) orig(vec.wrapped[].getClass().getName()) orig(newTerm) orig(newTerm.coeff) orig(newTerm.coeff.numer) orig(newTerm.coeff.denom) orig(newTerm.expt) size(vec.wrapped[]) size(vec.wrapped[])-1 orig(size(vec.wrapped[])) orig(size(vec.wrapped[]))-1 vec.wrapped[newTerm.coeff.numer] vec.wrapped[newTerm.coeff.numer-1] vec.wrapped[newTerm.coeff.numer..] vec.wrapped[newTerm.coeff.numer+1..] vec.wrapped[0..newTerm.coeff.numer] vec.wrapped[0..newTerm.coeff.numer-1] vec.wrapped[newTerm.coeff.denom] vec.wrapped[newTerm.coeff.denom-1] vec.wrapped[newTerm.coeff.denom..] vec.wrapped[newTerm.coeff.denom+1..] vec.wrapped[0..newTerm.coeff.denom] vec.wrapped[0..newTerm.coeff.denom-1] vec.wrapped[newTerm.expt] vec.wrapped[newTerm.expt-1] vec.wrapped[newTerm.expt..] vec.wrapped[newTerm.expt+1..] vec.wrapped[0..newTerm.expt] vec.wrapped[0..newTerm.expt-1] vec.wrapped[orig(newTerm.coeff.numer)] vec.wrapped[orig(newTerm.coeff.numer)-1] vec.wrapped[orig(newTerm.coeff.numer)..] vec.wrapped[orig(newTerm.coeff.numer)+1..] vec.wrapped[0..orig(newTerm.coeff.numer)] vec.wrapped[0..orig(newTerm.coeff.numer)-1] vec.wrapped[orig(newTerm.coeff.denom)] vec.wrapped[orig(newTerm.coeff.denom)-1] vec.wrapped[orig(newTerm.coeff.denom)..] vec.wrapped[orig(newTerm.coeff.denom)+1..] vec.wrapped[0..orig(newTerm.coeff.denom)] vec.wrapped[0..orig(newTerm.coeff.denom)-1] vec.wrapped[orig(newTerm.expt)] vec.wrapped[orig(newTerm.expt)-1] vec.wrapped[orig(newTerm.expt)..] vec.wrapped[orig(newTerm.expt)+1..] vec.wrapped[0..orig(newTerm.expt)] vec.wrapped[0..orig(newTerm.expt)-1] orig(vec.wrapped[post(newTerm.coeff.numer)]) orig(vec.wrapped[post(newTerm.coeff.numer)-1]) orig(vec.wrapped[post(newTerm.coeff.numer)..]) orig(vec.wrapped[post(newTerm.coeff.numer)+1..]) orig(vec.wrapped[0..post(newTerm.coeff.numer)]) orig(vec.wrapped[0..post(newTerm.coeff.numer)-1]) orig(vec.wrapped[post(newTerm.coeff.denom)]) orig(vec.wrapped[post(newTerm.coeff.denom)-1]) orig(vec.wrapped[post(newTerm.coeff.denom)..]) orig(vec.wrapped[post(newTerm.coeff.denom)+1..]) orig(vec.wrapped[0..post(newTerm.coeff.denom)]) orig(vec.wrapped[0..post(newTerm.coeff.denom)-1]) orig(vec.wrapped[post(newTerm.expt)]) orig(vec.wrapped[post(newTerm.expt)-1]) orig(vec.wrapped[post(newTerm.expt)..]) orig(vec.wrapped[post(newTerm.expt)+1..]) orig(vec.wrapped[0..post(newTerm.expt)]) orig(vec.wrapped[0..post(newTerm.expt)-1]) orig(vec.wrapped[newTerm.coeff.numer]) orig(vec.wrapped[newTerm.coeff.numer-1]) orig(vec.wrapped[newTerm.coeff.numer..]) orig(vec.wrapped[newTerm.coeff.numer+1..]) orig(vec.wrapped[0..newTerm.coeff.numer]) orig(vec.wrapped[0..newTerm.coeff.numer-1]) orig(vec.wrapped[newTerm.coeff.denom]) orig(vec.wrapped[newTerm.coeff.denom-1]) orig(vec.wrapped[newTerm.coeff.denom..]) orig(vec.wrapped[newTerm.coeff.denom+1..]) orig(vec.wrapped[0..newTerm.coeff.denom]) orig(vec.wrapped[0..newTerm.coeff.denom-1]) orig(vec.wrapped[newTerm.expt]) orig(vec.wrapped[newTerm.expt-1]) orig(vec.wrapped[newTerm.expt..]) orig(vec.wrapped[newTerm.expt+1..]) orig(vec.wrapped[0..newTerm.expt]) orig(vec.wrapped[0..newTerm.expt-1])
-assignable vec.wrapped[*], vec.wrapped[newTerm.coeff.numer], vec.wrapped[newTerm.coeff.numer-1], vec.wrapped[newTerm.coeff.numer..], vec.wrapped[newTerm.coeff.numer+1..], vec.wrapped[0..newTerm.coeff.numer], vec.wrapped[0..newTerm.coeff.numer-1], vec.wrapped[newTerm.coeff.denom], vec.wrapped[newTerm.coeff.denom-1], vec.wrapped[newTerm.coeff.denom..], vec.wrapped[newTerm.coeff.denom+1..], vec.wrapped[0..newTerm.coeff.denom], vec.wrapped[0..newTerm.coeff.denom-1], vec.wrapped[newTerm.expt], vec.wrapped[newTerm.expt-1], vec.wrapped[newTerm.expt..], vec.wrapped[newTerm.expt+1..], vec.wrapped[0..newTerm.expt], vec.wrapped[0..newTerm.expt-1]
+    Variables: vec vec.wrapped vec.wrapped[] vec.wrapped[].getClass().getName() newTerm newTerm.coeff newTerm.coeff.numer newTerm.coeff.denom newTerm.expt orig(vec) orig(vec.wrapped) orig(vec.wrapped[]) orig(vec.wrapped[].getClass().getName()) orig(newTerm) orig(newTerm.coeff) orig(newTerm.coeff.numer) orig(newTerm.coeff.denom) orig(newTerm.expt) size(vec.wrapped[]) size(vec.wrapped[])-1 orig(size(vec.wrapped[])) orig(size(vec.wrapped[]))-1
+assignable vec.wrapped[*]
 vec.wrapped == \old(vec.wrapped)
 newTerm.coeff == \old(newTerm.coeff)
 newTerm.coeff.numer == \old(newTerm.coeff.numer)
@@ -1138,7 +992,6 @@ newTerm.coeff != null
 newTerm.coeff.numer != 0
 newTerm.coeff.denom >= 1
 newTerm.expt >= 0
-(!(daikon.Quant.size(vec.wrapped) == 0)) || (newTerm.expt == 0)
 (!(daikon.Quant.size(vec.wrapped) == 0)) || (\old(daikon.Quant.size(vec.wrapped))-1 == 0)
 daikon.Quant.size(vec.wrapped) >= \old(daikon.Quant.size(vec.wrapped))-1
 (!(\old(daikon.Quant.size(vec.wrapped)) == 0)) || (daikon.Quant.size(vec.wrapped)-1 == 0)
@@ -1155,39 +1008,31 @@ daikon.Quant.eltsEqual(daikon.Quant.typeArray(p.terms.wrapped), "PolyCalc.RatTer
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(p.terms.wrapped), new String[] {  }) || daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(p.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 daikon.Quant.size(this.terms.wrapped) == 0 || daikon.Quant.size(this.terms.wrapped) == 1
 daikon.Quant.size(p.terms.wrapped) == 0 || daikon.Quant.size(p.terms.wrapped) == 1
-daikon.Quant.size(this.terms.wrapped) >= daikon.Quant.size(p.terms.wrapped)-1
-daikon.Quant.size(this.terms.wrapped)-1 <= daikon.Quant.size(p.terms.wrapped)
 ===========================================================================
 PolyCalc.RatPoly.sub(PolyCalc.RatPoly):::EXIT372
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
 this.terms == \result.terms
 this.terms.wrapped == \result.terms.wrapped
-daikon.Quant.pairwiseEqual(this.terms.wrapped, \result.terms.wrapped)
 \result == \old(this)
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
+daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(\result.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 daikon.Quant.size(this.terms.wrapped) == 1
-daikon.Quant.size(this.terms.wrapped) >= daikon.Quant.size(p.terms.wrapped)
-daikon.Quant.size(this.terms.wrapped)-1 >= daikon.Quant.size(p.terms.wrapped)-1
+daikon.Quant.size(\result.terms.wrapped) == 1
 ===========================================================================
 PolyCalc.RatPoly.sub(PolyCalc.RatPoly):::EXIT376
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
 p.terms == \result.terms
 p.terms.wrapped == \result.terms.wrapped
-daikon.Quant.pairwiseEqual(p.terms.wrapped, \result.terms.wrapped)
 \result == \old(p)
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(p.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
+daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(\result.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 daikon.Quant.size(p.terms.wrapped) == 1
-daikon.Quant.size(this.terms.wrapped) <= daikon.Quant.size(p.terms.wrapped)
-daikon.Quant.size(this.terms.wrapped)-1 <= daikon.Quant.size(p.terms.wrapped)-1
+daikon.Quant.size(\result.terms.wrapped) == 1
 ===========================================================================
 PolyCalc.RatPoly.sub(PolyCalc.RatPoly):::EXIT379
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.terms.wrapped), new String[] { "PolyCalc.RatTerm" })
 daikon.Quant.size(this.terms.wrapped) == 1
-daikon.Quant.size(this.terms.wrapped) >= daikon.Quant.size(p.terms.wrapped)
-daikon.Quant.size(this.terms.wrapped)-1 >= daikon.Quant.size(p.terms.wrapped)-1
-daikon.Quant.size(this.terms.wrapped) == (org.plumelib.util.MathPlume.gcd(daikon.Quant.size(p.terms.wrapped), daikon.Quant.size(\result.terms.wrapped)))
-daikon.Quant.size(this.terms.wrapped)-1 == (daikon.Quant.size(p.terms.wrapped)-1 * daikon.Quant.size(\result.terms.wrapped)-1)
 ===========================================================================
 PolyCalc.RatPoly.sub(PolyCalc.RatPoly):::EXIT
     Variables: this this.terms this.terms.wrapped this.terms.wrapped[] this.terms.wrapped[].getClass().getName() p p.terms p.terms.wrapped p.terms.wrapped[] p.terms.wrapped[].getClass().getName() return return.terms return.terms.wrapped return.terms.wrapped[] return.terms.wrapped[].getClass().getName() orig(this) orig(this.terms) orig(this.terms.wrapped) orig(this.terms.wrapped[]) orig(this.terms.wrapped[].getClass().getName()) orig(p) orig(p.terms) orig(p.terms.wrapped) orig(p.terms.wrapped[]) orig(p.terms.wrapped[].getClass().getName()) size(this.terms.wrapped[]) size(this.terms.wrapped[])-1 size(p.terms.wrapped[]) size(p.terms.wrapped[])-1 size(return.terms.wrapped[]) size(return.terms.wrapped[])-1 orig(size(this.terms.wrapped[])) orig(size(this.terms.wrapped[]))-1 orig(size(p.terms.wrapped[])) orig(size(p.terms.wrapped[]))-1
@@ -1211,18 +1056,6 @@ daikon.Quant.eltsEqual(daikon.Quant.typeArray(\result.terms.wrapped), "PolyCalc.
 daikon.Quant.size(this.terms.wrapped) == 0 || daikon.Quant.size(this.terms.wrapped) == 1
 daikon.Quant.size(p.terms.wrapped) == 0 || daikon.Quant.size(p.terms.wrapped) == 1
 daikon.Quant.size(\result.terms.wrapped) == 0 || daikon.Quant.size(\result.terms.wrapped) == 1 || daikon.Quant.size(\result.terms.wrapped) == 2
-daikon.Quant.size(this.terms.wrapped) >= daikon.Quant.size(p.terms.wrapped)-1
-(!(daikon.Quant.size(this.terms.wrapped) == 0)) || (daikon.Quant.size(\result.terms.wrapped)-1 == 0)
-daikon.Quant.size(this.terms.wrapped) >= daikon.Quant.size(\result.terms.wrapped)-1
-daikon.Quant.size(this.terms.wrapped)-1 <= daikon.Quant.size(p.terms.wrapped)
-(!(daikon.Quant.size(\result.terms.wrapped) == 0)) || (daikon.Quant.size(this.terms.wrapped)-1 == 0)
-daikon.Quant.size(this.terms.wrapped)-1 <= daikon.Quant.size(\result.terms.wrapped)
-(daikon.Quant.size(this.terms.wrapped)-1 & daikon.Quant.size(\result.terms.wrapped)-1) == 0
-(!(daikon.Quant.size(p.terms.wrapped) == 0)) || (daikon.Quant.size(\result.terms.wrapped)-1 == 0)
-daikon.Quant.size(p.terms.wrapped) >= daikon.Quant.size(\result.terms.wrapped)-1
-(!(daikon.Quant.size(\result.terms.wrapped) == 0)) || (daikon.Quant.size(p.terms.wrapped)-1 == 0)
-daikon.Quant.size(p.terms.wrapped)-1 <= daikon.Quant.size(\result.terms.wrapped)
-(daikon.Quant.size(p.terms.wrapped)-1 & daikon.Quant.size(\result.terms.wrapped)-1) == 0
 (daikon.Quant.size(\result.terms.wrapped) & daikon.Quant.size(\result.terms.wrapped)-1) == 0
 ===========================================================================
 PolyCalc.RatPoly.toString():::ENTER
@@ -1268,7 +1101,6 @@ PolyCalc.RatTerm:::OBJECT
 this.coeff != null
 this.coeff.denom >= 0
 this.expt >= 0
-(!(this.coeff.denom == 0)) || (this.expt == 0)
 ===========================================================================
 PolyCalc.RatTerm.RatTerm(PolyCalc.RatNum, int):::ENTER
     Variables: c c.numer c.denom e
@@ -1290,6 +1122,7 @@ c.denom >= 0
 ===========================================================================
 PolyCalc.RatTerm.debugPrint():::ENTER
     Variables: this this.coeff this.coeff.numer this.coeff.denom this.expt
+(!(this.coeff.denom == 0)) || (this.expt == 0)
 ===========================================================================
 PolyCalc.RatTerm.debugPrint():::EXIT
     Variables: this this.coeff this.coeff.numer this.coeff.denom this.expt return return.toString orig(this) orig(this.coeff) orig(this.coeff.numer) orig(this.coeff.denom) orig(this.expt)
@@ -1299,6 +1132,7 @@ this.coeff.denom == \old(this.coeff.denom)
 this.expt == \old(this.expt)
 \result != null
 warning: method daikon.inv.unary.string.PrintableString.format(OutputFormat:JML) needs to be implemented: return.toString is printable
+(!(this.coeff.denom == 0)) || (this.expt == 0)
 ===========================================================================
 PolyCalc.RatTerm.toString():::ENTER
     Variables: this this.coeff this.coeff.numer this.coeff.denom this.expt
@@ -1324,7 +1158,7 @@ PolyCalc.RatTermVec.RatTermVec():::EXIT
 daikon.Quant.pairwiseEqual(daikon.Quant.typeArray(this.wrapped), new String[] {  })
 ===========================================================================
 PolyCalc.RatTermVec.addElement(PolyCalc.RatTerm):::ENTER
-    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() t t.coeff t.coeff.numer t.coeff.denom t.expt size(this.wrapped[]) size(this.wrapped[])-1 this.wrapped[t.coeff.numer] this.wrapped[t.coeff.numer-1] this.wrapped[t.coeff.numer..] this.wrapped[t.coeff.numer+1..] this.wrapped[0..t.coeff.numer] this.wrapped[0..t.coeff.numer-1] this.wrapped[t.coeff.denom] this.wrapped[t.coeff.denom-1] this.wrapped[t.coeff.denom..] this.wrapped[t.coeff.denom+1..] this.wrapped[0..t.coeff.denom] this.wrapped[0..t.coeff.denom-1] this.wrapped[t.expt] this.wrapped[t.expt-1] this.wrapped[t.expt..] this.wrapped[t.expt+1..] this.wrapped[0..t.expt] this.wrapped[0..t.expt-1]
+    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() t t.coeff t.coeff.numer t.coeff.denom t.expt size(this.wrapped[]) size(this.wrapped[])-1
 daikon.Quant.noDups(this.wrapped)
 t != null
 t.coeff != null
@@ -1332,11 +1166,10 @@ t.coeff.numer != 0
 t.coeff.denom >= 0
 t.expt >= 0
 (!(t.coeff.denom == 0)) || (t.expt == 0)
-(!(t.coeff.denom == 0)) || (daikon.Quant.size(this.wrapped) == 0)
 ===========================================================================
 PolyCalc.RatTermVec.addElement(PolyCalc.RatTerm):::EXIT
-    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() t t.coeff t.coeff.numer t.coeff.denom t.expt orig(this) orig(this.wrapped) orig(this.wrapped[]) orig(this.wrapped[].getClass().getName()) orig(t) orig(t.coeff) orig(t.coeff.numer) orig(t.coeff.denom) orig(t.expt) size(this.wrapped[]) size(this.wrapped[])-1 orig(size(this.wrapped[])) orig(size(this.wrapped[]))-1 this.wrapped[t.coeff.numer] this.wrapped[t.coeff.numer-1] this.wrapped[t.coeff.numer..] this.wrapped[t.coeff.numer+1..] this.wrapped[0..t.coeff.numer] this.wrapped[0..t.coeff.numer-1] this.wrapped[t.coeff.denom] this.wrapped[t.coeff.denom-1] this.wrapped[t.coeff.denom..] this.wrapped[t.coeff.denom+1..] this.wrapped[0..t.coeff.denom] this.wrapped[0..t.coeff.denom-1] this.wrapped[t.expt] this.wrapped[t.expt-1] this.wrapped[t.expt..] this.wrapped[t.expt+1..] this.wrapped[0..t.expt] this.wrapped[0..t.expt-1] this.wrapped[orig(t.coeff.numer)] this.wrapped[orig(t.coeff.numer)-1] this.wrapped[orig(t.coeff.numer)..] this.wrapped[orig(t.coeff.numer)+1..] this.wrapped[0..orig(t.coeff.numer)] this.wrapped[0..orig(t.coeff.numer)-1] this.wrapped[orig(t.coeff.denom)] this.wrapped[orig(t.coeff.denom)-1] this.wrapped[orig(t.coeff.denom)..] this.wrapped[orig(t.coeff.denom)+1..] this.wrapped[0..orig(t.coeff.denom)] this.wrapped[0..orig(t.coeff.denom)-1] this.wrapped[orig(t.expt)] this.wrapped[orig(t.expt)-1] this.wrapped[orig(t.expt)..] this.wrapped[orig(t.expt)+1..] this.wrapped[0..orig(t.expt)] this.wrapped[0..orig(t.expt)-1] orig(this.wrapped[post(t.coeff.numer)]) orig(this.wrapped[post(t.coeff.numer)-1]) orig(this.wrapped[post(t.coeff.numer)..]) orig(this.wrapped[post(t.coeff.numer)+1..]) orig(this.wrapped[0..post(t.coeff.numer)]) orig(this.wrapped[0..post(t.coeff.numer)-1]) orig(this.wrapped[post(t.coeff.denom)]) orig(this.wrapped[post(t.coeff.denom)-1]) orig(this.wrapped[post(t.coeff.denom)..]) orig(this.wrapped[post(t.coeff.denom)+1..]) orig(this.wrapped[0..post(t.coeff.denom)]) orig(this.wrapped[0..post(t.coeff.denom)-1]) orig(this.wrapped[post(t.expt)]) orig(this.wrapped[post(t.expt)-1]) orig(this.wrapped[post(t.expt)..]) orig(this.wrapped[post(t.expt)+1..]) orig(this.wrapped[0..post(t.expt)]) orig(this.wrapped[0..post(t.expt)-1]) orig(this.wrapped[t.coeff.numer]) orig(this.wrapped[t.coeff.numer-1]) orig(this.wrapped[t.coeff.numer..]) orig(this.wrapped[t.coeff.numer+1..]) orig(this.wrapped[0..t.coeff.numer]) orig(this.wrapped[0..t.coeff.numer-1]) orig(this.wrapped[t.coeff.denom]) orig(this.wrapped[t.coeff.denom-1]) orig(this.wrapped[t.coeff.denom..]) orig(this.wrapped[t.coeff.denom+1..]) orig(this.wrapped[0..t.coeff.denom]) orig(this.wrapped[0..t.coeff.denom-1]) orig(this.wrapped[t.expt]) orig(this.wrapped[t.expt-1]) orig(this.wrapped[t.expt..]) orig(this.wrapped[t.expt+1..]) orig(this.wrapped[0..t.expt]) orig(this.wrapped[0..t.expt-1])
-assignable this.wrapped[*], this.wrapped[t.coeff.numer], this.wrapped[t.coeff.numer-1], this.wrapped[t.coeff.numer..], this.wrapped[t.coeff.numer+1..], this.wrapped[0..t.coeff.numer], this.wrapped[0..t.coeff.numer-1], this.wrapped[t.coeff.denom], this.wrapped[t.coeff.denom-1], this.wrapped[t.coeff.denom..], this.wrapped[t.coeff.denom+1..], this.wrapped[0..t.coeff.denom], this.wrapped[0..t.coeff.denom-1], this.wrapped[t.expt], this.wrapped[t.expt-1], this.wrapped[t.expt..], this.wrapped[t.expt+1..], this.wrapped[0..t.expt], this.wrapped[0..t.expt-1]
+    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() t t.coeff t.coeff.numer t.coeff.denom t.expt orig(this) orig(this.wrapped) orig(this.wrapped[]) orig(this.wrapped[].getClass().getName()) orig(t) orig(t.coeff) orig(t.coeff.numer) orig(t.coeff.denom) orig(t.expt) size(this.wrapped[]) size(this.wrapped[])-1 orig(size(this.wrapped[])) orig(size(this.wrapped[]))-1
+assignable this.wrapped[*]
 this.wrapped == \old(this.wrapped)
 t.coeff == \old(t.coeff)
 t.coeff.numer == \old(t.coeff.numer)
@@ -1351,9 +1184,7 @@ t.expt >= 0
 daikon.Quant.size(this.wrapped) >= 1
 warning: method daikon.inv.binary.twoSequence.SuperSequence.format(OutputFormat:JML) needs to be implemented: orig(this.wrapped[]) is a subsequence of this.wrapped[]
 daikon.Quant.subsetOf(\old(this.wrapped), this.wrapped)
-daikon.Quant.memberOf(\old(t) , this.wrapped )
 (!(t.coeff.denom == 0)) || (t.expt == 0)
-(!(t.coeff.denom == 0)) || (daikon.Quant.size(this.wrapped)-1 == 0)
 ===========================================================================
 PolyCalc.RatTermVec.copy():::ENTER
     Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() size(this.wrapped[]) size(this.wrapped[])-1
@@ -1362,85 +1193,53 @@ daikon.Quant.noDups(this.wrapped)
 PolyCalc.RatTermVec.copy():::EXIT
     Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() return return.wrapped return.wrapped[] return.wrapped[].getClass().getName() orig(this) orig(this.wrapped) orig(this.wrapped[]) orig(this.wrapped[].getClass().getName()) size(this.wrapped[]) size(this.wrapped[])-1 size(return.wrapped[]) size(return.wrapped[])-1 orig(size(this.wrapped[])) orig(size(this.wrapped[]))-1
 this.wrapped == \old(this.wrapped)
-daikon.Quant.pairwiseEqual(this.wrapped, \result.wrapped)
 daikon.Quant.pairwiseEqual(this.wrapped, \old(this.wrapped))
 daikon.Quant.noDups(this.wrapped)
 \result != null
 \result.wrapped != null
+daikon.Quant.noDups(\result.wrapped)
+daikon.Quant.eltsNotEqual(\result.wrapped, null)
+daikon.Quant.eltsEqual(daikon.Quant.typeArray(\result.wrapped), "PolyCalc.RatTerm")
 ===========================================================================
 PolyCalc.RatTermVec.get(int):::ENTER
-    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() index size(this.wrapped[]) size(this.wrapped[])-1 this.wrapped[index] this.wrapped[index-1] this.wrapped[index..] this.wrapped[index+1..] this.wrapped[0..index] this.wrapped[0..index-1]
+    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() index size(this.wrapped[]) size(this.wrapped[])-1
 index >= 0
 daikon.Quant.size(this.wrapped) >= 1
-daikon.Quant.noDups(daikon.Quant.slice(this.wrapped, index+1, daikon.Quant.size(this.wrapped)))
-daikon.Quant.noDups(daikon.Quant.slice(this.wrapped, 0, index))
-(!(daikon.Quant.size(this.wrapped)-1 == 0)) || (index == 0)
-index <= daikon.Quant.size(this.wrapped)-1
 ===========================================================================
 PolyCalc.RatTermVec.get(int):::EXIT
-    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() index return return.coeff return.coeff.numer return.coeff.denom return.expt orig(this) orig(this.wrapped) orig(this.wrapped[]) orig(this.wrapped[].getClass().getName()) orig(index) size(this.wrapped[]) size(this.wrapped[])-1 orig(size(this.wrapped[])) orig(size(this.wrapped[]))-1 this.wrapped[index] this.wrapped[index-1] this.wrapped[index..] this.wrapped[index+1..] this.wrapped[0..index] this.wrapped[0..index-1] this.wrapped[return.coeff.numer] this.wrapped[return.coeff.numer-1] this.wrapped[return.coeff.numer..] this.wrapped[return.coeff.numer+1..] this.wrapped[0..return.coeff.numer] this.wrapped[0..return.coeff.numer-1] this.wrapped[return.coeff.denom] this.wrapped[return.coeff.denom-1] this.wrapped[return.coeff.denom..] this.wrapped[return.coeff.denom+1..] this.wrapped[0..return.coeff.denom] this.wrapped[0..return.coeff.denom-1] this.wrapped[return.expt] this.wrapped[return.expt-1] this.wrapped[return.expt..] this.wrapped[return.expt+1..] this.wrapped[0..return.expt] this.wrapped[0..return.expt-1] this.wrapped[orig(index)] this.wrapped[orig(index)-1] this.wrapped[orig(index)..] this.wrapped[orig(index)+1..] this.wrapped[0..orig(index)] this.wrapped[0..orig(index)-1] orig(this.wrapped[post(index)]) orig(this.wrapped[post(index)-1]) orig(this.wrapped[post(index)..]) orig(this.wrapped[post(index)+1..]) orig(this.wrapped[0..post(index)]) orig(this.wrapped[0..post(index)-1]) orig(this.wrapped[post(return.coeff.numer)]) orig(this.wrapped[post(return.coeff.numer)-1]) orig(this.wrapped[post(return.coeff.numer)..]) orig(this.wrapped[post(return.coeff.numer)+1..]) orig(this.wrapped[0..post(return.coeff.numer)]) orig(this.wrapped[0..post(return.coeff.numer)-1]) orig(this.wrapped[post(return.coeff.denom)]) orig(this.wrapped[post(return.coeff.denom)-1]) orig(this.wrapped[post(return.coeff.denom)..]) orig(this.wrapped[post(return.coeff.denom)+1..]) orig(this.wrapped[0..post(return.coeff.denom)]) orig(this.wrapped[0..post(return.coeff.denom)-1]) orig(this.wrapped[post(return.expt)]) orig(this.wrapped[post(return.expt)-1]) orig(this.wrapped[post(return.expt)..]) orig(this.wrapped[post(return.expt)+1..]) orig(this.wrapped[0..post(return.expt)]) orig(this.wrapped[0..post(return.expt)-1]) orig(this.wrapped[index]) orig(this.wrapped[index-1]) orig(this.wrapped[index..]) orig(this.wrapped[index+1..]) orig(this.wrapped[0..index]) orig(this.wrapped[0..index-1])
+    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() index return return.coeff return.coeff.numer return.coeff.denom return.expt orig(this) orig(this.wrapped) orig(this.wrapped[]) orig(this.wrapped[].getClass().getName()) orig(index) size(this.wrapped[]) size(this.wrapped[])-1 orig(size(this.wrapped[])) orig(size(this.wrapped[]))-1
 this.wrapped == \old(this.wrapped)
 daikon.Quant.pairwiseEqual(this.wrapped, \old(this.wrapped))
-\result == daikon.Quant.getElement_Object(this.wrapped, \old(index))
 \result != null
 \result.coeff != null
 \result.coeff.denom >= 0
 \result.expt >= 0
 daikon.Quant.size(this.wrapped) >= 1
-daikon.Quant.noDups(daikon.Quant.slice(this.wrapped, \old(index)+1, daikon.Quant.size(this.wrapped)))
-daikon.Quant.noDups(daikon.Quant.slice(this.wrapped, 0, \old(index)))
-daikon.Quant.memberOf(\result , this.wrapped )
-daikon.Quant.memberOf(\result , daikon.Quant.slice(this.wrapped, \old(index), daikon.Quant.size(this.wrapped)) )
-daikon.Quant.memberOf(\result , daikon.Quant.slice(this.wrapped, 0, \old(index)) )
 (!(\result.coeff.numer == 0)) || (\result.expt == 0)
-(!(\result.coeff.numer == 0)) || (\old(index) == 0)
 (!(\result.coeff.denom == 0)) || (\result.expt == 0)
-(!(\result.coeff.denom == 0)) || (\old(index) == 0)
-(!(\result.coeff.denom == 0)) || (daikon.Quant.size(this.wrapped)-1 == 0)
-(!(daikon.Quant.size(this.wrapped)-1 == 0)) || (\old(index) == 0)
-\old(index) <= daikon.Quant.size(this.wrapped)-1
 ===========================================================================
 PolyCalc.RatTermVec.insert(PolyCalc.RatTerm, int):::ENTER
-    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() t t.coeff t.coeff.numer t.coeff.denom t.expt index size(this.wrapped[]) size(this.wrapped[])-1 this.wrapped[t.coeff.numer] this.wrapped[t.coeff.numer-1] this.wrapped[t.coeff.numer..] this.wrapped[t.coeff.numer+1..] this.wrapped[0..t.coeff.numer] this.wrapped[0..t.coeff.numer-1] this.wrapped[t.coeff.denom] this.wrapped[t.coeff.denom-1] this.wrapped[t.coeff.denom..] this.wrapped[t.coeff.denom+1..] this.wrapped[0..t.coeff.denom] this.wrapped[0..t.coeff.denom-1] this.wrapped[t.expt] this.wrapped[t.expt-1] this.wrapped[t.expt..] this.wrapped[t.expt+1..] this.wrapped[0..t.expt] this.wrapped[0..t.expt-1] this.wrapped[index] this.wrapped[index-1] this.wrapped[index..] this.wrapped[index+1..] this.wrapped[0..index] this.wrapped[0..index-1]
+    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() t t.coeff t.coeff.numer t.coeff.denom t.expt index size(this.wrapped[]) size(this.wrapped[])-1
 t != null
 t.coeff != null
 t.coeff.denom >= 1
 t.expt >= 0
 index >= 0
-daikon.Quant.noDups(daikon.Quant.slice(this.wrapped, 0, index-1))
-(!(index == 0)) || (t.expt == 0)
-(!(daikon.Quant.size(this.wrapped) == 0)) || (t.expt == 0)
-(!(daikon.Quant.size(this.wrapped) == 0)) || (index == 0)
-index <= daikon.Quant.size(this.wrapped)
 ===========================================================================
 PolyCalc.RatTermVec.insert(PolyCalc.RatTerm, int):::EXIT
-    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() t t.coeff t.coeff.numer t.coeff.denom t.expt index orig(this) orig(this.wrapped) orig(this.wrapped[]) orig(this.wrapped[].getClass().getName()) orig(t) orig(t.coeff) orig(t.coeff.numer) orig(t.coeff.denom) orig(t.expt) orig(index) size(this.wrapped[]) size(this.wrapped[])-1 orig(size(this.wrapped[])) orig(size(this.wrapped[]))-1 this.wrapped[t.coeff.numer] this.wrapped[t.coeff.numer-1] this.wrapped[t.coeff.numer..] this.wrapped[t.coeff.numer+1..] this.wrapped[0..t.coeff.numer] this.wrapped[0..t.coeff.numer-1] this.wrapped[t.coeff.denom] this.wrapped[t.coeff.denom-1] this.wrapped[t.coeff.denom..] this.wrapped[t.coeff.denom+1..] this.wrapped[0..t.coeff.denom] this.wrapped[0..t.coeff.denom-1] this.wrapped[t.expt] this.wrapped[t.expt-1] this.wrapped[t.expt..] this.wrapped[t.expt+1..] this.wrapped[0..t.expt] this.wrapped[0..t.expt-1] this.wrapped[index] this.wrapped[index-1] this.wrapped[index..] this.wrapped[index+1..] this.wrapped[0..index] this.wrapped[0..index-1] this.wrapped[orig(t.coeff.numer)] this.wrapped[orig(t.coeff.numer)-1] this.wrapped[orig(t.coeff.numer)..] this.wrapped[orig(t.coeff.numer)+1..] this.wrapped[0..orig(t.coeff.numer)] this.wrapped[0..orig(t.coeff.numer)-1] this.wrapped[orig(t.coeff.denom)] this.wrapped[orig(t.coeff.denom)-1] this.wrapped[orig(t.coeff.denom)..] this.wrapped[orig(t.coeff.denom)+1..] this.wrapped[0..orig(t.coeff.denom)] this.wrapped[0..orig(t.coeff.denom)-1] this.wrapped[orig(t.expt)] this.wrapped[orig(t.expt)-1] this.wrapped[orig(t.expt)..] this.wrapped[orig(t.expt)+1..] this.wrapped[0..orig(t.expt)] this.wrapped[0..orig(t.expt)-1] this.wrapped[orig(index)] this.wrapped[orig(index)-1] this.wrapped[orig(index)..] this.wrapped[orig(index)+1..] this.wrapped[0..orig(index)] this.wrapped[0..orig(index)-1] orig(this.wrapped[post(t.coeff.numer)]) orig(this.wrapped[post(t.coeff.numer)-1]) orig(this.wrapped[post(t.coeff.numer)..]) orig(this.wrapped[post(t.coeff.numer)+1..]) orig(this.wrapped[0..post(t.coeff.numer)]) orig(this.wrapped[0..post(t.coeff.numer)-1]) orig(this.wrapped[post(t.coeff.denom)]) orig(this.wrapped[post(t.coeff.denom)-1]) orig(this.wrapped[post(t.coeff.denom)..]) orig(this.wrapped[post(t.coeff.denom)+1..]) orig(this.wrapped[0..post(t.coeff.denom)]) orig(this.wrapped[0..post(t.coeff.denom)-1]) orig(this.wrapped[post(t.expt)]) orig(this.wrapped[post(t.expt)-1]) orig(this.wrapped[post(t.expt)..]) orig(this.wrapped[post(t.expt)+1..]) orig(this.wrapped[0..post(t.expt)]) orig(this.wrapped[0..post(t.expt)-1]) orig(this.wrapped[post(index)]) orig(this.wrapped[post(index)-1]) orig(this.wrapped[post(index)..]) orig(this.wrapped[post(index)+1..]) orig(this.wrapped[0..post(index)]) orig(this.wrapped[0..post(index)-1]) orig(this.wrapped[t.coeff.numer]) orig(this.wrapped[t.coeff.numer-1]) orig(this.wrapped[t.coeff.numer..]) orig(this.wrapped[t.coeff.numer+1..]) orig(this.wrapped[0..t.coeff.numer]) orig(this.wrapped[0..t.coeff.numer-1]) orig(this.wrapped[t.coeff.denom]) orig(this.wrapped[t.coeff.denom-1]) orig(this.wrapped[t.coeff.denom..]) orig(this.wrapped[t.coeff.denom+1..]) orig(this.wrapped[0..t.coeff.denom]) orig(this.wrapped[0..t.coeff.denom-1]) orig(this.wrapped[t.expt]) orig(this.wrapped[t.expt-1]) orig(this.wrapped[t.expt..]) orig(this.wrapped[t.expt+1..]) orig(this.wrapped[0..t.expt]) orig(this.wrapped[0..t.expt-1]) orig(this.wrapped[index]) orig(this.wrapped[index-1]) orig(this.wrapped[index..]) orig(this.wrapped[index+1..]) orig(this.wrapped[0..index]) orig(this.wrapped[0..index-1])
-assignable this.wrapped[*], this.wrapped[t.coeff.numer], this.wrapped[t.coeff.numer-1], this.wrapped[t.coeff.numer..], this.wrapped[t.coeff.numer+1..], this.wrapped[0..t.coeff.numer], this.wrapped[0..t.coeff.numer-1], this.wrapped[t.coeff.denom], this.wrapped[t.coeff.denom-1], this.wrapped[t.coeff.denom..], this.wrapped[t.coeff.denom+1..], this.wrapped[0..t.coeff.denom], this.wrapped[0..t.coeff.denom-1], this.wrapped[t.expt], this.wrapped[t.expt-1], this.wrapped[t.expt..], this.wrapped[t.expt+1..], this.wrapped[0..t.expt], this.wrapped[0..t.expt-1]
+    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() t t.coeff t.coeff.numer t.coeff.denom t.expt index orig(this) orig(this.wrapped) orig(this.wrapped[]) orig(this.wrapped[].getClass().getName()) orig(t) orig(t.coeff) orig(t.coeff.numer) orig(t.coeff.denom) orig(t.expt) orig(index) size(this.wrapped[]) size(this.wrapped[])-1 orig(size(this.wrapped[])) orig(size(this.wrapped[]))-1
+assignable this.wrapped[*]
 this.wrapped == \old(this.wrapped)
 t.coeff == \old(t.coeff)
 t.coeff.numer == \old(t.coeff.numer)
 t.coeff.denom == \old(t.coeff.denom)
 t.expt == \old(t.expt)
-\old(t) == daikon.Quant.getElement_Object(this.wrapped, \old(index))
 daikon.Quant.size(this.wrapped)-1 == \old(daikon.Quant.size(this.wrapped))
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(this.wrapped, \old(index)+1, daikon.Quant.size(this.wrapped)), \old(daikon.Quant.slice(this.wrapped, index, daikon.Quant.size(this.wrapped))))
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(this.wrapped, 0, \old(index)-1), \old(daikon.Quant.slice(this.wrapped, 0, \new(index)-1)))
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(this.wrapped, 0, \old(index)-1), \old(daikon.Quant.slice(this.wrapped, 0, index-1)))
 t.coeff != null
 t.coeff.denom >= 1
 t.expt >= 0
 daikon.Quant.size(this.wrapped) >= 1
-daikon.Quant.noDups(daikon.Quant.slice(this.wrapped, 0, \old(index)-1))
 daikon.Quant.subsetOf(\old(this.wrapped), this.wrapped)
-daikon.Quant.memberOf(\old(t) , this.wrapped )
-t.coeff.numer <= daikon.Quant.size(this.wrapped)
-(!(\old(index) == 0)) || (t.expt == 0)
-t.expt != daikon.Quant.size(this.wrapped)
-(!(daikon.Quant.size(this.wrapped)-1 == 0)) || (t.expt == 0)
-daikon.Quant.memberOf(\old(t) , daikon.Quant.slice(this.wrapped, \old(index), daikon.Quant.size(this.wrapped)) )
-daikon.Quant.memberOf(\old(t) , daikon.Quant.slice(this.wrapped, 0, \old(index)) )
-(!(daikon.Quant.size(this.wrapped)-1 == 0)) || (\old(index) == 0)
-\old(index) <= daikon.Quant.size(this.wrapped)-1
 ===========================================================================
 PolyCalc.RatTermVec.printDebug():::ENTER
     Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() size(this.wrapped[]) size(this.wrapped[])-1
@@ -1453,29 +1252,21 @@ daikon.Quant.pairwiseEqual(this.wrapped, \old(this.wrapped))
 warning: method daikon.inv.unary.string.PrintableString.format(OutputFormat:JML) needs to be implemented: return.toString is printable
 ===========================================================================
 PolyCalc.RatTermVec.remove(int):::ENTER
-    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() index size(this.wrapped[]) size(this.wrapped[])-1 this.wrapped[index] this.wrapped[index-1] this.wrapped[index..] this.wrapped[index+1..] this.wrapped[0..index] this.wrapped[0..index-1]
+    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() index size(this.wrapped[]) size(this.wrapped[])-1
 daikon.Quant.noDups(this.wrapped)
 index >= 0
 daikon.Quant.size(this.wrapped) >= 1
-(!(daikon.Quant.size(this.wrapped)-1 == 0)) || (index == 0)
-index <= daikon.Quant.size(this.wrapped)-1
 ===========================================================================
 PolyCalc.RatTermVec.remove(int):::EXIT
-    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() index orig(this) orig(this.wrapped) orig(this.wrapped[]) orig(this.wrapped[].getClass().getName()) orig(index) size(this.wrapped[]) size(this.wrapped[])-1 orig(size(this.wrapped[])) orig(size(this.wrapped[]))-1 this.wrapped[index] this.wrapped[index-1] this.wrapped[index..] this.wrapped[index+1..] this.wrapped[0..index] this.wrapped[0..index-1] this.wrapped[orig(index)] this.wrapped[orig(index)-1] this.wrapped[orig(index)..] this.wrapped[orig(index)+1..] this.wrapped[0..orig(index)] this.wrapped[0..orig(index)-1] orig(this.wrapped[post(index)]) orig(this.wrapped[post(index)-1]) orig(this.wrapped[post(index)..]) orig(this.wrapped[post(index)+1..]) orig(this.wrapped[0..post(index)]) orig(this.wrapped[0..post(index)-1]) orig(this.wrapped[index]) orig(this.wrapped[index-1]) orig(this.wrapped[index..]) orig(this.wrapped[index+1..]) orig(this.wrapped[0..index]) orig(this.wrapped[0..index-1])
+    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() index orig(this) orig(this.wrapped) orig(this.wrapped[]) orig(this.wrapped[].getClass().getName()) orig(index) size(this.wrapped[]) size(this.wrapped[])-1 orig(size(this.wrapped[])) orig(size(this.wrapped[]))-1
 assignable this.wrapped[*]
 this.wrapped == \old(this.wrapped)
 daikon.Quant.size(this.wrapped) == \old(daikon.Quant.size(this.wrapped))-1
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(this.wrapped, \old(index), daikon.Quant.size(this.wrapped)), \old(daikon.Quant.slice(this.wrapped, \new(index)+1, daikon.Quant.size(this.wrapped))))
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(this.wrapped, \old(index), daikon.Quant.size(this.wrapped)), \old(daikon.Quant.slice(this.wrapped, index+1, daikon.Quant.size(this.wrapped))))
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(this.wrapped, 0, \old(index)-1), \old(daikon.Quant.slice(this.wrapped, 0, \new(index)-1)))
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(this.wrapped, 0, \old(index)-1), \old(daikon.Quant.slice(this.wrapped, 0, index-1)))
 daikon.Quant.noDups(this.wrapped)
 daikon.Quant.subsetOf(this.wrapped, \old(this.wrapped))
-(!(daikon.Quant.size(this.wrapped) == 0)) || (\old(index) == 0)
-\old(index) <= daikon.Quant.size(this.wrapped)
 ===========================================================================
 PolyCalc.RatTermVec.set(PolyCalc.RatTerm, int):::ENTER
-    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() t t.coeff t.coeff.numer t.coeff.denom t.expt index size(this.wrapped[]) size(this.wrapped[])-1 this.wrapped[t.coeff.numer] this.wrapped[t.coeff.numer-1] this.wrapped[t.coeff.numer..] this.wrapped[t.coeff.numer+1..] this.wrapped[0..t.coeff.numer] this.wrapped[0..t.coeff.numer-1] this.wrapped[t.coeff.denom] this.wrapped[t.coeff.denom-1] this.wrapped[t.coeff.denom..] this.wrapped[t.coeff.denom+1..] this.wrapped[0..t.coeff.denom] this.wrapped[0..t.coeff.denom-1] this.wrapped[t.expt] this.wrapped[t.expt-1] this.wrapped[t.expt..] this.wrapped[t.expt+1..] this.wrapped[0..t.expt] this.wrapped[0..t.expt-1] this.wrapped[index] this.wrapped[index-1] this.wrapped[index..] this.wrapped[index+1..] this.wrapped[0..index] this.wrapped[0..index-1]
+    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() t t.coeff t.coeff.numer t.coeff.denom t.expt index size(this.wrapped[]) size(this.wrapped[])-1
 daikon.Quant.noDups(this.wrapped)
 t != null
 t.coeff != null
@@ -1484,51 +1275,33 @@ t.expt >= 0
 index >= 0
 daikon.Quant.size(this.wrapped) >= 1
 (!(t.coeff.denom == 0)) || (t.expt == 0)
-(!(t.coeff.denom == 0)) || (index == 0)
-(!(t.coeff.denom == 0)) || (daikon.Quant.size(this.wrapped)-1 == 0)
-(!(daikon.Quant.size(this.wrapped)-1 == 0)) || (index == 0)
-index <= daikon.Quant.size(this.wrapped)-1
 ===========================================================================
 PolyCalc.RatTermVec.set(PolyCalc.RatTerm, int):::EXIT
-    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() t t.coeff t.coeff.numer t.coeff.denom t.expt index orig(this) orig(this.wrapped) orig(this.wrapped[]) orig(this.wrapped[].getClass().getName()) orig(t) orig(t.coeff) orig(t.coeff.numer) orig(t.coeff.denom) orig(t.expt) orig(index) size(this.wrapped[]) size(this.wrapped[])-1 orig(size(this.wrapped[])) orig(size(this.wrapped[]))-1 this.wrapped[t.coeff.numer] this.wrapped[t.coeff.numer-1] this.wrapped[t.coeff.numer..] this.wrapped[t.coeff.numer+1..] this.wrapped[0..t.coeff.numer] this.wrapped[0..t.coeff.numer-1] this.wrapped[t.coeff.denom] this.wrapped[t.coeff.denom-1] this.wrapped[t.coeff.denom..] this.wrapped[t.coeff.denom+1..] this.wrapped[0..t.coeff.denom] this.wrapped[0..t.coeff.denom-1] this.wrapped[t.expt] this.wrapped[t.expt-1] this.wrapped[t.expt..] this.wrapped[t.expt+1..] this.wrapped[0..t.expt] this.wrapped[0..t.expt-1] this.wrapped[index] this.wrapped[index-1] this.wrapped[index..] this.wrapped[index+1..] this.wrapped[0..index] this.wrapped[0..index-1] this.wrapped[orig(t.coeff.numer)] this.wrapped[orig(t.coeff.numer)-1] this.wrapped[orig(t.coeff.numer)..] this.wrapped[orig(t.coeff.numer)+1..] this.wrapped[0..orig(t.coeff.numer)] this.wrapped[0..orig(t.coeff.numer)-1] this.wrapped[orig(t.coeff.denom)] this.wrapped[orig(t.coeff.denom)-1] this.wrapped[orig(t.coeff.denom)..] this.wrapped[orig(t.coeff.denom)+1..] this.wrapped[0..orig(t.coeff.denom)] this.wrapped[0..orig(t.coeff.denom)-1] this.wrapped[orig(t.expt)] this.wrapped[orig(t.expt)-1] this.wrapped[orig(t.expt)..] this.wrapped[orig(t.expt)+1..] this.wrapped[0..orig(t.expt)] this.wrapped[0..orig(t.expt)-1] this.wrapped[orig(index)] this.wrapped[orig(index)-1] this.wrapped[orig(index)..] this.wrapped[orig(index)+1..] this.wrapped[0..orig(index)] this.wrapped[0..orig(index)-1] orig(this.wrapped[post(t.coeff.numer)]) orig(this.wrapped[post(t.coeff.numer)-1]) orig(this.wrapped[post(t.coeff.numer)..]) orig(this.wrapped[post(t.coeff.numer)+1..]) orig(this.wrapped[0..post(t.coeff.numer)]) orig(this.wrapped[0..post(t.coeff.numer)-1]) orig(this.wrapped[post(t.coeff.denom)]) orig(this.wrapped[post(t.coeff.denom)-1]) orig(this.wrapped[post(t.coeff.denom)..]) orig(this.wrapped[post(t.coeff.denom)+1..]) orig(this.wrapped[0..post(t.coeff.denom)]) orig(this.wrapped[0..post(t.coeff.denom)-1]) orig(this.wrapped[post(t.expt)]) orig(this.wrapped[post(t.expt)-1]) orig(this.wrapped[post(t.expt)..]) orig(this.wrapped[post(t.expt)+1..]) orig(this.wrapped[0..post(t.expt)]) orig(this.wrapped[0..post(t.expt)-1]) orig(this.wrapped[post(index)]) orig(this.wrapped[post(index)-1]) orig(this.wrapped[post(index)..]) orig(this.wrapped[post(index)+1..]) orig(this.wrapped[0..post(index)]) orig(this.wrapped[0..post(index)-1]) orig(this.wrapped[t.coeff.numer]) orig(this.wrapped[t.coeff.numer-1]) orig(this.wrapped[t.coeff.numer..]) orig(this.wrapped[t.coeff.numer+1..]) orig(this.wrapped[0..t.coeff.numer]) orig(this.wrapped[0..t.coeff.numer-1]) orig(this.wrapped[t.coeff.denom]) orig(this.wrapped[t.coeff.denom-1]) orig(this.wrapped[t.coeff.denom..]) orig(this.wrapped[t.coeff.denom+1..]) orig(this.wrapped[0..t.coeff.denom]) orig(this.wrapped[0..t.coeff.denom-1]) orig(this.wrapped[t.expt]) orig(this.wrapped[t.expt-1]) orig(this.wrapped[t.expt..]) orig(this.wrapped[t.expt+1..]) orig(this.wrapped[0..t.expt]) orig(this.wrapped[0..t.expt-1]) orig(this.wrapped[index]) orig(this.wrapped[index-1]) orig(this.wrapped[index..]) orig(this.wrapped[index+1..]) orig(this.wrapped[0..index]) orig(this.wrapped[0..index-1])
-assignable this.wrapped[*], this.wrapped[t.coeff.numer], this.wrapped[t.coeff.numer-1], this.wrapped[t.coeff.numer..], this.wrapped[t.coeff.numer+1..], this.wrapped[0..t.coeff.numer], this.wrapped[0..t.coeff.numer-1], this.wrapped[t.coeff.denom], this.wrapped[t.coeff.denom-1], this.wrapped[t.coeff.denom..], this.wrapped[t.coeff.denom+1..], this.wrapped[0..t.coeff.denom], this.wrapped[0..t.coeff.denom-1], this.wrapped[t.expt], this.wrapped[t.expt-1], this.wrapped[t.expt..], this.wrapped[t.expt+1..], this.wrapped[0..t.expt], this.wrapped[0..t.expt-1]
+    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() t t.coeff t.coeff.numer t.coeff.denom t.expt index orig(this) orig(this.wrapped) orig(this.wrapped[]) orig(this.wrapped[].getClass().getName()) orig(t) orig(t.coeff) orig(t.coeff.numer) orig(t.coeff.denom) orig(t.expt) orig(index) size(this.wrapped[]) size(this.wrapped[])-1 orig(size(this.wrapped[])) orig(size(this.wrapped[]))-1
+assignable this.wrapped[*]
 this.wrapped == \old(this.wrapped)
 t.coeff == \old(t.coeff)
 t.coeff.numer == \old(t.coeff.numer)
 t.coeff.denom == \old(t.coeff.denom)
 t.expt == \old(t.expt)
-\old(t) == daikon.Quant.getElement_Object(this.wrapped, \old(index))
 daikon.Quant.size(this.wrapped) == \old(daikon.Quant.size(this.wrapped))
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(this.wrapped, \old(index)+1, daikon.Quant.size(this.wrapped)), \old(daikon.Quant.slice(this.wrapped, \new(index)+1, daikon.Quant.size(this.wrapped))))
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(this.wrapped, \old(index)+1, daikon.Quant.size(this.wrapped)), \old(daikon.Quant.slice(this.wrapped, index+1, daikon.Quant.size(this.wrapped))))
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(this.wrapped, 0, \old(index)-1), \old(daikon.Quant.slice(this.wrapped, 0, \new(index)-1)))
-daikon.Quant.pairwiseEqual(daikon.Quant.slice(this.wrapped, 0, \old(index)-1), \old(daikon.Quant.slice(this.wrapped, 0, index-1)))
 daikon.Quant.noDups(this.wrapped)
 t.coeff != null
 t.coeff.numer != 0
 t.expt >= 0
 daikon.Quant.size(this.wrapped) >= 1
-daikon.Quant.memberOf(\old(t) , this.wrapped )
 (!(t.coeff.denom == 0)) || (t.expt == 0)
-(!(t.coeff.denom == 0)) || (\old(index) == 0)
-(!(t.coeff.denom == 0)) || (daikon.Quant.size(this.wrapped)-1 == 0)
-daikon.Quant.memberOf(\old(t) , daikon.Quant.slice(this.wrapped, \old(index), daikon.Quant.size(this.wrapped)) )
-daikon.Quant.memberOf(\old(t) , daikon.Quant.slice(this.wrapped, 0, \old(index)) )
-(!(daikon.Quant.size(this.wrapped)-1 == 0)) || (\old(index) == 0)
-\old(index) <= daikon.Quant.size(this.wrapped)-1
 ===========================================================================
 PolyCalc.RatTermVec.size():::ENTER
     Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() size(this.wrapped[]) size(this.wrapped[])-1
 daikon.Quant.noDups(this.wrapped)
 ===========================================================================
 PolyCalc.RatTermVec.size():::EXIT
-    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() return orig(this) orig(this.wrapped) orig(this.wrapped[]) orig(this.wrapped[].getClass().getName()) size(this.wrapped[]) size(this.wrapped[])-1 orig(size(this.wrapped[])) orig(size(this.wrapped[]))-1 this.wrapped[return] this.wrapped[return-1] this.wrapped[return..] this.wrapped[return+1..] this.wrapped[0..return] this.wrapped[0..return-1] orig(this.wrapped[post(return)]) orig(this.wrapped[post(return)-1]) orig(this.wrapped[post(return)..]) orig(this.wrapped[post(return)+1..]) orig(this.wrapped[0..post(return)]) orig(this.wrapped[0..post(return)-1])
+    Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() return orig(this) orig(this.wrapped) orig(this.wrapped[]) orig(this.wrapped[].getClass().getName()) size(this.wrapped[]) size(this.wrapped[])-1 orig(size(this.wrapped[])) orig(size(this.wrapped[]))-1
 this.wrapped == \old(this.wrapped)
 daikon.Quant.pairwiseEqual(this.wrapped, \old(this.wrapped))
-\result == daikon.Quant.size(this.wrapped)
-\result == \old(daikon.Quant.size(this.wrapped))
 daikon.Quant.noDups(this.wrapped)
-("oneOf.java.jpp: SEQUENCE unimplemented" != null)
+\result >= 0
 ===========================================================================
 PolyCalc.RatTermVec.toString():::ENTER
     Variables: this this.wrapped this.wrapped[] this.wrapped[].getClass().getName() size(this.wrapped[]) size(this.wrapped[])-1

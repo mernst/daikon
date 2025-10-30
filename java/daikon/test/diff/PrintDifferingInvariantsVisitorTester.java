@@ -1,37 +1,44 @@
 package daikon.test.diff;
 
+import static java.util.logging.Level.INFO;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import daikon.*;
 import daikon.diff.*;
 import daikon.inv.*;
 import java.lang.reflect.Method;
 import junit.framework.*;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 @SuppressWarnings("nullness") // testing code
-public class PrintDifferingInvariantsVisitorTester extends TestCase {
+public class PrintDifferingInvariantsVisitorTester {
 
   VarInfo[] vars = {
     DiffTester.newIntVarInfo("x"), DiffTester.newIntVarInfo("y"), DiffTester.newIntVarInfo("z")
   };
+
   /** The program point that contains the test invariants. */
   PptTopLevel ppt = new PptTopLevel("Foo:::OBJECT", vars);
+
   /** The slice that contains the test invariants. */
   PptSlice slice0 = ppt.joiner_view;
 
   /** An invariant that is justified. */
   Invariant null_1_just = new DiffDummyInvariant(slice0, "1", true);
+
   /** An invariant that is justified but not worth printing. */
   Invariant null_noprint = new DiffDummyInvariant(slice0, "0", true, false);
 
-  /** Main method that runs tests. */
-  public static void main(String[] args) {
-    daikon.LogHelper.setupLogs(daikon.LogHelper.INFO);
-    junit.textui.TestRunner.run(new TestSuite(DiffTester.class));
+  /** prepare for tests */
+  @BeforeClass
+  public static void setUpClass() {
+    daikon.LogHelper.setupLogs(INFO);
+    FileIO.new_decl_format = true;
   }
 
-  public PrintDifferingInvariantsVisitorTester(String name) {
-    super(name);
-  }
-
+  @Test
   public void testShouldPrint() throws Exception {
     // Invoke private method using reflection
     Method m =

@@ -6,6 +6,12 @@ public class SimpUtil {
     throw new Error("do not instantiate");
   }
 
+  /**
+   * Throws an exception if the string is not a Simplify expression.
+   *
+   * @param s a Simplify expression
+   */
+  @SuppressWarnings("AssignmentExpression") // for "assert (assert_enabled = true);"
   public static void assert_well_formed(String s) {
     boolean assert_enabled = false;
     assert (assert_enabled = true);
@@ -24,8 +30,12 @@ public class SimpUtil {
     //     if (s.indexOf("((") != -1)
     //       throw new Error("'((' may not appear, '" + s + "'");
     assert s.length() >= 4 : "too short, '" + s + "'";
-    if (s.charAt(0) != '(') throw new Error("starts with lparen, '" + s + "'");
-    if (s.charAt(s.length() - 1) != ')') throw new Error("ends with rparen, '" + s + "'");
+    if (s.charAt(0) != '(') {
+      throw new Error("starts with lparen, '" + s + "'");
+    }
+    if (s.charAt(s.length() - 1) != ')') {
+      throw new Error("ends with rparen, '" + s + "'");
+    }
 
     @SuppressWarnings("UnusedVariable")
     int paren = 0;

@@ -5,8 +5,10 @@ package daikon.tools;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 import java.util.StringTokenizer;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.FilesPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * This tool fixes a Dtrace file whose invocation nonces became inaccurate as a result of a {@code
@@ -20,10 +22,12 @@ import org.plumelib.util.UtilPlume;
  */
 public class DtraceNonceFixer {
 
+  /** The system-specific line separator. */
   private static final String lineSep = System.lineSeparator();
 
+  /** The usage message for this program. */
   private static String usage =
-      UtilPlume.joinLines(
+      StringsPlume.joinLines(
           "Usage: DtraceNonceFixer FILENAME",
           "Modifies dtrace file FILENAME so that the invocation nonces are consistent.",
           "The output file will be FILENAME_fixed and another output included",
@@ -51,9 +55,8 @@ public class DtraceNonceFixer {
     String outputFilename =
         args[0].endsWith(".gz") ? (args[0] + "_fixed.gz") : (args[0] + "_fixed");
 
-    try {
-      BufferedReader br1 = UtilPlume.bufferedFileReader(args[0]);
-      PrintWriter out = new PrintWriter(UtilPlume.bufferedFileWriter(outputFilename));
+    try (BufferedReader br1 = FilesPlume.newBufferedFileReader(args[0]);
+        PrintWriter out1 = new PrintWriter(FilesPlume.newBufferedFileWriter(outputFilename))) {
 
       // maxNonce - the biggest nonce ever found in the file
       // correctionFactor - the amount to add to each observed nonce
@@ -76,37 +79,36 @@ public class DtraceNonceFixer {
         int newNonce = non + correctionFactor;
         maxNonce = Math.max(maxNonce, newNonce);
         if (non != -1) {
-          out.println(spawnWithNewNonce(nextInvo, newNonce));
+          out1.println(spawnWithNewNonce(nextInvo, newNonce));
         } else {
-          out.println(nextInvo);
+          out1.println(nextInvo);
         }
       }
-      out.flush();
-      out.close();
+      out1.flush();
 
       // now go back and add the OBJECT and CLASS invocations
       String allFixedFilename =
           outputFilename.endsWith(".gz") ? (args[0] + "_all_fixed.gz") : (args[0] + "_all_fixed");
 
-      BufferedReader br2 = UtilPlume.bufferedFileReader(outputFilename);
-      out = new PrintWriter(UtilPlume.bufferedFileWriter(allFixedFilename));
+      try (BufferedReader br2 = FilesPlume.newBufferedFileReader(outputFilename);
+          PrintWriter out2 = new PrintWriter(FilesPlume.newBufferedFileWriter(allFixedFilename))) {
 
-      while (br2.ready()) {
-        String nextInvo = grabNextInvocation(br2);
-        int non = peekNonce(nextInvo);
-        // if there is no nonce at this point it must be an OBJECT
-        // or a CLASS invocation
-        if (non == -1) {
-          out.println(spawnWithNewNonce(nextInvo, ++maxNonce));
-        } else {
-          out.println(nextInvo);
+        while (br2.ready()) {
+          String nextInvo = grabNextInvocation(br2);
+          int non = peekNonce(nextInvo);
+          // if there is no nonce at this point it must be an OBJECT
+          // or a CLASS invocation
+          if (non == -1) {
+            out2.println(spawnWithNewNonce(nextInvo, ++maxNonce));
+          } else {
+            out2.println(nextInvo);
+          }
         }
-      }
 
-      out.flush();
-      out.close();
+        out2.flush();
+      }
     } catch (IOException e) {
-      throw new Error(e);
+      throw new UncheckedIOException(e);
     }
   }
 

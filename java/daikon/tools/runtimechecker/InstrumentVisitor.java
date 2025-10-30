@@ -24,11 +24,11 @@ import jtb.visitor.TreeDumper;
 import jtb.visitor.TreeFormatter;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Visitor that instruments a Java source file (i.e. adds code at certain places) to check invariant
- * violations at runtime.
+ * violations at run time.
  */
 @SuppressWarnings("rawtypes")
 public class InstrumentVisitor extends DepthFirstVisitor {
@@ -503,7 +503,7 @@ public class InstrumentVisitor extends DepthFirstVisitor {
             Ast.create(
                 "ClassOrInterfaceBodyDeclaration",
                 new Class[] {Boolean.TYPE},
-                new Object[] {Boolean.FALSE}, // isInterface == false
+                new Object[] {false}, // isInterface == false
                 modifiers_declaration_stringbuffer.toString());
     Ast.addDeclaration(c, d);
     NodeSequence ns = (NodeSequence) d.f0.choice;
@@ -629,7 +629,7 @@ public class InstrumentVisitor extends DepthFirstVisitor {
         Ast.create(
             "ClassOrInterfaceBodyDeclaration",
             new Class[] {Boolean.TYPE},
-            new Object[] {Boolean.FALSE}, // isInterface == false
+            new Object[] {false}, // isInterface == false
             "public static boolean isDaikonInstrumented() { return true; }");
   }
 
@@ -642,7 +642,7 @@ public class InstrumentVisitor extends DepthFirstVisitor {
         Ast.create(
             "ClassOrInterfaceBodyDeclaration",
             new Class[] {Boolean.TYPE},
-            new Object[] {Boolean.FALSE}, // isInterface == false
+            new Object[] {false}, // isInterface == false
             code.toString());
   }
 
@@ -654,7 +654,7 @@ public class InstrumentVisitor extends DepthFirstVisitor {
         Ast.create(
             "ClassOrInterfaceBodyDeclaration",
             new Class[] {Boolean.TYPE},
-            new Object[] {Boolean.FALSE}, // isInterface == false
+            new Object[] {false}, // isInterface == false
             code.toString());
   }
 
@@ -677,7 +677,8 @@ public class InstrumentVisitor extends DepthFirstVisitor {
 
     code.add("} catch (Exception e) {");
     code.add(
-        " System.err.println(\"malformed invariant. This is probably a bug in the daikon.tools.runtimechecker tool; please submit a bug report.\");");
+        " System.err.println(\"malformed invariant. This is probably a bug in the"
+            + " daikon.tools.runtimechecker tool; please submit a bug report.\");");
     code.add(" e.printStackTrace();");
     code.add(" System.exit(1);");
     code.add("}");
@@ -688,7 +689,7 @@ public class InstrumentVisitor extends DepthFirstVisitor {
         Ast.create(
             "ClassOrInterfaceBodyDeclaration",
             new Class[] {Boolean.TYPE},
-            new Object[] {Boolean.FALSE}, // isInterface == false
+            new Object[] {false}, // isInterface == false
             code.toString());
   }
 
@@ -697,7 +698,8 @@ public class InstrumentVisitor extends DepthFirstVisitor {
 
     StringBuilder code = new StringBuilder();
     code.append(
-        "private void checkObjectInvariants_instrument(daikon.tools.runtimechecker.Violation.Time time) {");
+        "private void checkObjectInvariants_instrument"
+            + "(daikon.tools.runtimechecker.Violation.Time time) {");
     String objectPptname = classname + ":::OBJECT";
     PptTopLevel objectPpt = pptmap.get(objectPptname);
     if (objectPpt != null) {
@@ -709,7 +711,7 @@ public class InstrumentVisitor extends DepthFirstVisitor {
         Ast.create(
             "ClassOrInterfaceBodyDeclaration",
             new Class[] {Boolean.TYPE},
-            new Object[] {Boolean.FALSE}, // isInterface == false
+            new Object[] {false}, // isInterface == false
             code.toString());
   }
 
@@ -717,7 +719,8 @@ public class InstrumentVisitor extends DepthFirstVisitor {
       String classname) {
     StringBuilder code = new StringBuilder();
     code.append(
-        "private static void checkClassInvariantsInstrument(daikon.tools.runtimechecker.Violation.Time time) {");
+        "private static void checkClassInvariantsInstrument"
+            + "(daikon.tools.runtimechecker.Violation.Time time) {");
     String classPptname = classname + ":::CLASS";
     PptTopLevel classPpt = pptmap.get(classPptname);
     if (classPpt != null) {
@@ -729,7 +732,7 @@ public class InstrumentVisitor extends DepthFirstVisitor {
         Ast.create(
             "ClassOrInterfaceBodyDeclaration",
             new Class[] {Boolean.TYPE},
-            new Object[] {Boolean.FALSE}, // isInterface == false
+            new Object[] {false}, // isInterface == false
             code.toString());
   }
 
@@ -778,8 +781,11 @@ public class InstrumentVisitor extends DepthFirstVisitor {
   }
 
   /**
-   * Return a subset of the argument list, removing invariants that do not have a properly
+   * Returns a subset of the argument list, removing invariants that do not have a properly
    * implemented Java format.
+   *
+   * @param invariants a list of invariants
+   * @return a new list that is a subset of the argument list
    */
   private static List<Invariant> filterInvariants(List<Invariant> invariants) {
     List<Invariant> survivors = new ArrayList<>();
@@ -1070,7 +1076,7 @@ public class InstrumentVisitor extends DepthFirstVisitor {
 
     String javarep = inv.format_using(OutputFormat.JAVA);
 
-    if (daikonrep.indexOf("\"") != -1 || daikonrep.indexOf("\\") != -1) {
+    if (daikonrep.indexOf('\"') != -1 || daikonrep.indexOf('\\') != -1) {
       // Now comes some real ugliness: [[ ... ]] It's easier to do
       // this transformation on a character list than by pattern
       // matching against a String.
@@ -1093,7 +1099,7 @@ public class InstrumentVisitor extends DepthFirstVisitor {
     code.append("<INVINFO>");
     code.append("<" + inv.ppt.parent.ppt_name.getPoint() + ">");
     code.append("<DAIKON>" + daikonrep + "</DAIKON>");
-    code.append("<INV>" + UtilPlume.escapeJava(javarep) + "</INV>");
+    code.append("<INV>" + StringsPlume.escapeJava(javarep) + "</INV>");
     code.append("<DAIKONCLASS>" + inv.getClass().toString() + "</DAIKONCLASS>");
     code.append("<METHOD>" + inv.ppt.parent.ppt_name.getSignature() + "</METHOD>");
     code.append("</INVINFO>");
@@ -1107,13 +1113,13 @@ public class InstrumentVisitor extends DepthFirstVisitor {
 
   /** A pair consisting of an Invariant and its corresponding Property. */
   private static class InvProp {
-    public InvProp(Invariant inv, Property p) {
+    InvProp(Invariant inv, Property p) {
       this.invariant = inv;
       this.property = p;
     }
 
-    public Invariant invariant;
-    public Property property;
+    Invariant invariant;
+    Property property;
   }
 
   /**

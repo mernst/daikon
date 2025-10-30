@@ -1,34 +1,53 @@
 package daikon.test;
 
-import daikon.*;
+import static java.util.logging.Level.INFO;
+import static org.junit.Assert.assertEquals;
+
+import daikon.FileIO;
+import daikon.ProglangType;
 import java.util.Arrays;
 import java.util.Comparator;
-import junit.framework.*;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.plumelib.util.ArraysPlume;
 
+/** Test the ProglangType class. */
 @SuppressWarnings("nullness") // testing code
-public class ProglangTypeTest extends TestCase {
+public class ProglangTypeTest {
 
-  public static void main(String[] args) {
-    daikon.LogHelper.setupLogs(daikon.LogHelper.INFO);
-    junit.textui.TestRunner.run(new TestSuite(ProglangTypeTest.class));
-  }
+  /** Creates a ProglangTypeTest. */
+  public ProglangTypeTest() {}
 
-  public ProglangTypeTest(String name) {
-    super(name);
-  }
+  /** Comparator for arrays of longs. */
+  static Comparator<long[]> longarrcomparator = ArraysPlume.LongArrayComparatorLexical.it;
 
-  static Comparator<long[]> longarrcomparator = new ArraysPlume.LongArrayComparatorLexical();
-
+  /** Comparator for arrays of Strings. */
   static Comparator<String[]> comparrcomparator =
       new ArraysPlume.ComparableArrayComparatorLexical<String>();
 
-  // Runtime type of first argument is long[]
+  /** prepare for tests */
+  @BeforeClass
+  public static void setUpClass() {
+    daikon.LogHelper.setupLogs(INFO);
+    FileIO.new_decl_format = true;
+  }
+
+  /**
+   * Asserts that the two arrays are equal.
+   *
+   * @param a the first array; its run-time is long[]
+   * @param b the second array
+   */
   void longarrEquals(Object a, long[] b) {
     assertEquals(0, longarrcomparator.compare((long[]) a, b));
   }
 
-  // Runtime type of first (and second) argument is Comparable[]
+  /**
+   * Asserts that the two arrays are equal.
+   *
+   * @param a the first array; its run-time is Comparable[]
+   * @param b the second array; its run-time is Comparable[]
+   */
   void comparrEquals(Object a, Object[] b) {
     String[] a1 = (String[]) a;
     String[] b1 = (String[]) b;
@@ -52,6 +71,7 @@ public class ProglangTypeTest extends TestCase {
         result);
   }
 
+  @Test
   public void test_parse_value() {
     ProglangType pint = ProglangType.INT;
     test_parse_value_helper(pint, "1", Long.valueOf(1));

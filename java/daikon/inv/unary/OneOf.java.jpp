@@ -97,7 +97,7 @@ The correct way to build the system is to run 'make'.
   #define ONEOFSCALAR OneOfString
   #define ONEOFSCALAR_STRING "OneOfString"
   #define SINGLESCALAR SingleString
-  #define TOSTRING(x) ((x == null) ? "null" : "\"" + UtilPlume.escapeNonASCII(x) + "\"")
+  #define TOSTRING(x) ((x == null) ? "null" : "\"" + StringsPlume.escapeNonASCII(x) + "\"")
   #define TOSTRING_SIMPLIFY(x) simplify_format_string(x)
   #define NAME var().name()
 #elif defined(SEQUENCE)
@@ -138,7 +138,7 @@ The correct way to build the system is to run 'make'.
   #define ONEOFSCALAR_STRING "OneOfStringSequence"
   #define SINGLESCALAR SingleStringSequence
   #define TOSTRING(x) Arrays.toString(x)
-  #define TOSTRINGELEMENT(x) ((x == null) ? "null" : "\"" + UtilPlume.escapeNonASCII(x) + "\"")
+  #define TOSTRINGELEMENT(x) ((x == null) ? "null" : "\"" + StringsPlume.escapeNonASCII(x) + "\"")
   #define TOSTRING_SIMPLIFY(x) simplify_format_string(x)
   #define ELT_EQUALS(a,b) ((a) == (b))
   #define NAME var().name()
@@ -185,7 +185,7 @@ The correct way to build the system is to run 'make'.
   #define ONEOFSCALAR EltOneOfString
   #define ONEOFSCALAR_STRING "EltOneOfString"
   #define SINGLESCALAR SingleStringSequence
-  #define TOSTRING(x) ((x == null) ? "null" : "\"" + UtilPlume.escapeNonASCII(x) + "\"")
+  #define TOSTRING(x) ((x == null) ? "null" : "\"" + StringsPlume.escapeNonASCII(x) + "\"")
   #define TOSTRING_SIMPLIFY(x) simplify_format_string(x)
   #define NAME var().name() + " elements"
 #else
@@ -212,6 +212,9 @@ import java.io.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.*;
+#if defined(STRING) || defined(ELTSTRING)
+import java.util.Comparator;
+#endif
 #if defined(BASE_STRING)
   import java.util.regex.*;
 #endif
@@ -223,9 +226,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.Unused;
+import daikon.SignaturesUtil;
 import org.plumelib.reflection.Signatures;
 import org.plumelib.util.ArraysPlume;
 import org.plumelib.util.Intern;
+import org.plumelib.util.StringsPlume;
 import org.plumelib.util.UtilPlume;
 import typequals.prototype.qual.NonPrototype;
 import typequals.prototype.qual.Prototype;
@@ -260,9 +265,6 @@ import typequals.prototype.qual.Prototype;
 
 @SuppressWarnings("UnnecessaryParentheses")  // generated code, parentheses are sometimes needed
 public final class ONEOFSCALAR extends SINGLESCALAR implements OneOf {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20030822L;
 
   /** Debugging logger. */
@@ -345,13 +347,11 @@ public final class ONEOFSCALAR extends SINGLESCALAR implements OneOf {
     return proto;
   }
 
-  /** returns whether or not this invariant is enabled */
   @Override
   public boolean enabled() {
     return dkconfig_enabled;
   }
 
-  /** instantiate an invariant on the specified slice */
   @Override
   public ONEOFSCALAR instantiate_dyn(@Prototype ONEOFSCALAR this, PptSlice slice) {
     return new ONEOFSCALAR(slice);
@@ -360,20 +360,20 @@ public final class ONEOFSCALAR extends SINGLESCALAR implements OneOf {
 #if defined(SCALAR)
   @Pure
   public boolean is_boolean(@GuardSatisfied ONEOFSCALAR this) {
-     return (var().file_rep_type == ProglangType.BOOLEAN);
+     return var().file_rep_type == ProglangType.BOOLEAN;
   }
   @Pure
   public boolean is_hashcode(@GuardSatisfied ONEOFSCALAR this) {
-    return (var().file_rep_type == ProglangType.HASHCODE);
+    return var().file_rep_type == ProglangType.HASHCODE;
   }
 #else
   @Pure
   public boolean is_boolean(@GuardSatisfied ONEOFSCALAR this) {
-    return (var().file_rep_type.elementType() == ProglangType.BOOLEAN);
+    return var().file_rep_type.elementType() == ProglangType.BOOLEAN;
   }
   @Pure
   public boolean is_hashcode(@GuardSatisfied ONEOFSCALAR this) {
-    return (var().file_rep_type.elementType() == ProglangType.HASHCODE);
+    return var().file_rep_type.elementType() == ProglangType.HASHCODE;
   }
 #endif
 
@@ -417,13 +417,13 @@ public final class ONEOFSCALAR extends SINGLESCALAR implements OneOf {
   }
 
 #if defined(STRING) || defined(ELTSTRING)
-  static Comparator<String> comparator = new UtilPlume.NullableStringComparator();
+  static Comparator<@Nullable String> comparator = Comparator.nullsFirst(Comparator.naturalOrder());
   #define COMPARATOR_ARG , comparator
 #elif defined(SEQUENCE)
-  static Comparator<long[]> comparator = new ArraysPlume.LongArrayComparatorLexical();
+  static Comparator<long[]> comparator = ArraysPlume.LongArrayComparatorLexical.it;
 #define COMPARATOR_ARG , comparator
 #elif defined(FLOATSEQUENCE)
-  static Comparator<double[]> comparator = new ArraysPlume.DoubleArrayComparatorLexical();
+  static Comparator<double[]> comparator = ArraysPlume.DoubleArrayComparatorLexical.it;
 #define COMPARATOR_ARG , comparator
 #elif defined(STRINGSEQUENCE)
   static Comparator<String[]> comparator = new ArraysPlume.ComparableArrayComparatorLexical<String>(); // need to figure out proper generic type -MDE
@@ -470,13 +470,8 @@ public final class ONEOFSCALAR extends SINGLESCALAR implements OneOf {
     // Not so efficient an implementation, but simple;
     // and how often will we need to print this anyway?
     sort_rep();
-    StringBuilder sb = new StringBuilder();
-    sb.append("{ ");
+    StringJoiner sj = new StringJoiner(", ", "{ ", " }");
     for (int i = 0; i < num_elts; i++) {
-      if (i != 0) {
-        sb.append(", ");
-      }
-
 #if defined(SCALAR) || defined(ELT) || defined(SEQUENCE) || defined(STRING) || defined(ELTSTRING)
       if (PrintInvariants.dkconfig_static_const_infer) {
         boolean curVarMatch = false;
@@ -485,17 +480,17 @@ public final class ONEOFSCALAR extends SINGLESCALAR implements OneOf {
           if (vi.isStaticConstant() && VarComparability.comparable(vi, var())) {
             Object constantVal = vi.constantValue();
             if (constantVal.equals(elts[i])) {
-              sb.append(vi.name());
+              sj.add(vi.name());
               curVarMatch = true;
             }
           }
         }
 
         if (curVarMatch == false) {
-          sb.append(TOSTRING(elts[i]));
+          sj.add(TOSTRING(elts[i]));
         }
       } else {
-        sb.append(TOSTRING(elts[i]));
+        sj.add(TOSTRING(elts[i]));
       }
 #elif defined(FLOAT) || defined(ELTFLOAT)
       if (PrintInvariants.dkconfig_static_const_infer) {
@@ -507,7 +502,7 @@ public final class ONEOFSCALAR extends SINGLESCALAR implements OneOf {
             if (vi.rep_type == ProglangType.DOUBLE) {
               Double constantVal = (Double)vi.constantValue();
               if (Global.fuzzy.eq(constantVal, elts[i]) || (Double.isNaN(constantVal) && Double.isNaN(elts[i]))) {
-                sb.append(vi.name());
+                sj.add(vi.name());
                 curVarMatch = true;
               }
             }
@@ -515,7 +510,7 @@ public final class ONEOFSCALAR extends SINGLESCALAR implements OneOf {
             else {
               Object constantVal = vi.constantValue();
               if (constantVal.equals(elts[i])) {
-                sb.append(vi.name());
+                sj.add(vi.name());
                 curVarMatch = true;
               }
             }
@@ -523,17 +518,16 @@ public final class ONEOFSCALAR extends SINGLESCALAR implements OneOf {
         }
 
         if (curVarMatch == false) {
-          sb.append(TOSTRING(elts[i]));
+          sj.add(TOSTRING(elts[i]));
         }
       } else {
-        sb.append(TOSTRING(elts[i]));
+        sj.add(TOSTRING(elts[i]));
       }
 #else
-      sb.append(TOSTRING(elts[i]));
+      sj.add(TOSTRING(elts[i]));
 #endif
     }
-    sb.append(" }");
-    return sb.toString();
+    return sj.toString();
   }
 
   @Override
@@ -671,7 +665,9 @@ public final class ONEOFSCALAR extends SINGLESCALAR implements OneOf {
             return varname + " == null";
           } else {
             if (str.startsWith("[")) {
-              str = Signatures.fieldDescriptorToBinaryName(str);
+              @SuppressWarnings("signature")
+              String tempStr = Signatures.fieldDescriptorToBinaryName(str);
+              str = tempStr;
             }
             if (PrintInvariants.dkconfig_static_const_infer) {
               PptTopLevel pptt = ppt.parent;
@@ -733,7 +729,9 @@ public final class ONEOFSCALAR extends SINGLESCALAR implements OneOf {
     }
     String type_str;
     if (str.startsWith("[")) {
-      type_str = Signatures.fieldDescriptorToBinaryName(str);
+      @SuppressWarnings("signature")
+      String temp_type_str = Signatures.fieldDescriptorToBinaryName(str);
+      type_str = temp_type_str;
     } else {
       type_str = str;
       if (type_str.startsWith("\"") && type_str.endsWith("\"")) {
@@ -1083,7 +1081,9 @@ public String format_csharp_contract(@GuardSatisfied ONEOFSCALAR this) {
     String oneOfArray = "new String[] { ";
   #endif
     for (int i = 0 ; i < num_elts ; i++) {
-      if (i != 0) { oneOfArray += ", "; }
+      if (i != 0) {
+        oneOfArray += ", ";
+      }
       oneOfArray = oneOfArray + TOSTRING(elts[i]);
     }
     oneOfArray += " }";
@@ -1139,7 +1139,9 @@ public String format_csharp_contract(@GuardSatisfied ONEOFSCALAR this) {
     {
       result = "";
       for (int i = 0; i < num_elts; i++) {
-        if (i != 0) { result += " || "; }
+        if (i != 0) {
+          result += " || ";
+        }
 
         #if defined(FLOAT)
         result += "daikon.Quant.fuzzy.eq(" + varname + ", " + TOSTRING(elts[i]) + ")";
@@ -1154,7 +1156,9 @@ public String format_csharp_contract(@GuardSatisfied ONEOFSCALAR this) {
     result = "";
     boolean is_type = is_type();
     for (int i = 0; i < num_elts; i++) {
-      if (i != 0) { result += " || "; }
+      if (i != 0) {
+        result += " || ";
+      }
       String str = elts[i];
       if (!is_type) {
         result += varname + JAVA_EQUALS_STRING(TOSTRING(str));
@@ -1164,7 +1168,9 @@ public String format_csharp_contract(@GuardSatisfied ONEOFSCALAR this) {
           result += varname + " == null";
         } else {
           if (str.startsWith("[")) {
-            str = Signatures.fieldDescriptorToBinaryName(str);
+            @SuppressWarnings("signature")
+            String tempStr = Signatures.fieldDescriptorToBinaryName(str);
+            str = tempStr;
           }
           // ".class" (which is a suffix for a type name) and not
           // getClassSuffix (which is a suffix for an expression).
@@ -1186,7 +1192,9 @@ public String format_csharp_contract(@GuardSatisfied ONEOFSCALAR this) {
 
     result = "";
     for (int i = 0; i < num_elts; i++) {
-      if (i != 0) { result += " || "; }
+      if (i != 0) {
+        result += " || ";
+      }
 
     #if defined(STRINGSEQUENCE)
       String seq = "new String[] { ";
@@ -1231,7 +1239,9 @@ public String format_csharp_contract(@GuardSatisfied ONEOFSCALAR this) {
         if (value == null) {
           // do nothing
         } else if (value.startsWith("[")) {
-          value = Signatures.fieldDescriptorToBinaryName(value);
+          @SuppressWarnings("signature")
+          String tempValue = Signatures.fieldDescriptorToBinaryName(value);
+          value = tempValue;
         } else if (value.startsWith("\"") && value.endsWith("\"")) {
           value = value.substring(1, value.length()-1);
         }
@@ -1685,7 +1695,6 @@ public String format_csharp_contract(@GuardSatisfied ONEOFSCALAR this) {
     return null;
   }
 #elif defined(IS_SEQUENCE)
-  /** {@inheritDoc} */
   @Override
   public @Nullable DiscardInfo isObviousDynamically(VarInfo[] vis) {
     DiscardInfo super_result = super.isObviousDynamically(vis);
@@ -1785,7 +1794,6 @@ public String format_csharp_contract(@GuardSatisfied ONEOFSCALAR this) {
     return null;
   }
 #elif defined(STRING) || defined(ELTSTRING)
-  /** {@inheritDoc} */
   @Override
   public @Nullable DiscardInfo isObviousDynamically(VarInfo[] vis) {
     DiscardInfo super_result = super.isObviousDynamically(vis);
@@ -2012,7 +2020,7 @@ public String format_csharp_contract(@GuardSatisfied ONEOFSCALAR this) {
   @Pure
   @Override
   public boolean isExact() {
-    return (num_elts == 1);
+    return num_elts == 1;
   }
 
   // Look up a previously instantiated invariant.
@@ -2054,7 +2062,7 @@ public String format_csharp_contract(@GuardSatisfied ONEOFSCALAR this) {
    * @param parent_ppt slice that will contain the new invariant
    */
   @Override
-  public @Nullable Invariant merge(List<Invariant> invs, PptSlice parent_ppt) {
+  public @Nullable ONEOFSCALAR merge(List<Invariant> invs, PptSlice parent_ppt) {
 
     // Create the initial parent invariant from the first child
     ONEOFSCALAR  first = (ONEOFSCALAR) invs.get(0);
@@ -2119,9 +2127,10 @@ public String format_csharp_contract(@GuardSatisfied ONEOFSCALAR this) {
       return false;
     }
 
-    if (!(state instanceof INT[])) {
-      System.out.println("state is of class '" + state.getClass().getName()
-                          + "'");
+    if (!(state instanceof INTARRAY)) {
+      // Daikon is about to crash.  Produce some debugging output.
+      System.out.printf("state = %s [%s]%n", state, state.getClass());
+      System.out.printf("problem with %s%n", this);
     }
     INTARRAY e = (INTARRAY) state;
     for (int i = 0; i < num_elts; i++) {
@@ -2158,7 +2167,7 @@ public String format_csharp_contract(@GuardSatisfied ONEOFSCALAR this) {
       return val;
     }
     dummy_hashcode_vals.put(hashcode, next_dummy_hashcode);
-    return (next_dummy_hashcode++);
+    return next_dummy_hashcode++;
   }
 #endif
 }

@@ -2,6 +2,9 @@
 
 package daikon;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+
 import java.io.PrintWriter;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,6 +13,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.plumelib.util.FuzzyFloat;
 
@@ -22,12 +26,14 @@ public final class Global {
     daikon.config.Configuration.getInstance();
   }
 
-  // Don't permit this class to be instantiated
-  private Global() {}
+  /** Do not instantiate. */
+  private Global() {
+    throw new Error("Do not instantiate.");
+  }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Constants
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Constants
+  //
 
   public static final String lineSep = System.lineSeparator();
 
@@ -45,16 +51,16 @@ public final class Global {
 
   public static final Random random = new Random();
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Variables
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Variables
+  //
 
   // Perhaps I shouldn't have anything in this category (i.e., no global
   // variables)?
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Statistics-gathering
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Statistics-gathering
+  //
 
   // All these different variables is a little out of control, true.
   // Maybe turn it into a structure or an array of integers (which is
@@ -62,20 +68,20 @@ public final class Global {
 
   public static final boolean output_statistics = true;
 
-  /// Invariant inference or variable derivation
+  // Invariant inference or variable derivation
   // These I will compute from a final postpass over each Ppt.
   public static int non_canonical_variables = 0;
   public static int can_be_missing_variables = 0;
   public static int canonical_variables = 0;
 
-  /// Variable derivation
+  // Variable derivation
   public static int nonsensical_suppressed_derived_variables = 0;
   public static int tautological_suppressed_derived_variables = 0;
   // Can be set by a postpass.  (Might be instructive to compute on the
   // fly, too, to see what I missed.)
   public static int derived_variables = 0;
 
-  /// Invariant inference
+  // Invariant inference
   public static int implied_noninstantiated_invariants = 0;
   public static int implied_false_noninstantiated_invariants = 0;
   public static int subexact_noninstantiated_invariants = 0;
@@ -161,17 +167,17 @@ public final class Global {
     System.out.println("    reported_invariants = " + reported_invariants);
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Debugging
-  /// Anything that's commented in the false section is now implemented
-  /// via the logger.
+  // ///////////////////////////////////////////////////////////////////////////
+  // Debugging
+  // Anything that's commented in the false section is now implemented
+  // via the logger.
 
   public static boolean debugAll = false;
 
   static {
     // Set up debug traces.
     // Better to do this here than in each separate program.
-    LogHelper.setupLogs(debugAll ? LogHelper.FINE : LogHelper.INFO);
+    LogHelper.setupLogs(debugAll ? FINE : INFO);
   }
 
   /** Debug tracer for debugging statistics output. */
@@ -198,10 +204,11 @@ public final class Global {
   /** Debug tracer for debugging invariant printing. */
   public static Logger debugPrint = Logger.getLogger("daikon.print");
 
+  /** If true, print logging information about printing of dtrace files. */
   public static final boolean debugPrintDtrace = false;
 
-  // used only if debugPrintDtrace is true.  Users need not set this.
-  public static @MonotonicNonNull PrintWriter dtraceWriter = null;
+  /** Used only if debugPrintDtrace is true. Users need not set this. */
+  public static @Owning @MonotonicNonNull PrintWriter dtraceWriter = null;
 
   // Global Fuzzy Float comparator to use
   public static FuzzyFloat fuzzy = new FuzzyFloat();

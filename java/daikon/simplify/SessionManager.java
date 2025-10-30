@@ -1,25 +1,31 @@
 package daikon.simplify;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
+import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 /** A SessionManager is a component which handles the threading interaction with the Session. */
-public class SessionManager {
+public class SessionManager implements Closeable {
   /** The command to be performed (point of communication with worker thread). */
   private @Nullable Cmd pending;
 
   /** Our worker thread; hold onto it so that we can stop it. */
-  private Worker worker;
+  private @Owning Worker worker;
 
   // The error message returned by the worked thread, or null
   private @Nullable String error = null;
@@ -32,8 +38,14 @@ public class SessionManager {
   //    // Use "java -DDEBUG_SIMPLIFY=1 daikon.Daikon ..." or
   //    //     "make USER_JAVA_FLAGS=-DDEBUG_SIMPLIFY=1 ..."
 
-  private static final boolean debug_mgr = debug.isLoggable(Level.FINE);
+  /** debugging flag */
+  private static final boolean debug_mgr = debug.isLoggable(FINE);
 
+  /**
+   * log debug message
+   *
+   * @param s message to log
+   */
   public static void debugln(String s) {
     if (!debug_mgr) {
       return;
@@ -63,7 +75,7 @@ public class SessionManager {
   public void request(Cmd command) throws TimeoutException {
     assert worker != null : "Cannot use closed SessionManager";
     assert pending == null : "Cannot queue requests";
-    if (debug.isLoggable(Level.FINE)) {
+    if (debug.isLoggable(FINE)) {
       System.err.println("Running command " + command);
       System.err.println(" called from");
       Throwable t = new Throwable();
@@ -84,7 +96,7 @@ public class SessionManager {
       }
       // command finished iff the command was nulled out
       if (pending != null) {
-        session_done();
+        close();
         throw new TimeoutException();
       }
       // check for error
@@ -96,8 +108,10 @@ public class SessionManager {
 
   /** Shutdown this session. No further commands may be executed. */
   @SuppressWarnings("nullness") // nulling worker for fast failure (& for GC)
-  public void session_done() {
-    worker.session_done();
+  @EnsuresCalledMethods(value = "worker", methods = "close")
+  @Override
+  public void close(@GuardSatisfied SessionManager this) {
+    worker.close();
     worker = null;
   }
 
@@ -154,9 +168,6 @@ public class SessionManager {
     try {
       prover_instantiate_count++;
       prover = new SessionManager();
-      if (daikon.Daikon.no_text_output) {
-        System.out.print("...");
-      }
     } catch (SimplifyError e) {
       System.err.println("Could not utilize Simplify: " + e);
       return null;
@@ -171,12 +182,14 @@ public class SessionManager {
   }
 
   /** Helper thread which interacts with a Session, according to the enclosing manager. */
-  private class Worker extends Thread {
+  @MustCall("close") private class Worker extends Thread implements Closeable {
+    /** The session mananger. */
     private final SessionManager mgr = SessionManager.this; // just sugar
 
     /** The associated session, or null if the thread should shutdown. */
-    private @Nullable @GuardedBy("<self>") Session session = new Session();
+    private @Owning @Nullable @GuardedBy("<self>") Session session = new Session();
 
+    /** True if this has been closed. */
     private boolean finished = false;
 
     @Override
@@ -211,59 +224,79 @@ public class SessionManager {
       }
     }
 
+    @SuppressWarnings({
+      "nullness:contracts.precondition.override",
+      "builder:required.method.not.called" // operation performed on alias
+    })
+    @EnsuresCalledMethods(value = "session", methods = "close")
     @RequiresNonNull("session")
-    private void session_done() {
+    @Override
+    public void close(@GuardSatisfied Worker this) {
       finished = true;
       final @GuardedBy("<self>") Session tmp = session;
-      session = null;
       synchronized (tmp) {
-        tmp.kill();
+        tmp.close();
       }
+      session = null;
     }
   }
 
-  public static void main(String[] args) throws Exception {
-    daikon.LogHelper.setupLogs(daikon.LogHelper.INFO);
-    SessionManager m = new SessionManager();
-    CmdCheck cc;
+  /**
+   * Entry point for testing.
+   *
+   * @param args command-line arguments
+   * @throws TimeoutException if SessionManager times out
+   */
+  public static void main(String[] args) throws TimeoutException {
+    daikon.LogHelper.setupLogs(INFO);
+    SessionManager m = null; // dummy initialization to satisfy compiler's definite assignment check
+    try {
+      m = new SessionManager();
+      CmdCheck cc;
 
-    cc = new CmdCheck("(EQ 1 1)");
-    m.request(cc);
-    assert cc.valid;
+      cc = new CmdCheck("(EQ 1 1)");
+      m.request(cc);
+      assert cc.valid;
 
-    cc = new CmdCheck("(EQ 1 2)");
-    m.request(cc);
-    assert !cc.valid;
+      cc = new CmdCheck("(EQ 1 2)");
+      m.request(cc);
+      assert !cc.valid;
 
-    cc = new CmdCheck("(EQ x z)");
-    m.request(cc);
-    assert !cc.valid;
+      cc = new CmdCheck("(EQ x z)");
+      m.request(cc);
+      assert !cc.valid;
 
-    CmdAssume a = new CmdAssume("(AND (EQ x y) (EQ y z))");
-    m.request(a);
+      CmdAssume a = new CmdAssume("(AND (EQ x y) (EQ y z))");
+      m.request(a);
 
-    m.request(cc);
-    assert cc.valid;
+      m.request(cc);
+      assert cc.valid;
 
-    m.request(CmdUndoAssume.single);
+      m.request(CmdUndoAssume.single);
 
-    m.request(cc);
-    assert !cc.valid;
+      m.request(cc);
+      assert !cc.valid;
 
-    StringBuilder buf = new StringBuilder();
+      StringBuilder buf = new StringBuilder();
 
-    for (int i = 0; i < 20000; i++) {
-      buf.append("(EQ (select a " + i + ") " + (int) (200000 * Math.random()) + ")");
-    }
-    m.request(new CmdAssume(buf.toString()));
+      for (int i = 0; i < 20000; i++) {
+        buf.append("(EQ (select a " + i + ") " + (int) (200000 * Math.random()) + ")");
+      }
+      m.request(new CmdAssume(buf.toString()));
 
-    for (int i = 0; i < 10; i++) {
-      try {
-        m.request(new CmdCheck("(NOT (EXISTS (x) (EQ (select a x) (+ x " + i + "))))"));
-      } catch (TimeoutException e) {
-        System.out.println("Timeout, retrying");
-        m = new SessionManager();
-        m.request(new CmdAssume(buf.toString()));
+      for (int i = 0; i < 10; i++) {
+        try {
+          m.request(new CmdCheck("(NOT (EXISTS (x) (EQ (select a x) (+ x " + i + "))))"));
+        } catch (TimeoutException e) {
+          System.out.println("Timeout, retrying");
+          m.close();
+          m = new SessionManager();
+          m.request(new CmdAssume(buf.toString()));
+        }
+      }
+    } finally {
+      if (m != null) {
+        m.close();
       }
     }
   }

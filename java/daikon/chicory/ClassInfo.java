@@ -1,6 +1,5 @@
 package daikon.chicory;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +8,7 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
@@ -19,20 +19,23 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 public class ClassInfo {
 
-  /** binary name of the class */
+  /** binary name of the class. */
   public @BinaryName String class_name;
 
+  /** True if the class has a class initializer. */
+  public boolean hasClinit;
+
   // set by initViaReflection()
-  /** reflection object for this class */
+  /** reflection object for this class. */
   public @MonotonicNonNull Class<?> clazz;
 
   // Does not include class initializers, so each element's .member field
   // is non-null.
-  /** list of methods in the class */
+  /** list of methods in the class. */
   public List<MethodInfo> method_infos = new ArrayList<>();
 
-  /** this class's classloader */
-  private ClassLoader loader;
+  /** This class's classloader. */
+  private @Nullable ClassLoader loader;
 
   // traversalClass and traversalObject are set by init_traversal().
   /** DaikonVariables for the object program point (instance and static variables). */
@@ -41,7 +44,7 @@ public class ClassInfo {
   /** DaikonVariables for the class program point (static variables only). */
   public @MonotonicNonNull RootInfo traversalClass;
 
-  /** Whether or not any methods in this class were instrumented. */
+  /** True if any methods in this class were instrumented. */
   public boolean shouldInclude = false;
 
   /** Mapping from field name to string representation of its value* */
@@ -50,9 +53,10 @@ public class ClassInfo {
   public Map<String, String> staticMap = new HashMap<>();
 
   /** Create ClassInfo with specified name. */
-  public ClassInfo(@BinaryName String class_name, ClassLoader theLoader) {
+  public ClassInfo(@BinaryName String class_name, @Nullable ClassLoader theLoader) {
     this.class_name = class_name;
     loader = theLoader;
+    hasClinit = false;
   }
 
   /** Set the list of methods. */
@@ -93,7 +97,8 @@ public class ClassInfo {
           boolean foundMatch = false;
           for (MethodInfo mi : method_infos) {
             assert mi.member != null
-                : "@AssumeAssertion(nullness): member of method_infos have .member field"; // dependent type
+                : "@AssumeAssertion(nullness): member of method_infos have"
+                    + " .member field"; // dependent type
             // System.out.printf("compare %s to pure %s%n",
             //                  mi.member.toString() , pureMeth);
             if (mi.member.toString().trim().equals(pureMeth)) {
@@ -124,24 +129,6 @@ public class ClassInfo {
     return methodName.matches(".*" + Pattern.quote(class_name) + "\\..*\\(.*");
   }
 
-  /** dumps all of the class info to the specified stream */
-  public void dump(PrintStream ps) {
-    ps.printf("ClassInfo for %s [%s]%n", class_name, clazz);
-    for (MethodInfo mi : method_infos) {
-      ps.printf("  method %s [%s]%n", mi.method_name, mi.member);
-      ps.printf("    arguments: ");
-      for (int ii = 0; ii < mi.arg_names.length; ii++) {
-        if (ii > 0) ps.printf(", ");
-        ps.printf("%s [%s] %s", mi.arg_type_strings[ii], mi.arg_types[ii], mi.arg_names[ii]);
-      }
-      ps.printf("%n    exits: ");
-      for (Integer exit_loc : mi.exit_locations) {
-        ps.printf("%s ", exit_loc);
-      }
-      ps.println();
-    }
-  }
-
   /**
    * Initializes the daikon variables for the object and class ppts.
    *
@@ -161,7 +148,6 @@ public class ClassInfo {
   @SideEffectFree
   @Override
   public String toString(@GuardSatisfied ClassInfo this) {
-    return (String.format(
-        "ClassInfo %s [%s] %s", System.identityHashCode(this), class_name, clazz));
+    return String.format("ClassInfo %s [%s] %s", System.identityHashCode(this), class_name, clazz);
   }
 }

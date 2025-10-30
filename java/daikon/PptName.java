@@ -24,9 +24,6 @@ import org.plumelib.reflection.ReflectionPlume;
 // No "@Deprecated" annotation yet, but we should add it once support for
 // file format 1 is removed from Daikon.
 public class PptName implements Serializable {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20020122L;
 
   // These are never changed but cannot be declared "final", because they
@@ -37,12 +34,14 @@ public class PptName implements Serializable {
   // fn_name and point together comprise fullname
   /** The part of fullname before ":::" */
   private @Interned String fn_name;
+
   /** Post-separator (separator is ":::") */
   private @Interned String point;
 
   // cls and method together comprise fn_name
   /** Fully-qualified class name. */
   private @Nullable @Interned String cls;
+
   /** Method signature, including types. */
   private final @Nullable @Interned String method;
 
@@ -59,7 +58,9 @@ public class PptName implements Serializable {
 
   // ==================== CONSTRUCTORS ====================
 
-  /** @param name non-null ppt name as given in the decls file */
+  /**
+   * @param name non-null ppt name as given in the decls file
+   */
   public PptName(String name) {
     // If the name is well-formed, like "mvspc.setupGUI()V:::EXIT75",
     // then this constructor will extract the class and method names.
@@ -94,7 +95,13 @@ public class PptName implements Serializable {
     method = fn_name.substring(dot + 1).intern();
   }
 
-  /** className or methodName (or both) must be non-null. */
+  /**
+   * Creates a new PptName. {@code className} or {@code methodName} (or both) must be non-null.
+   *
+   * @param className fully-qualified class name
+   * @param methodName method signature, including types
+   * @param pointName post-separator (separator is ":::")
+   */
   public PptName(@Nullable String className, @Nullable String methodName, String pointName) {
     if ((className == null) && (methodName == null)) {
       throw new UnsupportedOperationException("One of class or method must be non-null");
@@ -250,7 +257,7 @@ public class PptName implements Serializable {
    * Returns a numerical subscript of the given point, or Integer.MIN_VALUE if none exists. e.g.
    * "84".
    *
-   * @return a numerical subscript of the given point, or Integer.MIN_VALUE if none exists.
+   * @return a numerical subscript of the given point, or Integer.MIN_VALUE if none exists
    * @see #exitLine()
    */
   public int getPointSubscript() {
@@ -264,7 +271,7 @@ public class PptName implements Serializable {
             result = Integer.parseInt(point.substring(i));
             break;
           } catch (NumberFormatException e) {
-            continue;
+            // continue;
           }
         }
       }
@@ -344,7 +351,7 @@ public class PptName implements Serializable {
   @EnsuresNonNullIf(result = true, expression = "point")
   @Pure
   public boolean isNumberedExitPoint() {
-    return ((point != null) && (isExitPoint() && !isCombinedExitPoint()));
+    return (point != null) && (isExitPoint() && !isCombinedExitPoint());
   }
 
   /**
@@ -385,7 +392,7 @@ public class PptName implements Serializable {
    * newer declaration format does not have {@code <init>} but their method name includes the class
    * name. For compatibility both mechanisms are checked.
    *
-   * @return true iff this program point is a constructor entry or exit.
+   * @return true iff this program point is a constructor entry or exit
    */
   @Pure
   public boolean isConstructor() {
@@ -405,7 +412,9 @@ public class PptName implements Serializable {
       assert method != null; // for nullness checker
       int arg_start = method.indexOf('(');
       String method_name = method;
-      if (arg_start != -1) method_name = method.substring(0, arg_start);
+      if (arg_start != -1) {
+        method_name = method.substring(0, arg_start);
+      }
 
       // System.out.println ("fullname = " + fullname);
       // System.out.println ("fn_name = " + fn_name);
@@ -422,7 +431,11 @@ public class PptName implements Serializable {
     return false;
   }
 
-  /** Debugging output. */
+  /**
+   * Debugging output.
+   *
+   * @return a string representation of this
+   */
   public String repr() {
     return "PptName: fullname="
         + fullname
@@ -486,7 +499,7 @@ public class PptName implements Serializable {
 
   // ==================== OBJECT METHODS ====================
 
-  /* @return interned string such that this.equals(new PptName(this.toString())) */
+  // Returns an interned string such that `this.equals(new PptName(this.toString()))`.
   @SideEffectFree
   @Override
   public String toString(@GuardSatisfied PptName this) {
@@ -517,14 +530,22 @@ public class PptName implements Serializable {
   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
     try {
       in.defaultReadObject();
-      if (fullname != null) fullname = fullname.intern();
-      if (fn_name != null) fn_name = fn_name.intern();
-      if (cls != null) cls = cls.intern();
+      if (fullname != null) {
+        fullname = fullname.intern();
+      }
+      if (fn_name != null) {
+        fn_name = fn_name.intern();
+      }
+      if (cls != null) {
+        cls = cls.intern();
+      }
       if (method != null) {
         // method = method.intern();
         ReflectionPlume.setFinalField(this, "method", method.intern());
       }
-      if (point != null) point = point.intern();
+      if (point != null) {
+        point = point.intern();
+      }
     } catch (NoSuchFieldException e) {
       throw new Error(e);
     }

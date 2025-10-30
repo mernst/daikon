@@ -18,8 +18,12 @@ public class MultiDiff {
   }
 
   public static void main(String[] args)
-      throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException,
-          NoSuchMethodException, InvocationTargetException {
+      throws IOException,
+          ClassNotFoundException,
+          InstantiationException,
+          IllegalAccessException,
+          NoSuchMethodException,
+          InvocationTargetException {
     try {
       mainHelper(args);
     } catch (daikon.Daikon.DaikonTerminationException e) {
@@ -32,20 +36,26 @@ public class MultiDiff {
    * appropriate to be called progrmmatically.
    */
   public static void mainHelper(final String[] args)
-      throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException,
-          InvocationTargetException, NoSuchMethodException {
-    PrintStream out = new PrintStream(new FileOutputStream("rand_sel.spinfo"));
-    /*
-      try {
-        if (args.length != 0) {
-            FileOutputStream file = new FileOutputStream (args[0]);
-            out = new PrintStream (file);
-        }
-    }
+      throws IOException,
+          ClassNotFoundException,
+          InstantiationException,
+          IllegalAccessException,
+          InvocationTargetException,
+          NoSuchMethodException {
+    try (FileOutputStream fos = new FileOutputStream("rand_sel.spinfo")) {
+      PrintStream out = new PrintStream(fos);
+      /*
+        try {
+          if (args.length != 0) {
+              FileOutputStream file = new FileOutputStream (args[0]);
+              out = new PrintStream (file);
+          }
+      }
 
-    catch (IOException e) {e.printStackTrace(); }
-    */
-    MultiDiffVisitor.setForSpinfoOut(out);
-    Diff.main(args);
+      catch (IOException e) {e.printStackTrace(); }
+      */
+      MultiDiffVisitor.setForSpinfoOut(out);
+      Diff.main(args);
+    }
   }
 }

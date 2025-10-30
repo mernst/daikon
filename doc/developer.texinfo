@@ -42,20 +42,13 @@
 @center @titlefont{Developer Manual}
 
 @sp 2
-@center Daikon version 5.8.3
+@center Daikon version 5.8.23
 
 @sp 1
 
-@ifset final
-@c FINAL version
-@c Print out the Daikon version 5.8.3 release date
-@center May 4, 2020
-@end ifset
-
-@ifclear final
-@c DRAFT version
-@center DRAFT Version @today{}
-@end ifclear
+@c The following comment is needed to help perl edit the release date.
+@c Print out the Daikon version 5.8.23 release date
+@center June 4, 2025
 
 @sp 5
 @c reads daikon-logo.{eps,pdf} (not .txt, .png, or .jpg, because info
@@ -65,7 +58,7 @@
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1998-2014
+Copyright @copyright{} 1998-2025
 @end titlepage
 
 @c set document heading/footing style
@@ -76,11 +69,6 @@ Copyright @copyright{} 1998-2014
 @c @oddheading Section @thissectionnum @| @thissectionname @| @thispage
 @c @oddheading Chapter @thischapternum: @thischaptername @| @| @thispage
 @c @evenheading @thispage @| @| Section @thissectionnum: @thissectionname
-
-@ifclear final
-@c DRAFT version
-@everyfooting DRAFT @| @| @today{}
-@end ifclear
 
 @html
 @image{images/daikon-logo}
@@ -97,7 +85,7 @@ Copyright @copyright{} 1998-2014
 @top Daikon Invariant Detector Developer Manual
 
 This is the developer manual for the Daikon invariant detector.
-It describes Daikon version 5.8.3, released May 4, 2020.
+It describes Daikon version 5.8.23, released June 4, 2025.
 
 @menu
 * Introduction::
@@ -153,7 +141,7 @@ This chapter describes how to customize or modify Daikon.
 
 @menu
 * Compiling Daikon::
-* Version control repository::
+* Source code (version control repository)::
 * Using Eclipse::
 * New invariants::
 * New derived variables::
@@ -188,16 +176,13 @@ For more information about compiling Daikon, see the comments in the Makefiles.
 
 Before compiling Daikon, you need to install some dependencies (that is,
 software used to build Daikon).  For
-@uref{https://github.com/codespecs/daikon/blob/master/scripts/Dockerfile-centos-jdk11-plus,
-,CentOS},
-@uref{https://github.com/codespecs/daikon/blob/master/scripts/Dockerfile-fedora-jdk11-plus,
-, Fedora}, and
-@uref{https://github.com/codespecs/daikon/blob/master/scripts/Dockerfile-ubuntu-jdk11-plus,
+@uref{https://github.com/codespecs/daikon/blob/master/scripts/Dockerfile-rockylinux-jdk17-plus,
+,Rocky Linux} and
+@uref{https://github.com/codespecs/daikon/blob/master/scripts/Dockerfile-ubuntu-jdk17-plus,
 , Ubuntu}, you can
 find the commands to install these dependencies in file
 @file{$DAIKONDIR/scripts/Dockerfile-@emph{OSNAME}-jdk@emph{N}-plus}.
-For other operating systems, use similar commands.  (Feel free to share
-them with the Daikon developers so that we can include them for other users.)
+For other operating systems, use similar commands.
 
 Note that Kvasir, the Daikon front end for the C language
 (@pxref{Kvasir,,,daikon,Daikon User Manual}), does not work on Mac OS.
@@ -211,9 +196,10 @@ distribution into multiple @file{.java} files, which are then compiled.
 If you have a C compiler, you almost certainly have @command{cpp}.
 
 
-@node    Version control repository
-@section Version control repository
+@node    Source code (version control repository)
+@section Source code (version control repository)
 
+@cindex source code
 @cindex repository
 @cindex Git repository
 @cindex version control repository
@@ -402,22 +388,22 @@ Manual}), among others.  More often, users apply a programming language
 front end (also called an @dfn{instrumenter}) to a program, causing
 executions of the program to write files in Daikon's format.  (For
 information about existing front ends, see
-@ref{Front ends (instrumentation),,,daikon,Daikon User Manual}.)
+@ref{Front ends and instrumentation,,,daikon,Daikon User Manual}.)
 When a general front end is not
 available, it is possible to manually instrument a specific program so
 that it writes files in Daikon's format.  The resulting instrumented
 program is very similar to what an instrumenter would have created, so
 this section is relevant to both approaches.
 
-Conceptually, instrumentation is very simple.  For each program point
-(say, a line of code or the entry or exit from a procedure) at which you
-wish to detect invariants, the front end must arrange to create a
+Conceptually, a front end instrumenter has two tasks.  Suppose you want to
+infer invariants at a program point (say, a line of code or the entry or
+exit from a procedure).  The front end must create a
 declaration (@pxref{Declarations}) that
-lists the variables in scope at that program point, and the front end
-must arrange that execution creates a data trace record (@pxref{Data
-trace records}) for each execution of that
-program point.  Conventionally, the way to create a data trace record is
-to insert a @code{printf} (or similar) statement that outputs the current
+lists the variables in scope at that program point.  Every time that
+program point is executed, the program must output a data trace record
+(@pxref{Data trace records}).  A front end can make the program output a
+data trace record by inserting a @code{printf} (or similar) statement that
+outputs the current
 values of the variables of interest.
 
 
@@ -483,38 +469,38 @@ them all to 1, which is a safe default.
 @example
 class Example @{
   static @{
-    daikon.Runtime.setDtraceMaybe("daikon-output/StackAr.dtrace");
+    daikon.chicory.Runtime.setDtraceMaybe("daikon-output/StackAr.dtrace");
   @}
 
   // Return either the square of x or the square of (x+1).
   int squar(int x, boolean b) @{
-    synchronized (daikon.Runtime.dtrace) @{
-      daikon.Runtime.dtrace.println();
-      daikon.Runtime.dtrace.println("Example.squar:::ENTER");
-      daikon.Runtime.dtrace.println("x");
-      daikon.Runtime.dtrace.println(x);
-      daikon.Runtime.dtrace.println(1);  // modified bit
-      daikon.Runtime.dtrace.println("b");
-      daikon.Runtime.dtrace.println(b ? 1 : 0);
-      daikon.Runtime.dtrace.println(1);  // modified bit
+    synchronized (daikon.chicory.Runtime.dtrace) @{
+      daikon.chicory.Runtime.dtrace.println();
+      daikon.chicory.Runtime.dtrace.println("Example.squar:::ENTER");
+      daikon.chicory.Runtime.dtrace.println("x");
+      daikon.chicory.Runtime.dtrace.println(x);
+      daikon.chicory.Runtime.dtrace.println(1);  // modified bit
+      daikon.chicory.Runtime.dtrace.println("b");
+      daikon.chicory.Runtime.dtrace.println(b ? 1 : 0);
+      daikon.chicory.Runtime.dtrace.println(1);  // modified bit
     @}
 
     if (b)
       x++;
 
     int daikon_return_value = x*x;
-    synchronized (daikon.Runtime.dtrace) @{
-      daikon.Runtime.dtrace.println();
-      daikon.Runtime.dtrace.println("Example.squar:::EXIT");
-      daikon.Runtime.dtrace.println("x");
-      daikon.Runtime.dtrace.println(x);
-      daikon.Runtime.dtrace.println(1);  // modified bit
-      daikon.Runtime.dtrace.println("b");
-      daikon.Runtime.dtrace.println(b ? 1 : 0);
-      daikon.Runtime.dtrace.println(1);  // modified bit
-      daikon.Runtime.dtrace.println("return");
-      daikon.Runtime.dtrace.println(daikon_return_value);
-      daikon.Runtime.dtrace.println(1);  // modified bit
+    synchronized (daikon.chicory.Runtime.dtrace) @{
+      daikon.chicory.Runtime.dtrace.println();
+      daikon.chicory.Runtime.dtrace.println("Example.squar:::EXIT");
+      daikon.chicory.Runtime.dtrace.println("x");
+      daikon.chicory.Runtime.dtrace.println(x);
+      daikon.chicory.Runtime.dtrace.println(1);  // modified bit
+      daikon.chicory.Runtime.dtrace.println("b");
+      daikon.chicory.Runtime.dtrace.println(b ? 1 : 0);
+      daikon.chicory.Runtime.dtrace.println(1);  // modified bit
+      daikon.chicory.Runtime.dtrace.println("return");
+      daikon.chicory.Runtime.dtrace.println(daikon_return_value);
+      daikon.chicory.Runtime.dtrace.println(1);  // modified bit
     @}
 
     return daikon_return_value;
@@ -630,7 +616,7 @@ memory errors in C, and they need to perform exactly the same memory
 tracking as a Daikon front end must perform.  Therefore, a Daikon front
 end can use the same well-known techniques, and possibly can even be
 built on top of such a tool.  For instance, one C front end, named Kvasir, is
-built on top of the Valgrind tool (@uref{http://valgrind.org/}),
+built on top of the Valgrind tool (@uref{https://valgrind.org/}),
 greatly reducing the implementation effort.  Valgrind only works under
 Linux, but a C front end for another platform could build on a similar
 tool; many other such tools exist.
@@ -1045,7 +1031,7 @@ be enabled or disabled at the Daikon command line, as described in
 @cindex non-checking of invariants
 @cindex non-printing of invariants
 
-Daikon reduces runtime and memory by avoiding performing work for
+Daikon reduces run time and memory by avoiding performing work for
 redundant invariants that provide no useful information to the user.
 There are three basic types of optimization that can be performed for
 uninteresting invariants:  non-instantiation, suppression, and
@@ -1081,7 +1067,7 @@ See @ref{New suppressors} for more information.
 @dfn{Non-printing} is a post-pass that throws out any invariants that
 are implied by other true invariants.  It is similar to suppression, but
 has none of the limitations of suppression.  But since it is only run as
-a post pass, it cannot optimize runtime and memory use as suppression can.
+a post pass, it cannot optimize run time and memory use as suppression can.
 Non-printing should be used only in cases where suppression cannot.
 Non-printing is implemented by @code{ObviousFilter}, which calls the
 @code{isObviousDynamically} method on invariants.  The
@@ -1226,8 +1212,8 @@ behavior and possibly update the goals.
 
 The Daikon distribution contains unit tests, but not regression tests
 (which would make the distribution much larger).  The regression tests
-appear in Daikon's version control repository (@pxref{Version control
-repository}), within the @file{tests} subdirectory.
+appear in Daikon's version control repository (@pxref{Source code (version control
+repository)}), within the @file{tests} subdirectory.
 
 @menu
 * Unit testing::
@@ -1711,7 +1697,7 @@ Window >> Preferences >> Java >> Compiler >> Style >> Non-static access >> >> Ig
 @node          Import existing project
 @subsubsection Import an existing project
 
-First, do @command{cp $DAIKONDIR/java/.classpath-pag $DAIKONDIR/java/.classpath}
+@c First, do @command{cp $DAIKONDIR/java/.classpath-pag $DAIKONDIR/java/.classpath}
 
 Second, import Daikon into Eclipse.  To import:  start Eclipse, then choose
 menu item @samp{File->Import->ExistingProjectIntoWorkspace}, then enter (the full
@@ -1839,7 +1825,7 @@ put a semi-colon at the end of your expression!).
 @node       Using Git with Eclipse
 @subsection Using Git with Eclipse
 
-This section has yet to be completed, although you can just do all the editing,
+This section has yet to be written, although you can just do all the editing,
 compiling, and
 running from the Eclipse IDE while doing version control commands from the shell
 or whatever current system you use.
@@ -1873,7 +1859,7 @@ be the same), and you may replace @code{@@chapter} by @code{@@section},
 Follow the Texinfo conventions for marking up text.  In particular:
 @itemize
 @item
-Don't use regular double quotes (&quot;) in running text.  Instead, use
+Don't use regular double quotes (") in running text.  Instead, use
 two single back quotes and two regular quotes, ``like this''.  Emacs will
 do this substitution for you if you are using its Texinfo mode.
 
@@ -1995,7 +1981,12 @@ A clone of
 
 @item
 Environment variable @env{JAVA_HOME} must be set to the appropriate JDK installation.
-[TODO: Is this really necessary?]
+For now, this should be a current version of JDK 8. If the default JDK on your
+system is not JDK 8, you will also need to add @file{$JAVA_HOME/bin} to your @env{PATH}.
+See the example in the next section.
+@c This is necessary as daikon/java/Makefile will set JAVA_HOME to the machine's default
+@c JDK if it is not currently set. Currently, the machine default is often JDK 11 and we
+@c want to build with JDK 8.
 @c Example:  export JAVA_HOME=/usr/lib/jvm/java-1.8.0
 
 @item
@@ -2011,16 +2002,19 @@ Optionally, set environment variable @env{BIBDIR} to a clone of
 @section Distribution setup instructions
 
 @need 1000
-The recommended setup for the distribution process:
-@itemize
-@item get a fresh copy of your Bash shell (e.g., log out and log back in)
-@item @code{unset CHECKERFRAMEWORK}
+Get a fresh copy of your Bash shell (e.g., log out and log back in), then
+run the following bash commands.  Note that your system may no longer have
+JDK 8 installed at @file{/usr/lib/jvm-1.8.0}. If you do not have a local
+copy, one can be found at @file{/homes/gws/markro/jdk1.8.0_401}.
+In any case, adjust environment variables below as necessary.
 @c DAIKONDIR is necessary only for the instructions in this file.
 @c Maybe use a different environment variable?
-@item set @env{DAIKONDIR} as you would normally:  @code{export DAIKONDIR=...}
-@item set @env{JAVA_HOME} to point to JDK 8; for example, @code{export JAVA_HOME=/usr/lib/jvm/java-1.8.0}
-@c @item @command{source $DAIKONDIR/scripts/daikon.bashrc}
-@end itemize
+@example
+export DAIKONDIR=$inv/daikon
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0
+export PATH=$JAVA_HOME/bin:$PATH
+unset CHECKERFRAMEWORK
+@end example
 
 
 @need 1000
@@ -2051,7 +2045,7 @@ nothing to commit, working directory clean
 The Fjalar tool set (primarily, Kvasir) is built upon, or uses pieces
 from, two open source projects.
 The home page for the Valgrind instrumentation framework is
-@uref{http://www.valgrind.org}.
+@uref{https://valgrind.org}.
 The home page for the GNU Binutils
 (a collection of binary tools, of which Kvasir uses only readelf) is
 @uref{http://www.gnu.org/software/binutils/}.
@@ -2062,7 +2056,7 @@ File
 these tools that Kvasir uses.
 You can determine whether a newer version of these tools is available
 by comparing the @file{REVISION} file to
-@url{http://valgrind.org/downloads/current.html} and
+@url{https://valgrind.org/downloads/current.html} and
 @url{http://ftp.gnu.org/gnu/binutils/?C=M;O=D}.
 If so, you should update the Fjalar source tree as soon as practical.
 For details, see the separate document ``Merging
@@ -2081,13 +2075,14 @@ complete overnight.
 
 @need 1000
 @item
-Edit the @file{doc/CHANGES} file to indicate what has changed
+Edit the @file{doc/CHANGELOG.md} file to indicate what has changed
 in this version.  A good way to determine what has changed is to diff
 the Texinfo source files in the @file{doc/} directory against the previous
 versions:
 
 @smallexample
-cd $DAIKONDIR/doc
+if [ -z "$DAIKONDIR" ] && [ -d "front-end/" ] ; then DAIKONDIR=$(pwd) ; fi
+cd $DAIKONDIR/doc && \
 diff -b -u -s --from-file /cse/web/research/plse/daikon/download/doc *.texinfo
 @end smallexample
 
@@ -2096,9 +2091,10 @@ Another good source of information are the repository logs since the
 last release:
 
 @smallexample
-cd $DAIKONDIR
+if [ -z "$DAIKONDIR" ] && [ -d "front-end/" ] ; then DAIKONDIR=$(pwd) ; fi
 DAIKONVERSION=`wget -q http://plse.cs.washington.edu/daikon/download/doc/VERSION \
-    -O - | xargs echo -n`
+    -O - | xargs echo -n` && \
+cd $DAIKONDIR && \
 git log v$DAIKONVERSION..HEAD
 @end smallexample
 
@@ -2114,9 +2110,10 @@ git log v$DAIKONVERSION..HEAD
 In addition, you should run the same command in your Fjalar clone:
 
 @smallexample
-cd $DAIKONDIR/fjalar
+if [ -z "$DAIKONDIR" ] && [ -d "front-end/" ] ; then DAIKONDIR=$(pwd) ; fi
 DAIKONVERSION=`wget -q http://plse.cs.washington.edu/daikon/download/doc/VERSION \
-    -O - | xargs echo -n`
+    -O - | xargs echo -n` && \
+@{ cd $DAIKONDIR/fjalar || cd $DAIKONDIR/../fjalar ; @} && \
 git log v$DAIKONVERSION..HEAD
 @end smallexample
 
@@ -2214,9 +2211,7 @@ overnight.
 Do a very clean rebuild of everything.
 
 @example
-cd $DAIKONDIR
-make very-clean clean-kvasir
-make rebuild-everything
+cd $DAIKONDIR && make very-clean clean-kvasir && make rebuild-everything
 @end example
 
 @c Time on buffalo as of 12/16/2015
@@ -2230,7 +2225,7 @@ make rebuild-everything
 @item
 Once you have successfully reached this point, you are ready to make a release
 candidate and begin testing it.
-The following command will verify that @file{doc/CHANGES} is up-to-date and then list
+The following command will verify that @file{doc/CHANGELOG.md} is up-to-date and then list
 any uncommitted files.
 
 @example
@@ -2288,8 +2283,7 @@ Now, update the appropriate files with the date and version number
 of the release and commit these changes back to the repository:
 
 @example
-make update-run-google-java-format
-make update-and-commit-version
+make update-run-google-java-format && make update-and-commit-version
 @end example
 
 [Time: moments]
@@ -2316,16 +2310,16 @@ build everything to be distributed and copy it to the temporary staging area
 @example
 # First, start a separate, new Bash command shell.  Don't kill your old one.
 
-mkdir -p /tmp/$USER
-cd /tmp/$USER
-rm -rf stage-daikon
-git clone --depth 3 https://github.com/codespecs/daikon stage-daikon
+rm -rf /tmp/$USER/stage-daikon
+mkdir -p /tmp/$USER/stage-daikon
 cd /tmp/$USER/stage-daikon
+git clone --depth=1 https://github.com/codespecs/daikon
+cd daikon
 export DAIKONDIR=`pwd`
 export JAVA_HOME=/usr/lib/jvm/java-1.8.0
+export PATH=$JAVA_HOME/bin:$PATH
 unset CHECKERFRAMEWORK
-make compile
-make staging
+make compile && make staging
 @end example
 
 The final output of this command
@@ -2349,6 +2343,12 @@ make check-for-broken-doc-links
 
 Review @file{checklink.log} and make corrections as appropriate.
 
+Sometimes a website forbids robots, or artificially slows them.
+This can lead to link-checking failures.
+After you manually check a URL for correctness, you can add it to
+@url{https://github.com/plume-lib/html-tools/blob/master/html-valid-urls}
+so that no warning is issued in the future.
+
 In some cases a "403 Forbidden" error is transient, due to the website
 being down.  You can check such links by hand.
 
@@ -2363,9 +2363,12 @@ the incorrect link.
 Here is a workflow that may be used to deal with broken links:
 @itemize
 @item
-Use the @samp{Wayback Machine}, @url{http://archive.org/web/}, to see what the old content was.
+Use the @samp{Wayback Machine}, @url{http://archive.org/web/}, and enter the URL.
 @item
-Do a web search on the content to see if the page has relocated elsewhere.
+You will get a timeline.  Select a year and day, then you have to click on the time of day,
+and then you get a version of the page at that time.
+@item
+Copy the URL from the address bar of your browser.
 @item
 If the web search is not successful, email the maintainer of the old content.
 @end itemize
@@ -2417,7 +2420,7 @@ but on two long lines without any @code{\} line continuation characters.
 
 @need 1000
 @item
-Test the staged distribution on a 64-bit Fedora machine.
+Test the staged distribution on a 64-bit Rocky Linux machine.
 Since the machine you are using to build the release is probably
 such a machine, you may simply run the command below.  Success is indicated
 by invariant output being written to the screen.
@@ -2426,8 +2429,8 @@ by invariant output being written to the screen.
 make test-staged-dist
 @end example
 
-@c Time on buffalo as of 04/1r36/201r65
-[Time: 1 min]
+@c Time on buffalo as of 07/14/2022
+[Time: 5 min]
 
 
 @need 1000
@@ -2437,14 +2440,11 @@ Test the distribution on Ubuntu and Mac OS machines.
 To use Azure Pipelines,
 navigate to
 @url{https://dev.azure.com/mernstdaikon/daikon/_build?definitionId=3&_a=summary}
-and click ``Run pipeline''.
-
-It may take a while for the new jobs to complete,
-if the CI service is busy running other jobs for the codespecs organization.
+and click ``Run pipeline'' then ``Run''.
 
 If there is a problem, fix it and start over.
 
-[Time: 15 min]
+[Time: 15 min, or longer if the CI service is busy running other jobs for the codespecs organization.]
 
 
 @need 1000
@@ -2546,18 +2546,16 @@ the actual number of the release.
 <to:>  daikon-announce@@googlegroups.com
 <subject:>  Daikon version <version number> has been released
 
-Daikon version <version number> is now available.
-
-Please see the entry from the doc/CHANGES file that appears below for more details.
-
-You can download the latest version of Daikon at:
+Daikon version <version number> is available at:
 http://plse.cs.washington.edu/daikon/download/
+
+Please see the entry from the doc/CHANGELOG.md file that appears below for more details.
 
   <your name>
 
-<a copy of the current entry from the doc/CHANGES file, with
+<a copy of the current entry from the doc/CHANGELOG.md file, with
 paragraphs refilled (remove unnecessary line breaks that trim lines
-to 80 columns for the CHANGES file but aren't desirable in email)>
+to 80 columns for the CHANGELOG.md file but aren't desirable in email)>
 @end example
 
 Note that if you use Microsoft Outlook 2010 or 2013 as your mailer,
@@ -2733,7 +2731,7 @@ trunk (respectively, the branch).
 This chapter contains information about the file format of Daikon's
 input files.  It is of most information to those who wish to write a
 front end, also known as an instrumenter
-(@pxref{Front ends (instrumentation),,,daikon,Daikon User Manual}).
+(@pxref{Front ends and instrumentation,,,daikon,Daikon User Manual}).
 A new front end enables Daikon to detect
 invariants in another programming language.
 
@@ -2758,7 +2756,7 @@ declarations after the first one have no effect).
 
 A data trace record (also known as a @dfn{sample})
 represents one execution of a program point.  The
-record specifies the program point and gives the runtime values of each
+record specifies the program point and gives the run-time values of each
 variable.  The list of variables in the data trace record must be
 identical to that in the corresponding declaration.  For a given program point,
 the declaration must precede the first data trace record for the program
@@ -3001,7 +2999,7 @@ types are related to the program point hierarchy (see @ref{Dataflow hierarchy}).
 
 A @code{point} program point is one that is @emph{not} involved in a
 program point hierarchy.   This is normally used when the input is not
-from a programming language or when is no dataflow hierarchy.
+from a programming language or when there is no dataflow hierarchy.
 
 @item @code{flags <flags>}
 
@@ -3035,7 +3033,7 @@ the class/object program point for A.  By default @code{user} relations
 are not used because they can be recursive.
 
 The @var{relation-id} is a unique integer that identifies this parent
-relation.  They are used when defining the the specific parent
+relation.  They are used when defining the specific parent
 relations for variables.
 
 Multiple parent fields can be specified.
@@ -3361,8 +3359,6 @@ Optionally specifies the minimum possible length for this variable
 (for instance, due to language-specific restrictions on the type). This
 enables Daikon to suppress invariants that would be ``obvious'' in that
 case, such as @code{size(var) >= v}.
-Note that this item should be added to the @code{@emph{arrayname}[..]} entry
-not the @code{@emph{arrayname}[..]} entry.
 
 @item @code{max-length <v>}
 
@@ -3370,8 +3366,6 @@ Optionally specifies the maximum possible length for this variable
 (for instance, due to language-specific restrictions on the type). This
 enables Daikon to suppress invariants that would be ``obvious'' in that
 case, such as @code{size(var) <= v}.
-Note that this item should be added to the @code{@emph{arrayname}[..]} entry
-not the @code{@emph{arrayname}[..]} entry.
 
 @item @code{valid-values [<v1> <v2> ... <vN>]}
 
@@ -4315,6 +4309,12 @@ detection,,,daikon,Daikon User Manual}.
 @c  LocalWords:  UnaryInvariant BinaryInvariant TernaryInvariant EM64T www
 @c  LocalWords:  runtime var1 PptSlice1 over1 config EXIT99 var2 var3 val1
 @c  LocalWords:  EXITNN val2 arg1 arg2 EXIT35 plse fjalar myfjalar ln nsf
-@c  LocalWords:  chmod og rwx BIBDIR CHECKERFRAMEWORK pipefail wget
-@c  LocalWords:  readelf DAIKONVERSION xargs codespecs kvasir repo
-@c  LocalWords:  untracked
+@c  LocalWords:  chmod og rwx BIBDIR CHECKERFRAMEWORK pipefail wget OSNAME
+@c  LocalWords:  readelf DAIKONVERSION xargs codespecs kvasir repo rf pwd
+@c  LocalWords:  untracked Makefile's mernstdaikon mkdir checklink Wayback
+@c  LocalWords:  URI md cvsaa cvsai cvsa merging'' substrings splitter fi
+@c  LocalWords:  perl classname1 classname2 exitnn pptcond r1 Galar func
+@c  LocalWords:  ClearView bb nomod readonly variable'' f1 vN varname2 MD5
+@c  LocalWords:  getName EXIT103 varname1 type1 information1 value1 type2
+@c  LocalWords:  comparable1 information2 value2 comparable2 invariants''
+@c  LocalWords:  pathnames EXIT55 EXIT67

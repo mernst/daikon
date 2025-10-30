@@ -1,8 +1,10 @@
 package daikon.test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.logging.Level.INFO;
+import static org.junit.Assert.fail;
 
-import daikon.*;
+import daikon.Daikon;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -14,9 +16,10 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import junit.framework.*;
+import junit.framework.TestSuite;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
+import org.junit.Test;
 import org.plumelib.options.Option;
 import org.plumelib.options.Options;
 
@@ -27,7 +30,7 @@ import org.plumelib.options.Options;
  * are written to the InvariantFormatTest.diffs file. More detail on the expected formats of these
  * files is in Daikon developer manual.
  */
-public class InvariantFormatTester extends TestCase {
+public class InvariantFormatTester {
 
   /**
    * Maximum file size that can currently be examined by the program. It is arbitrary, but a length
@@ -60,7 +63,7 @@ public class InvariantFormatTester extends TestCase {
    *     selected tests assuming the output that the tests provide is the correct output.
    */
   public static void main(String[] args) {
-    daikon.LogHelper.setupLogs(daikon.LogHelper.INFO);
+    daikon.LogHelper.setupLogs(INFO);
 
     String usage = "java daikon.test.InvariantFormatTester";
     Options options = new Options(usage, InvariantFormatTester.class);
@@ -72,15 +75,6 @@ public class InvariantFormatTester extends TestCase {
     }
 
     junit.textui.TestRunner.run(new TestSuite(InvariantFormatTester.class));
-  }
-
-  /**
-   * This constructor allows the test to be created from the MasterTester class.
-   *
-   * @param name the desired name of the test case
-   */
-  public InvariantFormatTester(String name) {
-    super(name);
   }
 
   /**
@@ -102,6 +96,7 @@ public class InvariantFormatTester extends TestCase {
   }
 
   /** This function is the actual function performed when this class is run through JUnit. */
+  @Test
   public void testFormats() {
 
     // Don't care about comparability info because we are only

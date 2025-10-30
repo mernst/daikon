@@ -17,7 +17,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.BinaryName;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.FilesPlume;
 
 /**
  * This class contains static methods {@link #parse_spinfofile(File)} which creates Splitterss from
@@ -67,7 +67,7 @@ public class SplitterFactory {
    */
   private static int guid = 0;
 
-  /// Methods
+  // Methods
 
   /**
    * Parses the Splitter info.
@@ -188,8 +188,7 @@ public class SplitterFactory {
       @SuppressWarnings("signature") // safe, has been quoted
       @BinaryName String fileName_bn = fileName;
       splitObj.setClassName(fileName_bn);
-      try {
-        BufferedWriter writer = UtilPlume.bufferedFileWriter(fileAddress + ".java");
+      try (BufferedWriter writer = FilesPlume.newBufferedFileWriter(fileAddress + ".java")) {
         if (dkconfig_delete_splitters_on_exit) {
           new File(fileAddress + ".java").deleteOnExit();
           new File(fileAddress + ".class").deleteOnExit();
@@ -232,7 +231,6 @@ public class SplitterFactory {
    * @return the error output from compiling the files
    * @param fileNames paths to the files to be compiled as Strings
    * @throws IOException if there is a problem reading a file
-   * @see plume.FileCompiler#compileFiles
    */
   private static String compileFiles(List<String> fileNames) throws IOException {
     // We delay setting fileCompiler until now because we want to permit
@@ -245,7 +243,7 @@ public class SplitterFactory {
     return fileCompiler.compileFiles(fileNames);
   }
 
-  /** Determine whether a Ppt's name matches the given pattern. */
+  /** Returns true if a Ppt's name matches the given pattern. */
   private static boolean matchPpt(String ppt_name, PptTopLevel ppt) {
     if (ppt.name.equals(ppt_name)) {
       return true;
@@ -291,7 +289,7 @@ public class SplitterFactory {
    * "myPackage.myClass.someMethod" and guid = 12, then the following would be returned:
    * "myPackage_myClass_someMethod_12".
    *
-   * @param ppt_name the name of the Ppt that the splitter Java file wil be used with
+   * @param ppt_name the name of the Ppt that the splitter Java file will be used with
    */
   private static String getFileName(String ppt_name) {
     String splitterName = clean(ppt_name);
@@ -318,13 +316,14 @@ public class SplitterFactory {
   }
 
   /**
-   * Creates the temporary directory in which splitter files will be stored.
+   * Creates the temporary directory in which splitter files will be stored. The return value
+   * includes a trailing file separtor (e.g., "/"), unless the return value is "".
    *
    * @return the name of the temporary directory. This is where the Splitters are created.
    */
   private static String createTempDir() {
     try {
-      File tmpDir = UtilPlume.createTempDir("daikon", "split");
+      File tmpDir = FilesPlume.createTempDir("daikon", "split");
       if (dkconfig_delete_splitters_on_exit) {
         tmpDir.deleteOnExit();
       }

@@ -27,9 +27,6 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * whether order matters in a collection. This is immutable and interned.
  */
 public final class VarInfoAux implements Cloneable, Serializable {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20020614L;
 
   /** General debug tracer. */
@@ -45,13 +42,13 @@ public final class VarInfoAux implements Cloneable, Serializable {
   // See https://tinyurl.com/cfissue/877
 
   /**
-   * Whether the elements in this collection are all the meaningful elements, or whether there is a
+   * True if the elements in this collection are all the meaningful elements, or whether there is a
    * null at the end of this collection that ends the collection.
    */
   public static final String NULL_TERMINATING = "nullTerminating";
 
   /**
-   * Whether this variable is a parameter to a method, or derived from a parameter to a method. By
+   * True if this variable is a parameter to a method, or derived from a parameter to a method. By
    * default, if p is a parameter, then some EXIT invariants related to p aren't printed. However,
    * this does not affect the computation of invariants.
    *
@@ -60,16 +57,16 @@ public final class VarInfoAux implements Cloneable, Serializable {
    */
   public static final String IS_PARAM = "isParam";
 
-  /** Whether repeated elements can exist in this collection. */
+  /** True if repeated elements can exist in this collection. */
   public static final String HAS_DUPLICATES = "hasDuplicates";
 
-  /** Whether order matters. */
+  /** True if order matters. */
   public static final String HAS_ORDER = "hasOrder";
 
-  /** Whether taking the size of this matters. */
+  /** True if taking the size of this matters. */
   public static final String HAS_SIZE = "hasSize";
 
-  /** Whether null has a special meaning for this variable or its members. */
+  /** True if null has a special meaning for this variable or its members. */
   public static final String HAS_NULL = "hasNull";
 
   /** Indicates the minimum size of the vector, if there's any. */
@@ -94,14 +91,14 @@ public final class VarInfoAux implements Cloneable, Serializable {
   public static final String VALID_VALUES = "validvalues";
 
   /**
-   * Whether this variable is an inline structure. By default, a variable is a reference to a
+   * True if this variable is an inline structure. By default, a variable is a reference to a
    * structure (class). If it is an inlined structure (or array), it doesn't make sense to look for
    * invariants over its hashcode. Front ends include references to inlined structures as variables
    * because some tools that follow daikon need other information about the variable.
    */
   public static final String IS_STRUCT = "isStruct";
 
-  /** Whether this variable is known to be non-null, such as "this" in a Java program. */
+  /** True if this variable is known to be non-null, such as "this" in a Java program. */
   public static final String IS_NON_NULL = "isNonNull";
 
   /**
@@ -110,11 +107,49 @@ public final class VarInfoAux implements Cloneable, Serializable {
    */
   public static final String PACKAGE_NAME = "declaringClassPackageName";
 
+  /** See {@link #PACKAGE_NAME}. */
   public static final String NO_PACKAGE_NAME = "no_package_name_string";
 
+  /** Interned default options. */
+  private static @Interned VarInfoAux theDefault = new VarInfoAux().intern();
+
+  /** Contains the actual hashMap for this. */
+  @SuppressWarnings("serial")
+  private Map<@Interned String, @Interned String> map;
+
+  /** True if this is interned. */
+  private boolean isInterned = false;
+
+  /** Make the default map here. */
+  private VarInfoAux() {
+    HashMap<@Interned String, @Interned String> defaultMap = new HashMap<>();
+    // The following are default values.
+    defaultMap.put(HAS_DUPLICATES, TRUE);
+    defaultMap.put(HAS_ORDER, TRUE);
+    defaultMap.put(HAS_SIZE, TRUE);
+    defaultMap.put(HAS_NULL, TRUE);
+    defaultMap.put(NULL_TERMINATING, TRUE);
+    defaultMap.put(IS_PARAM, FALSE);
+    defaultMap.put(PACKAGE_NAME, NO_PACKAGE_NAME);
+    defaultMap.put(IS_STRUCT, FALSE);
+    defaultMap.put(IS_NON_NULL, FALSE);
+    this.map = defaultMap;
+    this.isInterned = false;
+  }
+
   /**
-   * Return an interned VarInfoAux that represents a given string. Elements are separated by commas,
-   * in the form:
+   * Create a new VarInfoAux with default options.
+   *
+   * @param map the map from property names to values
+   */
+  private VarInfoAux(Map<@Interned String, @Interned String> map) {
+    this.map = map;
+    this.isInterned = false;
+  }
+
+  /**
+   * Returns an interned VarInfoAux that represents a given string. Elements are separated by
+   * commas, in the form:
    *
    * <p>x = a, "a key" = "a value"
    *
@@ -132,6 +167,7 @@ public final class VarInfoAux implements Cloneable, Serializable {
     tok.ordinaryChar(']');
     tok.ordinaryChars(',', ',');
     tok.ordinaryChars('=', '=');
+    @SuppressWarnings("serial")
     Map<@Interned String, @Interned String> map = theDefault.map;
 
     String key = "";
@@ -162,25 +198,41 @@ public final class VarInfoAux implements Cloneable, Serializable {
       debug.fine("Token info: " + tokInfo + " " + token);
 
       if (token == "[") { // interned
-        if (!seenEqual) throw new IOException("Aux option did not contain an '='");
-        if (insideVector) throw new IOException("Vectors cannot be nested in an aux option");
-        if (value.length() > 0) throw new IOException("Cannot mix scalar and vector values");
+        if (!seenEqual) {
+          throw new IOException("Aux option did not contain an '='");
+        }
+        if (insideVector) {
+          throw new IOException("Vectors cannot be nested in an aux option");
+        }
+        if (value.length() > 0) {
+          throw new IOException("Cannot mix scalar and vector values");
+        }
 
         insideVector = true;
         value = "";
       } else if (token == "]") { // interned
-        if (!insideVector) throw new IOException("']' without preceding '['");
+        if (!insideVector) {
+          throw new IOException("']' without preceding '['");
+        }
         insideVector = false;
       } else if (token == ",") { // interned
-        if (!seenEqual) throw new IOException("Aux option did not contain an '='");
-        if (insideVector) throw new IOException("',' cannot be used inside a vector");
+        if (!seenEqual) {
+          throw new IOException("Aux option did not contain an '='");
+        }
+        if (insideVector) {
+          throw new IOException("',' cannot be used inside a vector");
+        }
         map.put(key.intern(), value.intern());
         key = "";
         value = "";
         seenEqual = false;
       } else if (token == "=") { // interned
-        if (seenEqual) throw new IOException("Aux option contained more than one '='");
-        if (insideVector) throw new IOException("'=' cannot be used inside a vector");
+        if (seenEqual) {
+          throw new IOException("Aux option contained more than one '='");
+        }
+        if (insideVector) {
+          throw new IOException("'=' cannot be used inside a vector");
+        }
         seenEqual = true;
       } else {
         if (!seenEqual) {
@@ -200,7 +252,8 @@ public final class VarInfoAux implements Cloneable, Serializable {
     // Interning
     VarInfoAux result = new VarInfoAux(map).intern();
     assert interningMap != null
-        : "@AssumeAssertion(nullness):  application invariant:  postcondition of intern(), which was just called";
+        : "@AssumeAssertion(nullness):  application invariant:  postcondition of intern(), which"
+            + " was just called";
     if (debug.isLoggable(Level.FINE)) {
       debug.fine("New parse " + result);
       debug.fine("Intern table size: " + interningMap.size());
@@ -208,10 +261,11 @@ public final class VarInfoAux implements Cloneable, Serializable {
     return result;
   }
 
-  /** Interned default options. */
-  private static @Interned VarInfoAux theDefault = new VarInfoAux().intern();
-
-  /** Create a new VarInfoAux with default options. */
+  /**
+   * Create a new VarInfoAux with default options.
+   *
+   * @return a new VarInfoAux with default options
+   */
   public static @Interned VarInfoAux getDefault() {
     return theDefault;
   }
@@ -231,35 +285,6 @@ public final class VarInfoAux implements Cloneable, Serializable {
     }
     map = newMap;
     return this.intern();
-  }
-
-  /** Contains the actual hashMap for this. */
-  private Map<@Interned String, @Interned String> map;
-
-  /** Whether this is interned. */
-  private boolean isInterned = false;
-
-  /** Make the default map here. */
-  private VarInfoAux() {
-    HashMap<@Interned String, @Interned String> defaultMap = new HashMap<>();
-    // The following are default values.
-    defaultMap.put(HAS_DUPLICATES, TRUE);
-    defaultMap.put(HAS_ORDER, TRUE);
-    defaultMap.put(HAS_SIZE, TRUE);
-    defaultMap.put(HAS_NULL, TRUE);
-    defaultMap.put(NULL_TERMINATING, TRUE);
-    defaultMap.put(IS_PARAM, FALSE);
-    defaultMap.put(PACKAGE_NAME, NO_PACKAGE_NAME);
-    defaultMap.put(IS_STRUCT, FALSE);
-    defaultMap.put(IS_NON_NULL, FALSE);
-    this.map = defaultMap;
-    this.isInterned = false;
-  }
-
-  /** Create a new VarInfoAux with default options. */
-  private VarInfoAux(Map<@Interned String, @Interned String> map) {
-    this.map = map;
-    this.isInterned = false;
   }
 
   /** Creates and returns a copy of this. */

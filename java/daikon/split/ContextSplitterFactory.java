@@ -3,6 +3,7 @@ package daikon.split;
 import daikon.split.misc.CallerContextSplitter;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,8 +30,10 @@ public class ContextSplitterFactory {
 
   /** Callsite granularity at the line level. */
   public static final int GRAIN_LINE = 0;
+
   /** Callsite granularity at the method level. */
   public static final int GRAIN_METHOD = 1;
+
   /** Callsite granularity at the class level. */
   public static final int GRAIN_CLASS = 2;
 
@@ -63,7 +66,7 @@ public class ContextSplitterFactory {
         MapfileEntry[] entries = parse_mapfile(file);
         splitters = make_context_splitters(entries, grain);
       } catch (IOException e) {
-        throw new Error(e);
+        throw new UncheckedIOException("problem reading " + file, e);
       }
 
       for (int j = 0; j < splitters.length; j++) {
@@ -114,8 +117,8 @@ public class ContextSplitterFactory {
   public static MapfileEntry[] parse_mapfile(File mapfile) throws IOException {
     ArrayList<MapfileEntry> result = new ArrayList<>();
 
-    try {
-      for (String reader_line : new EntryReader(mapfile.toString())) {
+    try (EntryReader er = new EntryReader(mapfile.toString())) {
+      for (String reader_line : er) {
         String line = reader_line;
         // Remove comments, skip blank lines
         {
@@ -185,7 +188,7 @@ public class ContextSplitterFactory {
       throw (IOException) new IOException("Malformed number").initCause(e);
     }
 
-    return result.toArray(new MapfileEntry[result.size()]);
+    return result.toArray(new MapfileEntry[0]);
   }
 
   /**
@@ -231,16 +234,9 @@ public class ContextSplitterFactory {
       }
 
       // Place the ID into the mapping
-      Map<String, Set<Long>> caller2ids = callee2caller2ids.get(callee_ppt_name);
-      if (caller2ids == null) {
-        caller2ids = new LinkedHashMap<>();
-        callee2caller2ids.put(callee_ppt_name, caller2ids);
-      }
-      Set<Long> ids = caller2ids.get(caller_condition);
-      if (ids == null) {
-        ids = new TreeSet<Long>();
-        caller2ids.put(caller_condition, ids);
-      }
+      Map<String, Set<Long>> caller2ids =
+          callee2caller2ids.computeIfAbsent(callee_ppt_name, __ -> new LinkedHashMap<>());
+      Set<Long> ids = caller2ids.computeIfAbsent(caller_condition, __ -> new TreeSet<Long>());
       ids.add(entry.id);
     } // for all entries
 
@@ -279,11 +275,11 @@ public class ContextSplitterFactory {
       }
 
       // Collect all splitters for one callee_ppt_name
-      Splitter[] splitters_array = splitters.toArray(new Splitter[splitters.size()]);
+      Splitter[] splitters_array = splitters.toArray(new Splitter[0]);
       result.add(new PptNameAndSplitters(callee_ppt_name, splitters_array));
     }
 
-    return result.toArray(new PptNameAndSplitters[result.size()]);
+    return result.toArray(new PptNameAndSplitters[0]);
   }
 
   /** Simple record type to store a PptName and Splitter array. */

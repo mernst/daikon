@@ -71,9 +71,8 @@ public class MultiDiffVisitor extends PrintNullDiffVisitor {
       if (val == null) {
         // Use one as default, obviously
         freqList.put(key, 1);
-      }
-      // increment if it's already there
-      else {
+      } else {
+        // increment if it's already there
         freqList.put(key, val.intValue() + 1);
       }
 
@@ -249,7 +248,7 @@ public class MultiDiffVisitor extends PrintNullDiffVisitor {
   @Override
   protected boolean shouldPrint(@Nullable Invariant inv1, @Nullable Invariant inv2) {
     return true; // super.shouldPrint (inv1, inv2) &&
-    //    inv1.format().toString().indexOf(">") == -1 &&
+    //    inv1.format().toString().indexOf('>') == -1 &&
     // inv1.format().toString().indexOf("orig") == -1;
   }
 }

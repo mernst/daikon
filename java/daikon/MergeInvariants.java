@@ -1,8 +1,12 @@
 package daikon;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+
 import daikon.split.PptSplitter;
 import daikon.suppress.NIS;
-import gnu.getopt.*;
+import gnu.getopt.Getopt;
+import gnu.getopt.LongOpt;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,10 +17,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.FilesPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Merges invariants from multiple invariant files into a single invariant file. It does this by
@@ -32,14 +36,18 @@ public final class MergeInvariants {
     throw new Error("do not instantiate");
   }
 
+  /** Debug logger. */
   public static final Logger debug = Logger.getLogger("daikon.MergeInvariants");
 
+  /** Progress logger. */
   public static final Logger debugProgress = Logger.getLogger("daikon.MergeInvariants.progress");
 
+  /** The file in which to produce output; if null, the results are printed. */
   public static @Nullable File output_inv_file;
 
+  /** The usage message for this program. */
   private static String usage =
-      UtilPlume.joinLines(
+      StringsPlume.joinLines(
           "Usage: java daikon.MergeInvariants [OPTION]... FILE",
           "  -h, --" + Daikon.help_SWITCH,
           "      Display this usage message",
@@ -54,7 +62,10 @@ public final class MergeInvariants {
           "      Specify an output inv file.  If not specified, the results are printed");
 
   public static void main(final String[] args)
-      throws FileNotFoundException, StreamCorruptedException, OptionalDataException, IOException,
+      throws FileNotFoundException,
+          StreamCorruptedException,
+          OptionalDataException,
+          IOException,
           ClassNotFoundException {
     try {
       mainHelper(args);
@@ -66,13 +77,23 @@ public final class MergeInvariants {
   /**
    * This does the work of {@link #main(String[])}, but it never calls System.exit, so it is
    * appropriate to be called progrmmatically.
+   *
+   * @param args the command-line arguments
+   * @throws FileNotFoundException if a file cannot be found
+   * @throws StreamCorruptedException if a stream is corrupted
+   * @throws OptionalDataException if there is a serialization problem
+   * @throws IOException if there is trouble with I/O
+   * @throws ClassNotFoundException if a class cannot be found
    */
-  @SuppressWarnings("nullness:contracts.precondition.not.satisfied") // private field
+  @SuppressWarnings("nullness:contracts.precondition") // private field
   public static void mainHelper(String[] args)
-      throws FileNotFoundException, StreamCorruptedException, OptionalDataException, IOException,
+      throws FileNotFoundException,
+          StreamCorruptedException,
+          OptionalDataException,
+          IOException,
           ClassNotFoundException {
 
-    daikon.LogHelper.setupLogs(daikon.LogHelper.INFO);
+    daikon.LogHelper.setupLogs(INFO);
 
     LongOpt[] longopts =
         new LongOpt[] {
@@ -88,7 +109,7 @@ public final class MergeInvariants {
     while ((c = g.getopt()) != -1) {
       switch (c) {
 
-          // long option
+        // long option
         case 0:
           String option_name = longopts[g.getLongind()].getName();
           if (Daikon.help_SWITCH.equals(option_name)) {
@@ -103,9 +124,9 @@ public final class MergeInvariants {
             Global.debugAll = true;
 
           } else if (Daikon.debug_SWITCH.equals(option_name)) {
-            LogHelper.setLevel(Daikon.getOptarg(g), LogHelper.FINE);
+            LogHelper.setLevel(Daikon.getOptarg(g), FINE);
           } else if (Daikon.track_SWITCH.equals(option_name)) {
-            LogHelper.setLevel("daikon.Debug", LogHelper.FINE);
+            LogHelper.setLevel("daikon.Debug", FINE);
             String error = Debug.add_track(Daikon.getOptarg(g));
             if (error != null) {
               throw new Daikon.UserError(
@@ -133,7 +154,7 @@ public final class MergeInvariants {
 
           output_inv_file = new File(output_inv_filename);
 
-          if (!UtilPlume.canCreateAndWrite(output_inv_file)) {
+          if (!FilesPlume.canCreateAndWrite(output_inv_file)) {
             throw new Daikon.UserError(
                 "Cannot write to serialization output file " + output_inv_file);
           }
@@ -148,7 +169,7 @@ public final class MergeInvariants {
       }
     }
 
-    daikon.LogHelper.setupLogs(Global.debugAll ? LogHelper.FINE : LogHelper.INFO);
+    daikon.LogHelper.setupLogs(Global.debugAll ? FINE : INFO);
 
     List<File> inv_files = new ArrayList<>();
     File decl_file = null;
@@ -177,8 +198,9 @@ public final class MergeInvariants {
     // Make sure at least two files were specified
     if (inv_files.size() < 2) {
       throw new Daikon.UserError(
-          "Must specify at least two inv files; only specified "
-              + UtilPlume.nplural(inv_files.size(), "file"));
+          "Provided "
+              + StringsPlume.nplural(inv_files.size(), "inv file")
+              + " but needs at least two");
     }
 
     // Setup the default for guarding
@@ -349,10 +371,12 @@ public final class MergeInvariants {
     merge_ppts.repCheck();
 
     // Debug print the hierarchy is a more readable manner
-    if (debug.isLoggable(Level.FINE)) {
+    if (debug.isLoggable(FINE)) {
       debug.fine("PPT Hierarchy");
       for (PptTopLevel ppt : merge_ppts.pptIterable()) {
-        if (ppt.parents.size() == 0) ppt.debug_print_tree(debug, 0, null);
+        if (ppt.parents.size() == 0) {
+          ppt.debug_print_tree(debug, 0, null);
+        }
       }
     }
 
@@ -371,7 +395,9 @@ public final class MergeInvariants {
     // System.out.println("Creating implications ");
     debugProgress.fine("Adding Implications ... ");
     for (PptTopLevel ppt : merge_ppts.pptIterable()) {
-      if (ppt.num_samples() > 0) ppt.addImplications();
+      if (ppt.num_samples() > 0) {
+        ppt.addImplications();
+      }
     }
     long duration = System.nanoTime() - startTime;
     debugProgress.fine("Time spent in implications: " + TimeUnit.NANOSECONDS.toSeconds(duration));
@@ -430,7 +456,8 @@ public final class MergeInvariants {
     }
 
     assert child.splitters != null
-        : "@AssumeAssertion(nullness): correlated: ppt.has_splitters() == child.has_splitters(), and ppt.has_splitters() == true";
+        : "@AssumeAssertion(nullness): correlated: ppt.has_splitters() == child.has_splitters(),"
+            + " and ppt.has_splitters() == true";
 
     // Both ppt and child should have the same number of splitters
     if (ppt.splitters.size() != child.splitters.size()) {

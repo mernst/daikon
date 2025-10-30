@@ -2,7 +2,10 @@ package daikon.test.inv;
 
 import static daikon.inv.Invariant.asInvClass;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import daikon.*;
 import daikon.config.Configuration;
@@ -18,10 +21,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.io.UncheckedIOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 import junit.framework.*;
@@ -29,6 +34,7 @@ import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.dataflow.qual.Pure;
+import org.junit.Test;
 import typequals.prototype.qual.Prototype;
 
 /**
@@ -46,8 +52,8 @@ import typequals.prototype.qual.Prototype;
  *
  * <p>Each command line is starts with a command: "add:" or "check:". Following the command comes
  * the arguments to be checked or added to the invariant. These arguments should be in the same
- * format as in a dtrace file. Next comes the the InvariantStatus that is expected to be returned by
- * the check or add command on checking or adding the arguments. Finally, the expected format of the
+ * format as in a dtrace file. Next comes the InvariantStatus that is expected to be returned by the
+ * check or add command on checking or adding the arguments. Finally, the expected format of the
  * Invariant after checking or adding the arguments is included. (The format of the invariant is
  * given by "Invariant.format_using(OutputFormat.DAIKON)")
  *
@@ -82,7 +88,7 @@ import typequals.prototype.qual.Prototype;
  * with in a command line.
  */
 @SuppressWarnings("nullness") // test code
-public class InvariantAddAndCheckTester extends TestCase {
+public class InvariantAddAndCheckTester {
 
   /** Indicates a string that when it starts a line signifies that the line is a comment. */
   public static final String COMMENT_STARTER_STRING = "#";
@@ -93,40 +99,10 @@ public class InvariantAddAndCheckTester extends TestCase {
   /** Allows for the configuring of Daikon options. */
   static Configuration config = Configuration.getInstance();
 
-  private static final String inputFileName = "daikon/test/inv/InvariantTest.input";
   private static final String commandsFileName = "daikon/test/inv/InvariantTest.commands";
   private static final String diffFileName = "daikon/test/inv/InvariantTest.diffs";
 
   private static final String lineSep = Global.lineSep;
-
-  /**
-   * This function allows this test to be run from the command line instead of its usual method,
-   * which is through the Daikon MasterTester.
-   *
-   * @param args arguments to the main function, which control options to the program. As of now
-   *     there is only one option, {@code --generate_goals}, which will generate goal information
-   *     for the selected tests assuming the output that the tests provide is the correct output.
-   */
-  public static void main(String[] args) {
-    daikon.LogHelper.setupLogs(daikon.LogHelper.INFO);
-    if (args.length == 1 && args[0].equalsIgnoreCase("--generate_goals")) {
-      writeCommandFile();
-    } else if (args.length > 0) {
-      throw new Daikon.UserError(
-          "Usage: java daikon.test.InvariantAddAndCheckTester [--generate_goals]");
-    } else {
-      junit.textui.TestRunner.run(new TestSuite(InvariantAddAndCheckTester.class));
-    }
-  }
-
-  /**
-   * This constructor allows the test to be created from the MasterTester class.
-   *
-   * @param name the desired name of the test case
-   */
-  public InvariantAddAndCheckTester(String name) {
-    super(name);
-  }
 
   /**
    * This function produces the format list for intialization of the static format list variable.
@@ -146,7 +122,8 @@ public class InvariantAddAndCheckTester extends TestCase {
   }
 
   /** This function is the actual function performed when this class is run through JUnit. */
-  public static void testFormats() {
+  @Test
+  public void testFormats() {
 
     // Don't care about comparability info because we are only
     // creating variables for the purpose of being compared (thus they
@@ -194,8 +171,12 @@ public class InvariantAddAndCheckTester extends TestCase {
    * @return false if any tests fail
    */
   private static boolean execute() {
-    LineNumberReader commandReader = getCommands();
-    String output = performTest(commandReader);
+    String output;
+    try (LineNumberReader commandReader = getCommands()) {
+      output = performTest(commandReader);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
 
     if (output == null) { // no errors
       return true;
@@ -209,20 +190,6 @@ public class InvariantAddAndCheckTester extends TestCase {
       }
       return false;
     }
-  }
-
-  private static void writeCommandFile() {
-    LineNumberReader inputReader = getInputReader();
-
-    String output = generateCommands(inputReader);
-    BufferedWriter commandOutput = getCommandWriter();
-    try {
-      commandOutput.write(output, 0, output.length());
-      commandOutput.close();
-    } catch (IOException e) {
-      throw new RuntimeException("Could not output generated commands");
-    }
-    System.out.println("Goals generated");
   }
 
   /**
@@ -263,50 +230,11 @@ public class InvariantAddAndCheckTester extends TestCase {
     }
   }
 
-  private static String generateCommands(LineNumberReader input) {
-    StringBuilder output = new StringBuilder();
-
-    while (true) {
-      String commands = AddAndCheckTestCase.generateTest(input);
-      if (commands == null) {
-        break;
-      }
-      output.append(commands);
-    }
-    return output.toString();
-  }
-
-  private static LineNumberReader getInputReader() {
-
-    // Calculate input file locations
-    //     URL inputFileLocation =
-    //       ClassLoader.getSystemClassLoader().getSystemResource("InvariantTest.commands");
-    //     if (inputFileLocation == null)
-    //       fail("Input file for invariant format tests missing." +
-    //            " (Should be in InvariantTest.commands" +
-    //            " and it must be within the classpath)");
-
-    //  String inputFile = inputFileLocation.getFile();
-    LineNumberReader input;
-    try {
-      input =
-          new LineNumberReader(new InputStreamReader(new FileInputStream(inputFileName), UTF_8));
-    } catch (FileNotFoundException e) {
-      fail(
-          "Unexpected FileNotFoundException (very strange since the URL of the file was found earlier)");
-      throw new Error("Unreachable control flow");
-    }
-    return input;
-  }
-
-  private static BufferedWriter getCommandWriter() {
-    try {
-      return Files.newBufferedWriter(Paths.get(commandsFileName), UTF_8);
-    } catch (IOException e) {
-      throw new RuntimeException("Cannot write output into " + commandsFileName);
-    }
-  }
-
+  /**
+   * Returns a reader for the {@code InvariantTest.commands} resource.
+   *
+   * @return a reader for the {@code InvariantTest.commands} resource
+   */
   private static LineNumberReader getCommands() {
     // Calculate input file locations
     //   URL inputFileLocation =
@@ -325,7 +253,8 @@ public class InvariantAddAndCheckTester extends TestCase {
           new LineNumberReader(new InputStreamReader(new FileInputStream(commandsFileName), UTF_8));
     } catch (FileNotFoundException e) {
       fail(
-          "Unexpected FileNotFoundException (very strange since the URL of the file was found earlier)");
+          "Unexpected FileNotFoundException (very strange since the URL of the file was found"
+              + " earlier)");
       throw new Error("Unreachable control flow");
     }
     return commands;
@@ -400,7 +329,7 @@ public class InvariantAddAndCheckTester extends TestCase {
      *
      * @return a string containing error messages for any failed cases
      */
-    public static @Nullable String runTest(LineNumberReader commands) {
+    static @Nullable String runTest(LineNumberReader commands) {
       boolean endOfFile = initFields(commands, false);
       if (endOfFile) {
         return null;
@@ -409,11 +338,11 @@ public class InvariantAddAndCheckTester extends TestCase {
         String commandLine = getNextRealLine(commands);
         int lineNumber = commands.getLineNumber();
         if (InvariantAddAndCheckTester.isComment(commandLine)) {
-          continue;
+          // continue;
         } else if (isTestTerminator(commandLine)) {
           break;
         } else if (isAddCommand(commandLine) || isCheckCommand(commandLine)) {
-          exicuteCheckOrAddCommand(commandLine, lineNumber);
+          executeCheckOrAddCommand(commandLine, lineNumber);
         } else if (isCompareCommand(commandLine)) {
         } else {
           throw new RuntimeException("unrecognized command");
@@ -429,7 +358,8 @@ public class InvariantAddAndCheckTester extends TestCase {
      * @return a String containing the proper add and check commands for this input lines of this
      *     test case
      */
-    public static @Nullable String generateTest(LineNumberReader commands) {
+    @SuppressWarnings("UnusedMethod")
+    static @Nullable String generateTest(LineNumberReader commands) {
       boolean endOfFile = initFields(commands, true);
       if (endOfFile) {
         return null;
@@ -475,7 +405,8 @@ public class InvariantAddAndCheckTester extends TestCase {
       Class<? extends Invariant> classToTest = asInvClass(getClass(className));
 
       try {
-        classToTest.getField("dkconfig_enabled"); // Enable if needs to be done
+        @SuppressWarnings("UnusedVariable")
+        Field ignore = classToTest.getField("dkconfig_enabled"); // Enable if needs to be done
         InvariantAddAndCheckTester.config.apply(className + ".enabled", "true");
       } catch (NoSuchFieldException e) { // Otherwise do nothing
       }
@@ -510,14 +441,14 @@ public class InvariantAddAndCheckTester extends TestCase {
     }
 
     /**
-     * Given a line from a command file, generates executes the appropriate check or add command and
-     * checks the results against the goal. If the results and goal do not match, a message is added
-     * to the results string buffer.
+     * Given a line from a command file, generates and executes the appropriate check or add
+     * command, and checks the results against the goal. If the results and goal do not match, a
+     * message is added to the results string buffer.
      */
-    private static void exicuteCheckOrAddCommand(String command, int lineNumber) {
+    private static void executeCheckOrAddCommand(String command, int lineNumber) {
 
       // remove the command
-      String args = command.substring(command.indexOf(":") + 1);
+      String args = command.substring(command.indexOf(':') + 1);
 
       StringTokenizer tokens = new StringTokenizer(args, argDivider);
       if (tokens.countTokens() != types.length + 2) {
@@ -534,10 +465,17 @@ public class InvariantAddAndCheckTester extends TestCase {
       tokens.nextToken(); // executed for side effect
       assertFalse(tokens.hasMoreTokens());
       InvariantStatus resultStatus;
-      if (isCheckCommand(command)) {
-        resultStatus = getCheckStatus(params);
-      } else {
-        resultStatus = getAddStatus(params);
+      try {
+        if (isCheckCommand(command)) {
+          resultStatus = getCheckStatus(params);
+        } else {
+          resultStatus = getAddStatus(params);
+        }
+      } catch (Exception e) {
+        throw new Error(
+            String.format(
+                "Problem with \"%s\" on line %d of %s", command, lineNumber, commandsFileName),
+            e);
       }
       if (resultStatus != goalStatus) {
         results.append(
@@ -557,7 +495,7 @@ public class InvariantAddAndCheckTester extends TestCase {
     /** Given a line from an input file, generates appropriate check or add command. */
     private static void generateCheckOrAddCommand(String command, int lineNumber) {
       // remove the command
-      String args = command.substring(command.indexOf(":") + 1);
+      String args = command.substring(command.indexOf(':') + 1);
 
       StringTokenizer tokens = new StringTokenizer(args, argDivider);
       if (tokens.countTokens() != types.length) {
@@ -617,7 +555,14 @@ public class InvariantAddAndCheckTester extends TestCase {
       try {
         return (InvariantStatus) addModified.invoke(invariantToTest, params);
       } catch (Exception e) {
-        throw new RuntimeException(" error in " + invariantToTest.getClass() + ": " + e);
+        throw new RuntimeException(
+            "getAddStatus: error invoking addModified("
+                + Arrays.toString(params)
+                + ") on "
+                + invariantToTest.getClass()
+                + "; commandsFileName="
+                + commandsFileName,
+            e);
       }
     }
 
@@ -731,6 +676,7 @@ public class InvariantAddAndCheckTester extends TestCase {
       }
       throw new RuntimeException("Cannot find format_using method");
     }
+
     /**
      * This function loads a class from file into the JVM given its fully-qualified name.
      *
@@ -789,7 +735,9 @@ public class InvariantAddAndCheckTester extends TestCase {
         Class<? extends Invariant> classToTest, ProglangType[] types) {
       int numInfos = getArity(classToTest);
 
-      if (numInfos == -1) throw new RuntimeException("Class arity cannot be determined.");
+      if (numInfos == -1) {
+        throw new RuntimeException("Class arity cannot be determined.");
+      }
 
       VarInfo[] result = new VarInfo[numInfos];
 
@@ -925,7 +873,8 @@ public class InvariantAddAndCheckTester extends TestCase {
     }
 
     /**
-     * This function instantiates an invariant class by using the <type>(PptSlice) constructor.
+     * This function instantiates an invariant class by using the {@code <type>(PptSlice)}
+     * constructor.
      *
      * @param theClass the invariant class to be instantiated
      * @param sl the PptSlice representing the variables about which an invariant is determined

@@ -2,6 +2,7 @@
 
 package daikon.tools;
 
+import static daikon.VarInfo.VarFlags;
 import static daikon.tools.nullness.NullnessUtil.*;
 
 import daikon.Daikon;
@@ -20,13 +21,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.plumelib.util.RegexUtil;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * This tool is used to find the differences between two dtrace files based on analysis of the
@@ -34,8 +36,9 @@ import org.plumelib.util.UtilPlume;
  */
 public class DtraceDiff {
 
+  /** The usage message for this program. */
   private static String usage =
-      UtilPlume.joinLines(
+      StringsPlume.joinLines(
           "Usage: DtraceDiff [OPTION]... [DECLS1]... DTRACE1 [DECLS2]... DTRACE2",
           "DTRACE1 and DTRACE2 are the data trace files to be compared.",
           "You may optionally specify corresponding DECLS files for each one.",
@@ -58,6 +61,14 @@ public class DtraceDiff {
           "      Specify a configuration option ",
           "See the Daikon manual for more information.");
 
+  /** Set this flag true for debugging output. */
+  private static boolean debug = false;
+
+  /**
+   * Entry point for DtraceDiff program.
+   *
+   * @param args command-line arguments, like those of {@link #mainHelper} and {@link #main}
+   */
   public static void main(String[] args) {
     try {
       mainHelper(args);
@@ -113,7 +124,7 @@ public class DtraceDiff {
     while ((c = g.getopt()) != -1) {
       switch (c) {
 
-          // long option
+        // long option
         case 0:
           String option_name = longopts[g.getLongind()].getName();
           if (Daikon.help_SWITCH.equals(option_name)) {
@@ -197,8 +208,7 @@ public class DtraceDiff {
             break;
           } else if (Daikon.config_SWITCH.equals(option_name)) {
             String config_file = Daikon.getOptarg(g);
-            try {
-              InputStream stream = new FileInputStream(config_file);
+            try (InputStream stream = new FileInputStream(config_file)) {
               Configuration.getInstance().apply(stream);
             } catch (IOException e) {
               throw new RuntimeException("Could not open config file " + config_file);
@@ -212,7 +222,7 @@ public class DtraceDiff {
             throw new RuntimeException("Unknown long option received: " + option_name);
           }
 
-          // short options
+        // short options
         case 'h':
           System.out.println(usage);
           throw new Daikon.NormalTermination();
@@ -228,14 +238,16 @@ public class DtraceDiff {
 
     for (int i = g.getOptind(); i < args.length; i++) {
       if (args[i].indexOf(".decls") != -1) {
-        if (dtracefile1 == null) declsfile1.add(new File(args[i]));
-        else if (dtracefile2 == null) declsfile2.add(new File(args[i]));
+        if (dtracefile1 == null) {
+          declsfile1.add(new File(args[i]));
+        } else if (dtracefile2 == null) declsfile2.add(new File(args[i]));
         else {
           throw new daikon.Daikon.UserError(usage);
         }
       } else { // presume any other file is a dtrace file
-        if (dtracefile1 == null) dtracefile1 = args[i];
-        else if (dtracefile2 == null) dtracefile2 = args[i];
+        if (dtracefile1 == null) {
+          dtracefile1 = args[i];
+        } else if (dtracefile2 == null) dtracefile2 = args[i];
         else {
           throw new daikon.Daikon.UserError(usage);
         }
@@ -258,112 +270,147 @@ public class DtraceDiff {
       PptMap ppts1 = FileIO.read_declaration_files(declsfile1);
       PptMap ppts2 = FileIO.read_declaration_files(declsfile2);
 
-      FileIO.ParseState state1 = new FileIO.ParseState(dtracefile1, false, true, ppts1);
-      FileIO.ParseState state2 = new FileIO.ParseState(dtracefile2, false, true, ppts2);
+      try (FileIO.ParseState state1 = new FileIO.ParseState(dtracefile1, false, true, ppts1);
+          FileIO.ParseState state2 = new FileIO.ParseState(dtracefile2, false, true, ppts2)) {
 
-      while (true) {
-        // *** should do some kind of progress bar here?
-        // read from dtracefile1 until we get a data trace record or EOF
         while (true) {
-          FileIO.read_data_trace_record_setstate(state1);
-          if (state1.rtype == FileIO.RecordType.SAMPLE) {
-            break;
-          } else if ((state1.rtype == FileIO.RecordType.EOF)
-              || (state1.rtype == FileIO.RecordType.TRUNCATED)) {
-            break;
+          // *** should do some kind of progress bar here?
+          // Read from dtracefile1 until we get a sample record or a decl record or an EOF.
+          while (true) {
+            FileIO.read_data_trace_record_setstate(state1);
+            if ((state1.rtype == FileIO.RecordType.SAMPLE)
+                || (state1.rtype == FileIO.RecordType.DECL)) {
+              break;
+            } else if ((state1.rtype == FileIO.RecordType.EOF)
+                || (state1.rtype == FileIO.RecordType.TRUNCATED)) {
+              break;
+            }
           }
-        }
-        // read from dtracefile2 until we get a data trace record or EOF
-        while (true) {
-          FileIO.read_data_trace_record_setstate(state2);
-          if (state2.rtype == FileIO.RecordType.SAMPLE) {
-            break;
-          } else if ((state2.rtype == FileIO.RecordType.EOF)
-              || (state2.rtype == FileIO.RecordType.TRUNCATED)) {
-            break;
+          // Read from dtracefile2 until we get a sample record or a decl record or an EOF.
+          while (true) {
+            FileIO.read_data_trace_record_setstate(state2);
+            if ((state2.rtype == FileIO.RecordType.SAMPLE)
+                || (state2.rtype == FileIO.RecordType.DECL)) {
+              break;
+            } else if ((state2.rtype == FileIO.RecordType.EOF)
+                || (state2.rtype == FileIO.RecordType.TRUNCATED)) {
+              break;
+            }
           }
-        }
 
-        // things had better be the same
-        if (state1.rtype == state2.rtype) {
-          if (state1.rtype == FileIO.RecordType.SAMPLE) {
-            @SuppressWarnings("nullness") // dependent:  state1 is SAMPLE
+          // things had better be the same
+          if (state1.rtype == state2.rtype) {
+            @SuppressWarnings("nullness") // dependent:  state1 is ParseState
             @NonNull PptTopLevel ppt1 = state1.ppt;
-            @SuppressWarnings("nullness") // dependent:  state1 is SAMPLE
+            if (ppt1 == null) {
+              // Null means the ppt should be excluded because it matches
+              // the omit_regexp or doesn't match the ppt_regexp.
+              continue;
+            }
+            @SuppressWarnings("nullness") // dependent:  state2 is ParseState
             @NonNull PptTopLevel ppt2 = state2.ppt;
-            @SuppressWarnings("nullness") // dependent:  state1 is SAMPLE
-            @NonNull ValueTuple vt1 = state1.vt;
-            @SuppressWarnings("nullness") // dependent:  state2 is SAMPLE
-            @NonNull ValueTuple vt2 = state2.vt;
-            VarInfo[] vis1 = ppt1.var_infos;
-            VarInfo[] vis2 = ppt2.var_infos;
+            if (state1.rtype == FileIO.RecordType.SAMPLE) {
+              @SuppressWarnings("nullness") // dependent:  state1 is SAMPLE
+              @NonNull ValueTuple vt1 = state1.vt;
+              @SuppressWarnings("nullness") // dependent:  state2 is SAMPLE
+              @NonNull ValueTuple vt2 = state2.vt;
+              VarInfo[] vis1 = ppt1.var_infos;
+              VarInfo[] vis2 = ppt2.var_infos;
 
-            // Check to see that Ppts match the first time we encounter them
-            PptTopLevel foundppt = pptmap.get(ppt1);
-            if (foundppt == null) {
+              // Check to see that Ppts match the first time we encounter them
+              PptTopLevel foundppt = pptmap.get(ppt1);
+              if (foundppt == null) {
+                if (!ppt1.name.equals(ppt2.name)) {
+                  ppt_mismatch_error(state1, dtracefile1, state2, dtracefile2);
+                }
+                for (int i = 0; (i < ppt1.num_tracevars) && (i < ppt2.num_tracevars); i++) {
+                  // *** what about comparability and aux info?
+                  if (!vis1[i].name().equals(vis2[i].name())
+                      || (vis1[i].is_static_constant != vis2[i].is_static_constant)
+                      || (vis1[i].isStaticConstant()
+                          && vis2[i].isStaticConstant()
+                          && !values_are_equal(
+                              vis1[i], vis1[i].constantValue(), vis2[i].constantValue()))
+                      || ((vis1[i].type != vis2[i].type)
+                          || (vis1[i].file_rep_type != vis2[i].file_rep_type)))
+                    ppt_var_decl_error(vis1[i], state1, dtracefile1, vis2[i], state2, dtracefile2);
+                }
+                if (ppt1.num_tracevars != ppt2.num_tracevars) {
+                  ppt_decl_error(state1, dtracefile1, state2, dtracefile2);
+                }
+                pptmap.put(ppt1, ppt2);
+              } else if (foundppt != ppt2) {
+                ppt_mismatch_error(state1, dtracefile1, state2, dtracefile2);
+              }
+
+              // check to see that variables on this pair of samples match
+              for (int i = 0; i < ppt1.num_tracevars; i++) {
+                if (vis1[i].is_static_constant) {
+                  continue;
+                }
+                boolean missing1 = vt1.isMissingNonsensical(vis1[i]);
+                boolean missing2 = vt2.isMissingNonsensical(vis2[i]);
+                Object val1 = vt1.getValueOrNull(vis1[i]);
+                Object val2 = vt2.getValueOrNull(vis2[i]);
+                // Require that missing1 == missing2.  Also require that if
+                // the values are present, they are the same.
+                if (!((missing1 == missing2)
+                    && (missing1
+                        // At this point, missing1 == false, missing2 == false,
+                        // val1 != null, val2 != null.
+                        || values_are_equal(
+                            vis1[i],
+                            castNonNull(val1),
+                            castNonNull(val2))))) // application invariant
+                ppt_var_value_error(
+                      vis1[i], val1, state1, dtracefile1, vis2[i], val2, state2, dtracefile2);
+              }
+            } else if (state1.rtype == FileIO.RecordType.DECL) {
+              // compare decls
+              VarInfo[] vis1 = ppt1.var_infos;
+              VarInfo[] vis2 = ppt2.var_infos;
               if (!ppt1.name.equals(ppt2.name)) {
                 ppt_mismatch_error(state1, dtracefile1, state2, dtracefile2);
               }
-              for (int i = 0; (i < ppt1.num_tracevars) && (i < ppt2.num_tracevars); i++) {
-                // *** what about comparability and aux info?
-                if (!vis1[i].name().equals(vis2[i].name())
-                    || (vis1[i].is_static_constant != vis2[i].is_static_constant)
-                    || (vis1[i].isStaticConstant()
-                        && vis2[i].isStaticConstant()
-                        && !values_are_equal(
-                            vis1[i], vis1[i].constantValue(), vis2[i].constantValue()))
-                    || ((vis1[i].type != vis2[i].type)
-                        || (vis1[i].file_rep_type != vis2[i].file_rep_type)))
-                  ppt_var_decl_error(vis1[i], state1, dtracefile1, vis2[i], state2, dtracefile2);
-              }
-              if (ppt1.num_tracevars != ppt2.num_tracevars) {
+              if (ppt1.num_declvars != ppt2.num_declvars) {
                 ppt_decl_error(state1, dtracefile1, state2, dtracefile2);
               }
-              pptmap.put(ppt1, ppt2);
-            } else if (foundppt != ppt2) {
-              ppt_mismatch_error(state1, dtracefile1, state2, dtracefile2);
-            }
-
-            // check to see that variables on this pair of samples match
-            for (int i = 0; i < ppt1.num_tracevars; i++) {
-              if (vis1[i].is_static_constant) {
-                continue;
+              // check to see that the decls match
+              for (int i = 0; i < ppt1.num_declvars; i++) {
+                if (!compare_varinfos(vis1[i], vis2[i])) {
+                  if (!debug) {
+                    ppt_var_decl_error(vis1[i], state1, dtracefile1, vis2[i], state2, dtracefile2);
+                  } else {
+                    System.out.printf("ERROR: dtrace decl mismatch within: %s%n", ppt1.name);
+                    printVarinfo(vis1[i]);
+                    printVarinfo(vis2[i]);
+                  }
+                }
               }
-              boolean missing1 = vt1.isMissingNonsensical(vis1[i]);
-              boolean missing2 = vt2.isMissingNonsensical(vis2[i]);
-              Object val1 = vt1.getValueOrNull(vis1[i]);
-              Object val2 = vt2.getValueOrNull(vis2[i]);
-              // Require that missing1 == missing2.  Also require that if
-              // the values are present, they are the same.
-              if (!((missing1 == missing2)
-                  && (missing1
-                      // At this point, missing1 == false, missing2 == false,
-                      // val1 != null, val2 != null.
-                      || values_are_equal(
-                          vis1[i], castNonNull(val1), castNonNull(val2))))) // application invariant
-              ppt_var_value_error(
-                    vis1[i], val1, state1, dtracefile1, vis2[i], val2, state2, dtracefile2);
+            } else {
+              return; // EOF on both files ==> normal return
             }
+            // state1.rtype != state2.rtype
+          } else if ((state1.rtype == FileIO.RecordType.TRUNCATED)
+              || (state2.rtype == FileIO.RecordType.TRUNCATED))
+            return; // either file reached truncation limit, return quietly
+          else if (state1.rtype == FileIO.RecordType.EOF) {
+            assert state2.ppt != null
+                : "@AssumeAssertion(nullness): application invariant: status is not EOF or"
+                    + " TRUNCATED";
+            throw new DiffError(
+                String.format(
+                    "ppt %s is at line %d in %s but is missing at end of %s",
+                    state2.ppt.name(), state2.get_linenum(), dtracefile2, dtracefile1));
           } else {
-            return; // EOF on both files ==> normal return
+            assert state1.ppt != null
+                : "@AssumeAssertion(nullness): application invariant: status is not EOF or"
+                    + " TRUNCATED";
+            throw new DiffError(
+                String.format(
+                    "ppt %s is at line %d in %s but is missing at end of %s",
+                    state1.ppt.name(), state1.get_linenum(), dtracefile1, dtracefile2));
           }
-        } else if ((state1.rtype == FileIO.RecordType.TRUNCATED)
-            || (state2.rtype == FileIO.RecordType.TRUNCATED))
-          return; // either file reached truncation limit, return quietly
-        else if (state1.rtype == FileIO.RecordType.EOF) {
-          assert state2.ppt != null
-              : "@AssumeAssertion(nullness): application invariant: status is not EOF or TRUNCATED";
-          throw new DiffError(
-              String.format(
-                  "ppt %s is at line %d in %s but is missing at end of %s",
-                  state2.ppt.name(), state2.get_linenum(), dtracefile2, dtracefile1));
-        } else {
-          assert state1.ppt != null
-              : "@AssumeAssertion(nullness): application invariant: status is not EOF or TRUNCATED";
-          throw new DiffError(
-              String.format(
-                  "ppt %s is at line %d in %s but is missing at end of %s",
-                  state1.ppt.name(), state1.get_linenum(), dtracefile1, dtracefile2));
         }
       }
     } catch (IOException e) {
@@ -373,6 +420,64 @@ public class DtraceDiff {
     }
   }
 
+  /**
+   * Compare two VarInfos for equality. Note there are many fields not compared: comparability,
+   * constant, exclosing-var and parent, for example.
+   *
+   * @param vi1 a VarInfo to compare
+   * @param vi2 a VarInfo to compare
+   * @return true if the VarInfos match
+   */
+  private static boolean compare_varinfos(VarInfo vi1, VarInfo vi2) {
+    if (!vi1.name().equals(vi2.name())) {
+      return false;
+    }
+    if (!vi1.str_name().equals(vi2.str_name())) {
+      return false;
+    }
+    if (!(vi1.var_kind == vi2.var_kind)) {
+      return false;
+    }
+    if (!vi1.type.equals(vi2.type)) {
+      return false;
+    }
+    if (!vi1.file_rep_type.equals(vi2.file_rep_type)) {
+      return false;
+    }
+    if (!vi1.var_flags.equals(vi2.var_flags)) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Used for debugging -- prints some of a VarInfo fields. Note there are many fields not printed:
+   * comparability, constant, exclosing-var and parent, for example.
+   *
+   * @param vi the VarInfo to print
+   */
+  private static void printVarinfo(VarInfo vi) {
+    System.out.printf("variable %s%n", vi.str_name());
+    System.out.printf("  var-kind %s%n", vi.var_kind);
+    System.out.printf("  dec-type %s%n", vi.type);
+    System.out.printf("  rep-type %s%n", vi.file_rep_type);
+    if (!vi.var_flags.isEmpty()) {
+      System.out.printf("  flags");
+      for (VarFlags flag : vi.var_flags) {
+        System.out.printf(" %s", flag.name().toLowerCase(Locale.ENGLISH));
+      }
+      System.out.printf("%n");
+    }
+  }
+
+  /**
+   * Compare two VarInfo fields for equality.
+   *
+   * @param vi a VarInfo that holds val1
+   * @param val1 a VarInfo field to compare
+   * @param val2 a VarInfo field to compare
+   * @return true if the fields match
+   */
   private static boolean values_are_equal(VarInfo vi, Object val1, Object val2) {
     ProglangType type = vi.file_rep_type;
     // System.out.printf("values_are_equal type = %s%n", type);
@@ -439,13 +544,13 @@ public class DtraceDiff {
         long v2 = ((Long) val2).longValue();
         return !(((v1 == 0) || (v2 == 0)) && (v1 != v2));
       } else if (type.isScalar()) {
-        return (((Long) val1).longValue() == ((Long) val2).longValue());
+        return ((Long) val1).longValue() == ((Long) val2).longValue();
       } else if (type.isFloat()) {
         double d1 = ((Double) val1).doubleValue();
         double d2 = ((Double) val2).doubleValue();
-        return ((Double.isNaN(d1) && Double.isNaN(d2)) || Global.fuzzy.eq(d1, d2));
+        return (Double.isNaN(d1) && Double.isNaN(d2)) || Global.fuzzy.eq(d1, d2);
       } else if (type.isString()) {
-        return (((String) val1).equals((String) val2));
+        return ((String) val1).equals((String) val2);
       }
     }
     throw new Error("Unexpected value type found"); // should never happen

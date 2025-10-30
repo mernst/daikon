@@ -1,5 +1,8 @@
 package daikon.test.diff;
 
+import static java.util.logging.Level.INFO;
+import static org.junit.Assert.assertEquals;
+
 import daikon.*;
 import daikon.config.*;
 import daikon.diff.*;
@@ -10,13 +13,17 @@ import daikon.split.misc.*;
 import daikon.test.*;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import junit.framework.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 @SuppressWarnings({"nullness", "UnusedVariable"}) // testing code
-public class DiffTester extends TestCase {
+public class DiffTester {
 
   private Diff diffSome;
   private Diff diffAll;
@@ -37,20 +44,16 @@ public class DiffTester extends TestCase {
   private PptMap imps1;
   private PptMap imps2;
 
-  public static void main(String[] args) {
-    daikon.LogHelper.setupLogs(LogHelper.INFO);
-    junit.textui.TestRunner.run(new TestSuite(DiffTester.class));
+  /** prepare for tests */
+  @BeforeClass
+  public static void setUpClass() {
+    daikon.LogHelper.setupLogs(INFO);
+    FileIO.new_decl_format = true;
   }
 
-  @SuppressWarnings("interning")
-  public static VarInfo newIntVarInfo(String name) {
-    return new VarInfo(
-        name, ProglangType.INT, ProglangType.INT, VarComparabilityNone.it, VarInfoAux.getDefault());
-  }
-
-  public DiffTester(String name) throws Exception {
-    super(name);
-
+  @Before
+  public void setUp()
+      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
     diffSome = new Diff();
     diffAll = new Diff(true);
 
@@ -199,12 +202,20 @@ public class DiffTester extends TestCase {
     }
   }
 
+  @SuppressWarnings("interning")
+  public static VarInfo newIntVarInfo(String name) {
+    return new VarInfo(
+        name, ProglangType.INT, ProglangType.INT, VarComparabilityNone.it, VarInfoAux.getDefault());
+  }
+
+  @Test
   public void testEmptyEmpty() {
     RootNode diff = diffSome.diffPptMap(empty, empty);
     RootNode ref = new RootNode();
-    printTree(ref).equals(printTree(diff));
+    assertEquals(printTree(ref), printTree(diff));
   }
 
+  @Test
   public void testEmptyPpts1() {
     RootNode diff = diffSome.diffPptMap(empty, ppts1);
 
@@ -220,6 +231,7 @@ public class DiffTester extends TestCase {
     assertEquals(printTree(ref), printTree(diff));
   }
 
+  @Test
   public void testPpts1Empty() {
     RootNode diff = diffSome.diffPptMap(ppts1, empty);
 
@@ -235,6 +247,7 @@ public class DiffTester extends TestCase {
     assertEquals(printTree(ref), printTree(diff));
   }
 
+  @Test
   public void testPpts1Ppts1() {
     RootNode diff = diffSome.diffPptMap(ppts1, ppts1);
 
@@ -259,6 +272,7 @@ public class DiffTester extends TestCase {
     assertEquals(printTree(ref), printTree(diff));
   }
 
+  @Test
   public void testPpts1Ppts2() {
     RootNode diff = diffSome.diffPptMap(ppts1, ppts2);
 
@@ -280,6 +294,7 @@ public class DiffTester extends TestCase {
     assertEquals(printTree(ref), printTree(diff));
   }
 
+  @Test
   public void testPpts1Ppts3() {
     RootNode diff = diffSome.diffPptMap(ppts1, ppts3);
 
@@ -304,6 +319,7 @@ public class DiffTester extends TestCase {
     assertEquals(printTree(ref), printTree(diff));
   }
 
+  @Test
   public void testInvs1Empty() {
     RootNode diff = diffSome.diffPptMap(invs1, empty);
 
@@ -333,6 +349,7 @@ public class DiffTester extends TestCase {
     assertEquals(printTree(ref), printTree(diff));
   }
 
+  @Test
   public void testInvs1Invs1() {
     RootNode diff = diffSome.diffPptMap(invs1, invs1);
 
@@ -364,6 +381,7 @@ public class DiffTester extends TestCase {
     assertEquals(printTree(ref), printTree(diff));
   }
 
+  @Test
   public void testInvs1Invs2() {
     RootNode diff = diffSome.diffPptMap(invs1, invs2);
 
@@ -395,6 +413,7 @@ public class DiffTester extends TestCase {
     assertEquals(printTree(ref), printTree(diff));
   }
 
+  @Test
   public void testInvs1Invs3() {
     RootNode diff = diffSome.diffPptMap(invs1, invs3);
 
@@ -426,11 +445,13 @@ public class DiffTester extends TestCase {
     assertEquals(printTree(ref), printTree(diff));
   }
 
+  @Test
   public void testNullaryInvs() {
     // executed for side effect
     diffSome.diffPptMap(imps1, imps2);
   }
 
+  @Test
   public void testNonModulus() {
     // Ensure that NonModulus is enabled
     Configuration.getInstance().apply(daikon.inv.unary.scalar.NonModulus.class, "enabled", "true");
@@ -449,6 +470,7 @@ public class DiffTester extends TestCase {
   // Runs diff on a PptMap containing a PptConditional, with
   // examineAllPpts set to false.  The PptConditional should be
   // ignored.
+  @Test
   public void testConditionalPptsFalse() {
     RootNode diff = diffSome.diffPptMap(ppts1, pptsCond);
 
@@ -476,6 +498,7 @@ public class DiffTester extends TestCase {
   // Runs diff on a PptMap containing a PptConditional, with
   // examineAllPpts set to true.  The PptConditional should be
   // ignored.
+  @Test
   public void testConditionalPptsTrue() {
     RootNode diff = diffAll.diffPptMap(ppts1, pptsCond);
 
@@ -516,14 +539,23 @@ public class DiffTester extends TestCase {
     PrintStream ps = new PrintStream(baos);
     PrintAllVisitor v = new PrintAllVisitor(ps, false, true);
     root.accept(v);
-    return baos.toString();
+    @SuppressWarnings("DefaultCharset") // toString(Charset) was introduced in Java 10
+    String result = baos.toString();
+    return result;
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Helper functions
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Helper functions
+  //
 
-  PptTopLevel newPptTopLevel(String pptname, VarInfo[] vars) {
+  /**
+   * Creates a PptTopLevel for the given name and variables.
+   *
+   * @param pptname the program point name
+   * @param vars the variables
+   * @return a PptTopLevel for the given name and variables
+   */
+  static PptTopLevel newPptTopLevel(String pptname, VarInfo[] vars) {
     return Common.makePptTopLevel(pptname, vars);
   }
 }

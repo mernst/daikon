@@ -1,6 +1,8 @@
 package daikon.tools.jtb;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
 
 import daikon.*;
 import daikon.inv.OutputFormat;
@@ -14,7 +16,7 @@ import java.nio.file.Paths;
 import java.util.logging.Logger;
 import jtb.*;
 import jtb.syntaxtree.*;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Merge Daikon-generated invariants into Java source code as ESC/JML/DBC annotations. All original
@@ -77,8 +79,9 @@ public class Annotate {
   public static final String max_invariants_pp_SWITCH = "max_invariants_pp";
   public static final String no_reflection_SWITCH = "no_reflection";
 
+  /** The usage message for this program. */
   private static String usage =
-      UtilPlume.joinLines(
+      StringsPlume.joinLines(
           "Usage:  java daikon.tools.Annotate FILE.inv FILE.java ...",
           "  -h   Display this usage message",
           "  -i   Insert invariants not supported by ESC with \"!\" instead of \"@\";",
@@ -160,7 +163,7 @@ public class Annotate {
           } else if (Daikon.debugAll_SWITCH.equals(option_name)) {
             Global.debugAll = true;
           } else if (Daikon.debug_SWITCH.equals(option_name)) {
-            LogHelper.setLevel(Daikon.getOptarg(g), LogHelper.FINE);
+            daikon.LogHelper.setLevel(Daikon.getOptarg(g), FINE);
           } else if (Daikon.format_SWITCH.equals(option_name)) {
             String format_name = Daikon.getOptarg(g);
             Daikon.output_format = OutputFormat.get(format_name);
@@ -182,13 +185,13 @@ public class Annotate {
         case 'i':
           insert_inexpressible = true;
           break;
-          // case 'r':
-          //   // Should do this witout calling out to the system.  (There must be
-          //   // an easy way to do this in Java.)
-          //   Process p = System.exec("find . -type f -name '*.java' -print");
-          //   p.waitFor();
-          //   StringBuilderInputStream sbis
-          //   break;
+        // case 'r':
+        //   // Should do this witout calling out to the system.  (There must be
+        //   // an easy way to do this in Java.)
+        //   Process p = System.exec("find . -type f -name '*.java' -print");
+        //   p.waitFor();
+        //   StringBuilderInputStream sbis
+        //   break;
         case 's':
           slashslash = true;
           break;
@@ -201,7 +204,7 @@ public class Annotate {
     }
 
     // Set up debug traces; note this comes after reading command line options.
-    LogHelper.setupLogs(Global.debugAll ? LogHelper.FINE : LogHelper.INFO);
+    daikon.LogHelper.setupLogs(Global.debugAll ? FINE : INFO);
 
     // The index of the first non-option argument -- the name of the .inv file
     int argindex = g.getOptind();
@@ -238,31 +241,25 @@ public class Annotate {
         throw new Error("unsupported output file format " + Daikon.output_format);
       }
       // outputFile.getParentFile().mkdirs();
-      Writer output = Files.newBufferedWriter(outputFile.toPath(), UTF_8);
+      try (Writer output = Files.newBufferedWriter(outputFile.toPath(), UTF_8)) {
 
-      debug.fine("Parsing file " + javafilename);
+        debug.fine("Parsing file " + javafilename);
 
-      // Annotate the file
-      Reader input;
-      try {
-        input = Files.newBufferedReader(Paths.get(javafilename), UTF_8);
-      } catch (FileNotFoundException e) {
-        throw new Error(e);
-      }
+        // Annotate the file
+        Node root;
+        try (Reader input = Files.newBufferedReader(Paths.get(javafilename), UTF_8)) {
+          JavaParser parser = new JavaParser(input);
+          root = parser.CompilationUnit();
+        } catch (FileNotFoundException e) {
+          throw new Error(e);
+        } catch (ParseException e) {
+          // e.printStackTrace();
+          System.err.println(javafilename + ": " + e);
+          throw new Daikon.UserError("ParseException in applyVisitorInsertComments");
+        }
 
-      JavaParser parser = new JavaParser(input);
-      Node root;
-      try {
-        root = parser.CompilationUnit();
-      } catch (ParseException e) {
-        // e.printStackTrace();
-        System.err.println(javafilename + ": " + e);
-        throw new Daikon.UserError("ParseException in applyVisitorInsertComments");
-      }
+        debug.fine("Processing file " + javafilename);
 
-      debug.fine("Processing file " + javafilename);
-
-      try {
         Ast.applyVisitorInsertComments(
             javafilename,
             root,
@@ -536,7 +533,7 @@ public class Annotate {
 //    to ensure that no simultaneous calls to that method occur. For methods with
 //    this concurrency contract Jcontract will generate code to check if they are
 //    being executed by more than one thread at once. An error will be reported
-//    at runtime if the contract is violated.
+//    at run time if the contract is violated.
 //
 // - Point of execution: right before calling the method.
 //
@@ -545,7 +542,7 @@ public class Annotate {
 // --------------
 //
 //    Contracts are inherited. If the derived class or overriding method doesn't
-// define a contract, it inherits that of the super class or interface.
+// define a contract, it inherits that of the superclass or interface.
 //    Note that a contract of $none implies that the super contract is applied.
 //
 //    If an overriding method does define a contract then it can only:

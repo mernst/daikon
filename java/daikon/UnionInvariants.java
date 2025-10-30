@@ -1,8 +1,10 @@
 package daikon;
 
-import gnu.getopt.*;
+import gnu.getopt.Getopt;
+import gnu.getopt.LongOpt;
 import java.io.File;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.FilesPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * UnionInvariants is a command-line tool that will read in one (or more) {@code .inv} files
@@ -21,9 +23,10 @@ public final class UnionInvariants {
     throw new Error("do not instantiate");
   }
 
+  /** The usage message for this program. */
   // Non-empty program points in the input files must be distinct.
   private static String usage =
-      UtilPlume.joinLines(
+      StringsPlume.joinLines(
           "Usage: java daikon.UnionInvariants [OPTION]... FILE.inv[.gz] [FILE.inv[.gz] ...]",
           "  -h, --" + Daikon.help_SWITCH,
           "      Display this usage message",
@@ -82,11 +85,11 @@ public final class UnionInvariants {
           System.out.println("Inv filename = " + inv_filename);
           inv_file = new File(inv_filename);
 
-          if (!UtilPlume.canCreateAndWrite(inv_file)) {
+          if (!FilesPlume.canCreateAndWrite(inv_file)) {
             throw new Daikon.UserError("Cannot write to serialization output file " + inv_file);
           }
           break;
-          //
+        //
         case '?':
           break; // getopt() already printed an error
         default:
