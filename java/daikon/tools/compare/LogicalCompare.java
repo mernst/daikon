@@ -1,11 +1,12 @@
 package daikon.tools.compare;
 
 import static daikon.tools.nullness.NullnessUtil.*;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
 
 import daikon.Daikon;
 import daikon.FileIO;
 import daikon.Global;
-import daikon.LogHelper;
 import daikon.PptMap;
 import daikon.PptTopLevel;
 import daikon.VarInfo;
@@ -47,12 +48,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.FilesPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * This is a standalone program that compares the invariants from two versions of (and/or runs of) a
@@ -83,13 +86,14 @@ public class LogicalCompare {
   // TODO: both of these fields should be instance fields and the main
   // method should create an instance.
 
-  // key = ppt name
+  /** key = ppt name */
   private static @MonotonicNonNull Map<String, List<Lemma>> extra_assumptions;
 
-  private static @MonotonicNonNull LemmaStack lemmas;
+  private static @Owning @MonotonicNonNull LemmaStack lemmas;
 
+  /** The usage message for this program. */
   private static String usage =
-      UtilPlume.joinLines(
+      StringsPlume.joinLines(
           "Usage: java daikon.tools.compare.LogicalCompare [options ...]",
           "           WEAK-INVS STRONG-INVS [ENTER-PPT [EXIT-PPT]]",
           "  -h, --" + Daikon.help_SWITCH,
@@ -141,7 +145,9 @@ public class LogicalCompare {
     for (Invariant inv : invs) {
       Invariant guarded_inv = inv;
       //       System.err.println("Examining " + inv.format());
-      if (inv instanceof GuardingImplication) inv = ((Implication) inv).consequent();
+      if (inv instanceof GuardingImplication) {
+        inv = ((Implication) inv).consequent();
+      }
       if (inv instanceof LowerBound
           || inv instanceof UpperBound
           || inv instanceof EltLowerBound
@@ -245,7 +251,9 @@ public class LogicalCompare {
   private static List<Lemma> translateRemovePre(List<Invariant> invs) {
     List<Lemma> lems = new ArrayList<>();
     for (Invariant inv : invs) {
-      if (!inv.isAllPrestate()) lems.add(new InvariantLemma(inv));
+      if (!inv.isAllPrestate()) {
+        lems.add(new InvariantLemma(inv));
+      }
     }
     return lems;
   }
@@ -346,20 +354,30 @@ public class LogicalCompare {
         } else if (opt_show_valid) {
           System.out.print("Valid: ");
           System.out.println(inv.summary);
-          if (opt_show_formulas) System.out.println("    " + inv.formula);
+          if (opt_show_formulas) {
+            System.out.println("    " + inv.formula);
+          }
         }
       } else if (result == 'F') {
         invalidCount++;
-        if (opt_proofs) System.out.println();
+        if (opt_proofs) {
+          System.out.println();
+        }
         System.out.print("Invalid: ");
         System.out.println(inv.summary);
-        if (opt_show_formulas) System.out.println("    " + inv.formula);
+        if (opt_show_formulas) {
+          System.out.println("    " + inv.formula);
+        }
       } else {
         assert result == '?';
-        if (opt_proofs) System.out.println();
+        if (opt_proofs) {
+          System.out.println();
+        }
         System.out.print("Timeout: ");
         System.out.println(inv.summary);
-        if (opt_show_formulas) System.out.println("    " + inv.formula);
+        if (opt_show_formulas) {
+          System.out.println("    " + inv.formula);
+        }
       }
     }
     return invalidCount;
@@ -470,7 +488,9 @@ public class LogicalCompare {
     List<Invariant> a_post = app_exit_ppt.invariants_vector();
     List<Invariant> t_post = test_exit_ppt.invariants_vector();
 
-    if (opt_timing) System.out.println("Starting timer");
+    if (opt_timing) {
+      System.out.println("Starting timer");
+    }
     long processing_time_start = System.currentTimeMillis();
 
     a_pre = filterInvariants(a_pre, false);
@@ -550,21 +570,24 @@ public class LogicalCompare {
     evaluateImplicationsCarefully(post_assumptions_safe, post_assumptions_unsafe, post_conclusions);
     long time_elapsed = System.currentTimeMillis() - processing_time_start;
     num_checked += post_conclusions.size();
-    if (opt_show_count) System.out.println("Checked " + num_checked + " invariants total");
-    if (opt_timing) System.out.println("Total time " + time_elapsed + "ms");
+    if (opt_show_count) {
+      System.out.println("Checked " + num_checked + " invariants total");
+    }
+    if (opt_timing) {
+      System.out.println("Total time " + time_elapsed + "ms");
+    }
   }
 
   @RequiresNonNull("extra_assumptions")
   private static void readExtraAssumptions(String filename) {
     File file = new File(filename);
-    try {
-      LineNumberReader reader = UtilPlume.lineNumberFileReader(file);
+    try (LineNumberReader reader = FilesPlume.newLineNumberFileReader(file)) {
       String line;
       String ppt_name = null;
       while ((line = reader.readLine()) != null) {
         line = line.trim();
         if (line.equals("") || line.startsWith("#")) {
-          continue;
+          // continue;
         } else if (line.startsWith("PPT_NAME")) {
           ppt_name = line.substring("PPT_NAME".length()).trim();
           if (!extra_assumptions.containsKey(ppt_name)) {
@@ -580,9 +603,10 @@ public class LogicalCompare {
           // expression, then look for a comment after that. But that
           // would involve counting parens and vertical bars and
           // backslashes, which I'm too lazy to do right now.
-          if (line.indexOf("#") != -1) {
-            formula = line.substring(0, line.indexOf("#"));
-            comment = line.substring(line.indexOf("#") + 1);
+          int hash = line.indexOf('#');
+          if (hash != -1) {
+            formula = line.substring(0, hash);
+            comment = line.substring(hash + 1);
           } else {
             formula = line;
             comment = "User-supplied assumption";
@@ -663,8 +687,7 @@ public class LogicalCompare {
             throw new Daikon.NormalTermination();
           } else if (option_name.equals("config-file")) {
             String config_file = Daikon.getOptarg(g);
-            try {
-              InputStream stream = new FileInputStream(config_file);
+            try (InputStream stream = new FileInputStream(config_file)) {
               Configuration.getInstance().apply(stream);
             } catch (IOException e) {
               throw new RuntimeException("Could not open config file " + config_file);
@@ -675,7 +698,7 @@ public class LogicalCompare {
           } else if (Daikon.debugAll_SWITCH.equals(option_name)) {
             Global.debugAll = true;
           } else if (Daikon.debug_SWITCH.equals(option_name)) {
-            LogHelper.setLevel(Daikon.getOptarg(g), LogHelper.FINE);
+            daikon.LogHelper.setLevel(Daikon.getOptarg(g), FINE);
           } else if (option_name.equals("proofs")) {
             opt_proofs = true;
           } else if (option_name.equals("show-count")) {
@@ -720,7 +743,7 @@ public class LogicalCompare {
     }
 
     // Set up debug traces; note this comes after reading command line options.
-    LogHelper.setupLogs(Global.debugAll ? LogHelper.FINE : LogHelper.INFO);
+    daikon.LogHelper.setupLogs(Global.debugAll ? FINE : INFO);
 
     int num_args = args.length - g.getOptind();
 

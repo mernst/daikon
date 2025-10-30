@@ -1,8 +1,10 @@
 package daikon.simplify;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.logging.Level.INFO;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,10 +13,13 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.Holding;
+import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -23,7 +28,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * A session is a channel to the Simplify theorem-proving tool. Once a session is started, commands
  * may be applied to the session to make queries and manipulate its state.
  */
-public class Session {
+@MustCall("close") public class Session implements Closeable {
   /**
    * A non-negative integer, representing the largest number of iterations for which Simplify should
    * be allowed to run on any single conjecture before giving up. Larger values may cause Simplify
@@ -66,8 +71,10 @@ public class Session {
    */
   public static boolean dkconfig_trace_input = false;
 
-  // non-null if dkconfig_trace_input==true
-  private @MonotonicNonNull PrintStream trace_file;
+  /** non-null if dkconfig_trace_input==true */
+  private final @Owning @MonotonicNonNull PrintStream trace_file;
+
+  /** A unique identifier for creating unique filenames for trace files. */
   private static int trace_count = 0;
 
   /* package */ final Process process;
@@ -79,7 +86,10 @@ public class Session {
    * Initializes the simplify environment for interaction. Use {@code Cmd} objects to interact with
    * this Session.
    */
+  @SuppressWarnings("AssignmentExpression") // for "while ((f = new File ..."
   public Session() {
+    // Note that this local variable shadows `this.trace_file`.
+    PrintStream trace_file = null;
     try {
       List<String> newEnv = new ArrayList<>();
       if (dkconfig_simplify_max_iterations != 0) {
@@ -97,14 +107,17 @@ public class Session {
       } else {
         simplifyPath = System.getProperty("simplify.path");
       }
-      process = java.lang.Runtime.getRuntime().exec(simplifyPath + " -nosc", envArray);
+      process = java.lang.Runtime.getRuntime().exec(new String[] {simplifyPath, "-nosc"}, envArray);
       SessionManager.debugln("Session: exec ok");
 
       if (dkconfig_trace_input) {
         File f;
-        while ((f = new File("simplify" + trace_count + ".in")).exists()) trace_count++;
+        while ((f = new File("simplify" + trace_count + ".in")).exists()) {
+          trace_count++;
+        }
         trace_file = new PrintStream(new FileOutputStream(f));
       }
+      this.trace_file = trace_file;
 
       // set up command stream
       PrintStream tmp_input = new PrintStream(process.getOutputStream());
@@ -126,8 +139,15 @@ public class Session {
       String actual = new String(buf, 0, pos, UTF_8);
       assert expect.equals(actual) : "Prompt expected, got '" + actual + "'";
 
-    } catch (IOException e) {
-      throw new SimplifyError(e.toString());
+    } catch (Exception | AssertionError e) {
+      if (trace_file != null) {
+        try {
+          trace_file.close();
+        } catch (Exception closeException) {
+          e.addSuppressed(closeException);
+        }
+      }
+      throw new SimplifyError(e);
     }
   }
 
@@ -135,7 +155,8 @@ public class Session {
       @UnknownInitialization(Session.class) @GuardSatisfied Session this, String s) {
     if (dkconfig_trace_input) {
       assert trace_file != null
-          : "@AssumeAssertion(nullness): dependent: trace_file is non-null (set in constructor) if dkconfig_trace_input is true";
+          : "@AssumeAssertion(nullness): dependent: trace_file is non-null (set in constructor) if"
+              + " dkconfig_trace_input is true";
       trace_file.println(s);
     }
     input.println(s);
@@ -148,44 +169,52 @@ public class Session {
     return output.readLine();
   }
 
-  @Holding("this")
-  public void kill(@GuardSatisfied Session this) {
+  /** Releases the resources held by this. */
+  @EnsuresCalledMethods(value = "trace_file", methods = "close")
+  @Override
+  public void close(@GuardSatisfied Session this) {
     process.destroy();
-    if (dkconfig_trace_input) {
-      assert trace_file != null
-          : "@AssumeAssertion(nullness): conditional: trace_file is non-null if dkconfig_trace_input==true";
+    assert dkconfig_trace_input == (trace_file != null)
+        : "@AssumeAssertion(nullness): conditional: trace_file is non-null if"
+            + " dkconfig_trace_input==true";
+    if (trace_file != null) {
       trace_file.close();
     }
   }
 
-  // for testing and playing around, not for real use
+  /**
+   * for testing and playing around, not for real use
+   *
+   * @param args command-line arguments
+   */
   public static void main(String[] args) {
-    daikon.LogHelper.setupLogs(daikon.LogHelper.INFO);
-    @GuardedBy("<self>") Session s = new Session();
+    daikon.LogHelper.setupLogs(INFO);
+    try (@GuardedBy("<self>") Session s = new Session()) {
 
-    CmdCheck cc;
+      CmdCheck cc;
 
-    cc = new CmdCheck("(EQ 1 1)");
-    cc.apply(s);
-    assert cc.valid;
+      cc = new CmdCheck("(EQ 1 1)");
+      cc.apply(s);
+      assert cc.valid;
 
-    cc = new CmdCheck("(EQ 1 2)");
-    cc.apply(s);
-    assert !cc.valid;
+      cc = new CmdCheck("(EQ 1 2)");
+      cc.apply(s);
+      assert !cc.valid;
 
-    cc = new CmdCheck("(EQ x z)");
-    cc.apply(s);
-    assert !cc.valid;
+      cc = new CmdCheck("(EQ x z)");
+      cc.apply(s);
+      assert !cc.valid;
 
-    CmdAssume a = new CmdAssume("(AND (EQ x y) (EQ y z))");
-    a.apply(s);
+      CmdAssume a = new CmdAssume("(AND (EQ x y) (EQ y z))");
+      a.apply(s);
 
-    cc.apply(s);
-    assert cc.valid;
+      cc.apply(s);
+      assert cc.valid;
 
-    CmdUndoAssume.single.apply(s);
+      CmdUndoAssume.single.apply(s);
 
-    cc.apply(s);
-    assert !cc.valid;
+      cc.apply(s);
+      assert !cc.valid;
+    }
   }
 }

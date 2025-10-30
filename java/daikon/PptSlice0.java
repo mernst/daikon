@@ -23,9 +23,6 @@ import org.checkerframework.dataflow.qual.Pure;
 // names tweaked, and temporarily use that as the invariant's ppt.
 
 public class PptSlice0 extends PptSlice {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20020122L;
 
   PptSlice0(PptTopLevel parent) {
@@ -162,17 +159,22 @@ public class PptSlice0 extends PptSlice {
 
   private static final class ImplicationWrapper {
 
-    public Implication theImp;
+    final Implication theImp;
     // hashCode is cached to make equality checks faster.
     private int hashCode;
 
-    public ImplicationWrapper(Implication theImp) {
+    ImplicationWrapper(Implication theImp) {
       this.theImp = theImp;
       // this.format = theImp.format();
       this.hashCode = 0;
     }
 
     // Abstracted out to permit use of a cached value
+    /**
+     * Returns a string representation of this.
+     *
+     * @return a string representation of this
+     */
     private String format(@GuardSatisfied ImplicationWrapper this) {
       // return format;
       return theImp.format();
@@ -192,6 +194,7 @@ public class PptSlice0 extends PptSlice {
     }
 
     // Returns the value of "isSameInvariant()".
+    @SuppressWarnings("AlreadyChecked") // debugging code
     @EnsuresNonNullIf(result = true, expression = "#1")
     @Pure
     @Override

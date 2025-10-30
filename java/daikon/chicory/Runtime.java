@@ -1,11 +1,15 @@
 package daikon.chicory;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -27,6 +31,7 @@ import java.util.zip.GZIPOutputStream;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.Holding;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -40,15 +45,13 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * methods; it should never be instantiated.
  */
 @SuppressWarnings({
-  "nullness:initialization.static.fields.uninitialized", // library initialized in code added by
-  // run-time instrumentation
   "JavaLangClash" // same class name as one in java.lang.
 })
-public class Runtime {
+public final class Runtime {
   /** Unique id for method entry/exit (so they can be matched up) */
   public static AtomicInteger nonce = new AtomicInteger();
 
-  /** debug flag */
+  /** debug flag. */
   public static boolean debug = false;
 
   /**
@@ -98,9 +101,11 @@ public class Runtime {
   static boolean dtraceLimitTerminate = false;
 
   /** Dtrace output stream. Null if no_dtrace is true. */
-  // Not annotated *@MonotonicNonNull* because initialization and use happen in generated
+  @SuppressWarnings(
+      "nullness:initialization.static.field.uninitialized" // initialized and used in generated
   // instrumentation code that cannot be type-checked by a source code checker.
-  static @GuardedBy("<self>") PrintStream dtrace;
+  )
+  static @Owning @GuardedBy("<self>") PrintWriter dtrace;
 
   /** Set to true when the dtrace stream is closed. */
   static boolean dtrace_closed = false;
@@ -111,11 +116,15 @@ public class Runtime {
   static String method_indent = "";
 
   /** Decl writer setup for writing to the trace file. */
-  // Set in ChicoryPremain.premain().
+  @SuppressWarnings("nullness:initialization.static.field.uninitialized" // Set in
+  // ChicoryPremain.initializeDeclAndDTraceWriters.
+  )
   static DeclWriter decl_writer;
 
   /** Dtrace writer setup for writing to the trace file. */
-  // Set in ChicoryPremain.premain().
+  @SuppressWarnings("nullness:initialization.static.field.uninitialized" // Set in
+  // ChicoryPremain.initializeDeclAndDTraceWriters.
+  )
   static @GuardedBy("Runtime.class") DTraceWriter dtrace_writer;
 
   /**
@@ -126,13 +135,14 @@ public class Runtime {
 
   /** Class of information about each active call. */
   private static class CallInfo {
-    /** nonce of call */
+    /** nonce of call. */
     int nonce;
-    /** whether or not the call was captured on enter */
+
+    /** whether or not the call was captured on enter. */
     boolean captured;
 
     @Holding("Runtime.class")
-    public CallInfo(int nonce, boolean captured) {
+    CallInfo(int nonce, boolean captured) {
       this.nonce = nonce;
       this.captured = captured;
     }
@@ -260,11 +270,9 @@ public class Runtime {
           capture = (mi.call_cnt % 10000) == 0;
         }
         Thread t = Thread.currentThread();
-        Deque<CallInfo> callstack = thread_to_callstack.get(t);
-        if (callstack == null) {
-          callstack = new ArrayDeque<CallInfo>();
-          thread_to_callstack.put(t, callstack);
-        }
+        @SuppressWarnings("lock:method.invocation") // CF bug: inference failed
+        Deque<CallInfo> callstack =
+            thread_to_callstack.computeIfAbsent(t, __ -> new ArrayDeque<CallInfo>());
         callstack.push(new CallInfo(nonce, capture));
       }
 
@@ -399,7 +407,7 @@ public class Runtime {
   }
 
   /**
-   * Return true iff the class with fully qualified name className has been initialized.
+   * Returns true iff the class with fully qualified name className has been initialized.
    *
    * @param className fully qualified class name
    */
@@ -430,7 +438,9 @@ public class Runtime {
         break;
       }
 
-      if (debug) System.out.println("processing class " + class_info.class_name);
+      if (debug) {
+        System.out.println("processing class " + class_info.class_name);
+      }
       if (first_class) {
         decl_writer.printHeaderInfo(class_info.class_name);
         first_class = false;
@@ -481,7 +491,7 @@ public class Runtime {
     // requirement that all variables used as locks be final or
     // effectively final.  If a bug exists whereby Runtime.dtrace
     // is not effectively final, this would unfortunately mask that error.
-    final @GuardedBy("<self>") PrintStream dtrace = Runtime.dtrace;
+    final @GuardedBy("<self>") PrintWriter dtrace = Runtime.dtrace;
 
     synchronized (dtrace) {
       // The shutdown hook is synchronized on this, so close it up
@@ -534,7 +544,9 @@ public class Runtime {
     }
 
     try {
-      dtrace = new PrintStream(daikonSocket.getOutputStream());
+      dtrace =
+          new PrintWriter(
+              new BufferedWriter(new OutputStreamWriter(daikonSocket.getOutputStream(), UTF_8)));
     } catch (IOException e) {
       System.out.println("IOException connecting to Daikon : " + e.getMessage() + ". Exiting");
       System.exit(1);
@@ -547,20 +559,29 @@ public class Runtime {
     }
   }
 
-  // Copied from daikon.Runtime
-  /** Specify the dtrace file to which to write. */
+  /**
+   * Specify the dtrace file to which to write.
+   *
+   * @param filename to use as the data trace file
+   * @param append if true, open dtrace file in append mode
+   */
   @EnsuresNonNull("dtrace")
   public static void setDtrace(String filename, boolean append) {
-    System.out.printf("entered daikon.chicory.Runtime.setDtrace(%s, %b)...%n", filename, append);
+    if (ChicoryPremain.verbose) {
+      System.out.printf("entered daikon.chicory.Runtime.setDtrace(%s, %b)...%n", filename, append);
+    }
 
     if (no_dtrace) {
       throw new Error("setDtrace called when no_dtrace was specified");
     }
+    File file = new File(filename);
+    File parent = file.getParentFile();
+    if (parent != null) {
+      parent.mkdirs();
+    }
+    OutputStream os = null; // dummy initialization for compiler's definite assignment check
     try {
-      File file = new File(filename);
-      File parent = file.getParentFile();
-      if (parent != null) parent.mkdirs();
-      OutputStream os = new FileOutputStream(filename, append);
+      os = new FileOutputStream(filename, append);
       if (filename.endsWith(".gz")) {
         if (append) {
           throw new Error(
@@ -577,8 +598,15 @@ public class Runtime {
 
       // 8192 is the buffer size in BufferedReader
       BufferedOutputStream bos = new BufferedOutputStream(os, 8192);
-      dtrace = new PrintStream(bos);
+      dtrace = new PrintWriter(new BufferedWriter(new OutputStreamWriter(bos, UTF_8)));
     } catch (Exception e) {
+      if (os != null) {
+        try {
+          os.close();
+        } catch (IOException e2) {
+          // do nothing, Exception `e` will be thrown below
+        }
+      }
       e.printStackTrace();
       throw new Error(e);
     }
@@ -594,9 +622,10 @@ public class Runtime {
    * If the current data trace file is not yet set, then set it. The value of the DTRACEFILE
    * environment variable is used; if that environment variable is not set, then the argument to
    * this method is used instead.
+   *
+   * @param default_filename the file to maybe use as the data trace file
    */
   public static void setDtraceMaybe(String default_filename) {
-    // Copied from daikon.Runtime
     // System.out.println ("Setting dtrace maybe: " + default_filename);
     if ((dtrace == null) && !no_dtrace) {
       String filename = System.getProperty("DTRACEFILE", default_filename);
@@ -605,9 +634,12 @@ public class Runtime {
     }
   }
 
+  /**
+   * Returns true if method Thread.addShutdownHook exists.
+   *
+   * @return true if method Thread.addShutdownHook exists
+   */
   private static boolean supportsAddShutdownHook() {
-    // Copied from daikon.Runtime
-
     try {
       Class<java.lang.Runtime> rt = java.lang.Runtime.class;
       rt.getMethod("addShutdownHook", new Class<?>[] {java.lang.Thread.class});
@@ -617,10 +649,8 @@ public class Runtime {
     }
   }
 
-  /** Add a shutdown hook to close the PrintStream when the program exits. */
+  /** Add a shutdown hook to close the PrintWriter when the program exits. */
   private static void addShutdownHook() {
-    // Copied from daikon.Runtime, then modified
-
     java.lang.Runtime.getRuntime()
         .addShutdownHook(
             new Thread() {
@@ -629,7 +659,7 @@ public class Runtime {
               public void run() {
                 if (!dtrace_closed) {
                   // When the program being instrumented exits, the buffers
-                  // of the "dtrace" (PrintStream) object are not flushed,
+                  // of the "dtrace" (PrintWriter) object are not flushed,
                   // so we miss the tail of the file.
 
                   synchronized (Runtime.dtrace) {
@@ -691,11 +721,12 @@ public class Runtime {
     return null;
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Wrappers for the various primitive types.
-  /// Used to distinguish wrappers created by user code
-  /// from wrappers created by Chicory.
+  // ///////////////////////////////////////////////////////////////////////////
+  // Wrappers for the various primitive types.
+  // Used to distinguish wrappers created by user code
+  // from wrappers created by Chicory.
 
+  /** A wrapper for a pritive class. */
   public static interface PrimitiveWrapper {
     // returns corresponding java.lang wrapper
     public Object getJavaWrapper();
@@ -703,7 +734,7 @@ public class Runtime {
     public Class<?> primitiveClass();
   }
 
-  /** wrapper used for boolean arguments */
+  /** wrapper used for boolean arguments. */
   public static class BooleanWrap implements PrimitiveWrapper {
     boolean val;
 
@@ -728,7 +759,7 @@ public class Runtime {
     }
   }
 
-  /** wrapper used for int arguments */
+  /** wrapper used for int arguments. */
   public static class ByteWrap implements PrimitiveWrapper {
     byte val;
 
@@ -753,13 +784,14 @@ public class Runtime {
     }
   }
 
-  /** wrapper used for int arguments */
+  /** wrapper used for int arguments. */
   public static class CharWrap implements PrimitiveWrapper {
     char val;
 
     public CharWrap(char val) {
       this.val = val;
     }
+
     // Print characters as integers.
     @SideEffectFree
     @Override
@@ -778,7 +810,7 @@ public class Runtime {
     }
   }
 
-  /** wrapper used for int arguments */
+  /** wrapper used for int arguments. */
   public static class FloatWrap implements PrimitiveWrapper {
     float val;
 
@@ -803,7 +835,7 @@ public class Runtime {
     }
   }
 
-  /** wrapper used for int arguments */
+  /** wrapper used for int arguments. */
   public static class IntWrap implements PrimitiveWrapper {
     int val;
 
@@ -828,7 +860,7 @@ public class Runtime {
     }
   }
 
-  /** wrapper used for int arguments */
+  /** wrapper used for int arguments. */
   public static class LongWrap implements PrimitiveWrapper {
     long val;
 
@@ -853,7 +885,7 @@ public class Runtime {
     }
   }
 
-  /** wrapper used for int arguments */
+  /** wrapper used for int arguments. */
   public static class ShortWrap implements PrimitiveWrapper {
     short val;
 
@@ -878,7 +910,7 @@ public class Runtime {
     }
   }
 
-  /** wrapper used for double arguments */
+  /** Wrapper used for double arguments. */
   public static class DoubleWrap implements PrimitiveWrapper {
     double val;
 
@@ -903,9 +935,9 @@ public class Runtime {
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Copied code
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Copied code
+  //
 
   // Lifted directly from plume/UtilPlume.java, where it is called
   // escapeJava(), but repeated here to make this class self-contained.
@@ -973,18 +1005,6 @@ public class Runtime {
    * <p>If the argument is not a field descriptor, returns it as is. This enables this method to be
    * used on the output of {@link Class#getName()}.
    */
-  @Deprecated
-  public static String classnameFromJvm(@FieldDescriptor String classname) {
-    return fieldDescriptorToBinaryName(classname);
-  }
-
-  /**
-   * Convert a classname from JVML format to Java format. For example, convert "[Ljava/lang/Object;"
-   * to "java.lang.Object[]".
-   *
-   * <p>If the argument is not a field descriptor, returns it as is. This enables this method to be
-   * used on the output of {@link Class#getName()}.
-   */
   @SuppressWarnings("signature") // conversion routine
   public static String fieldDescriptorToBinaryName(@FieldDescriptor String classname) {
 
@@ -1002,9 +1022,9 @@ public class Runtime {
       result = classname.substring(1, classname.length() - 1);
       result = result.replace('/', '.');
     } else {
-      if (dims > 0) // array of primitives
-      result = primitiveClassesFromJvm.get(classname);
-      else {
+      if (dims > 0) { // array of primitives
+        result = primitiveClassesFromJvm.get(classname);
+      } else {
         // just a primitive
         result = classname;
       }
@@ -1031,8 +1051,8 @@ public class Runtime {
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// end of copied code
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // end of copied code
+  //
 
 }

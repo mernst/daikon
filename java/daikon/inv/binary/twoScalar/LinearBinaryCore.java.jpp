@@ -12,7 +12,7 @@ The correct way to build the system is to run 'make'.
   #define CLASSNAME LinearBinaryCore
   #define PRIMITIVE long
   #define CLASSSTRING "LinearBinaryCore"
-  #define EQUAL(a,b) ((a) == (b))
+  #define EQUAL(a,b) (a == b)
 #elif defined(TYPEDOUBLE)
   #define CLASSNAME LinearBinaryCoreFloat
   #define PRIMITIVE double
@@ -26,10 +26,10 @@ The correct way to build the system is to run 'make'.
 
 package daikon.inv.binary.twoScalar;
 
-import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import daikon.*;
 import daikon.inv.*;
 import java.io.Serializable;
@@ -39,9 +39,6 @@ import java.util.logging.Logger;
 import org.plumelib.util.MathPlume;
 
 public final class CLASSNAME implements Serializable, Cloneable {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20030822L;
 
   /** Debug tracer. */
@@ -129,12 +126,12 @@ public final class CLASSNAME implements Serializable, Cloneable {
  }
 
   /**
-   * Returns whether or not the invariant is currently active. We become active after MINPAIRS
+   * Returns true if the invariant is currently active. We become active after MINPAIRS
    * values have been seen and a line calculated. Before that, a and b are uninitialized.
    */
   @Pure
   public boolean isActive() {
-    return (values_seen >= MINPAIRS);
+    return values_seen >= MINPAIRS;
   }
 
   /**
@@ -152,7 +149,6 @@ public final class CLASSNAME implements Serializable, Cloneable {
   // it can calculate different a/b and change whether or not it even
   // finds a line with a different order.  Current code always guarantees
   // that the points arrive in the same order (I think).
-  @SuppressWarnings("UnnecessaryParentheses")  // generated code; parens are sometimes necessary
   public InvariantStatus add_modified(PRIMITIVE x, PRIMITIVE y, int count) {
     if (values_seen < MINPAIRS) {
       if (debug.isLoggable(Level.FINE)) {
@@ -226,9 +222,9 @@ public final class CLASSNAME implements Serializable, Cloneable {
           // is very close.  It would probably be better to calculate the
           // actual distance from the line, but it would be unclear what to
           // compare this to (average or X and Y?).  This seems like a
-          // reasonable compromise
-          if ((!EQUAL(-b * y_cache[i],  a * x_cache[i] + c))
-              && (!EQUAL(x_cache[i], ((-b * y_cache[i] - c) / a)))) {
+          // reasonable compromise.
+          if (!EQUAL(-b * y_cache[i],  a * x_cache[i] + c)
+              && !EQUAL(x_cache[i], (-b * y_cache[i] - c) / a)) {
             if (debug.isLoggable(Level.FINE)) {
               debug.fine(
                   "Suppressing " + CLASSSTRING + " ("
@@ -252,9 +248,9 @@ public final class CLASSNAME implements Serializable, Cloneable {
         }
       }
     } else {
-      // Check the new value against a and b. (see prev explanation for double
-      // EQUAL check)
-      if ((!EQUAL(y, (-c - a * x)/b)) && (!EQUAL(x, (-c - b * y)/ a))) {
+      // Check the new value against a and b. (See previous explanation for double
+      // EQUAL check.)
+      if (!EQUAL(y, (-c - a * x)/b) && !EQUAL(x, (-c - b * y)/ a)) {
         // see if this new point is off one end or the other
         if (x < min_x) {
           min_x = x;
@@ -446,7 +442,7 @@ public final class CLASSNAME implements Serializable, Cloneable {
   }
 
   public boolean enoughSamples(@GuardSatisfied CLASSNAME this) {
-    return (values_seen >= MINPAIRS);
+    return values_seen >= MINPAIRS;
   }
 
   public double computeConfidence() {
@@ -669,6 +665,6 @@ public final class CLASSNAME implements Serializable, Cloneable {
       return false;
     }
 
-      return ((-a / b == -other.a / other.b) && (-c / b != -other.c / other.b));
+      return (-a / b == -other.a / other.b) && (-c / b != -other.c / other.b);
   }
 }

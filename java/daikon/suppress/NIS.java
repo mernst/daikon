@@ -24,8 +24,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
-import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
+import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -113,21 +113,17 @@ public class NIS {
    * these states on each suppressor.
    */
   public enum SuppressState {
-    /** initial state -- suppressor has not been checked yet */
+    /** Initial state -- suppressor has not been checked yet. */
     NONE,
-    /** suppressor matches the falsified invariant */
+    /** Suppressor matches the falsified invariant. */
     MATCH,
-    /** suppressor is true */
+    /** Suppressor is true. */
     VALID,
-    /** suppressor is not true */
+    /** Suppressor is not true. */
     INVALID,
-    /** suppressor contains a variable that has always been nonsensical */
+    /** Suppressor contains a variable that has always been nonsensical. */
     NONSENSICAL
   }
-
-  // This should be an enum!!
-  /** initial state -- suppressor has not been checked yet */
-  static final @Interned String NONE = "none";
 
   /**
    * Map from invariant class to a list of all of the suppression sets that contain a suppressor of
@@ -142,7 +138,7 @@ public class NIS {
   public static @MonotonicNonNull Map<Class<? extends Invariant>, Integer>
       suppressor_map_suppression_count;
 
-  /** List of all suppressions. */
+  /** List of all suppressions. Is set by {@link #init_ni_suppression}. */
   static @MonotonicNonNull List<NISuppressionSet> all_suppressions;
 
   /** List of suppressor invariant prototypes. */
@@ -166,22 +162,30 @@ public class NIS {
   // Statistics that are kept during processing.  Some of these are kept
   // and/or make sense for some approaches and not for others
 
-  /** Whether or not to keep statistics. */
+  /** If true, keep statistics. */
   public static boolean keep_stats = false;
+
   /** Number of falsified invariants in the program point. */
   public static int false_cnts = 0;
+
   /** Number of falsified invariants in the program point that are potential suppressors. */
   public static int false_invs = 0;
+
   /** Number of suppressions processed. */
   public static int suppressions_processed = 0;
+
   /** Number of suppressions processed by the falsified method. */
   public static int suppressions_processed_falsified = 0;
+
   /** Number of invariants that are no longer suppressed by a suppression. */
   static int new_invs_cnt = 0;
+
   /** Number of new_invs_cnt that are falsified by the sample. */
   public static int false_invs_cnt = 0;
+
   /** Number of invariants actually created. */
   public static int created_invs_cnt = 0;
+
   /** Number of invariants that are still suppressed. */
   static int still_suppressed_cnt = 0;
 
@@ -289,7 +293,9 @@ public class NIS {
     }
     // }
 
-    if (Debug.logDetail() && debug.isLoggable(Level.FINE)) dump(debug);
+    if (Debug.logDetail() && debug.isLoggable(Level.FINE)) {
+      dump(debug);
+    }
   }
 
   /**
@@ -411,9 +417,13 @@ public class NIS {
         assert inv.ppt.parent.findSlice(inv.ppt.var_infos) == inv.ppt;
       }
       inv.ppt.addInvariant(inv);
-      if (Debug.logOn()) inv.log("%s added to slice", inv.format());
+      if (Debug.logOn()) {
+        inv.log("%s added to slice", inv.format());
+      }
 
-      if (NIS.antecedent_method) created_invs_cnt++;
+      if (NIS.antecedent_method) {
+        created_invs_cnt++;
+      }
     }
 
     // Make a second pass through the new invariants and make sure that
@@ -596,7 +606,9 @@ public class NIS {
     }
     // false_invs = false_cnt;
 
-    if (debugAnt.isLoggable(Level.FINE)) ppt.debug_invs(debugAnt);
+    if (debugAnt.isLoggable(Level.FINE)) {
+      ppt.debug_invs(debugAnt);
+    }
 
     // Find all antecedents and organize them by their variables comparability
     Map<VarComparability, Antecedents> comp_ants = new LinkedHashMap<>();
@@ -634,17 +646,9 @@ public class NIS {
             if (!v1.compatible(v2)) {
               System.out.printf("inv %s has incompatible variables%n", ie.format());
             }
-            Count cnt = var_map.get(v1);
-            if (cnt == null) {
-              cnt = new Count(0);
-              var_map.put(v1, cnt);
-            }
+            Count cnt = var_map.computeIfAbsent(v1, __ -> new Count(0));
             cnt.val++;
-            cnt = var_map.get(v2);
-            if (cnt == null) {
-              cnt = new Count(0);
-              var_map.put(v2, cnt);
-            }
+            cnt = var_map.computeIfAbsent(v2, __ -> new Count(0));
             cnt.val++;
           }
           System.out.printf("%d distinct variables%n", var_map.size());
@@ -660,7 +664,9 @@ public class NIS {
     // possibly create any newly unsuppressed invariants
     for (Iterator<Antecedents> i = comp_ants.values().iterator(); i.hasNext(); ) {
       Antecedents ants = i.next();
-      if (ants.false_cnt == 0) i.remove();
+      if (ants.false_cnt == 0) {
+        i.remove();
+      }
     }
     if (debugAnt.isLoggable(Level.FINE)) {
       for (Antecedents ants : comp_ants.values()) {
@@ -784,7 +790,9 @@ public class NIS {
     for (SupInv supinv : suppressed_invs) {
       Invariant inv = supinv.instantiate(ppt);
       if (inv != null) {
-        if (Debug.dkconfig_internal_check) assert inv.ppt.find_inv_exact(inv) == null;
+        if (Debug.dkconfig_internal_check) {
+          assert inv.ppt.find_inv_exact(inv) == null;
+        }
         inv.ppt.addInvariant(inv);
         created_invs.add(inv);
       }
@@ -824,14 +832,12 @@ public class NIS {
           continue;
         }
 
-        if (inv.is_false()) false_invs++;
+        if (inv.is_false()) {
+          false_invs++;
+        }
 
         VarComparability vc = inv.get_comparability();
-        Antecedents ants = comp_ants.get(vc);
-        if (ants == null) {
-          ants = new Antecedents(vc);
-          comp_ants.put(vc, ants);
-        }
+        Antecedents ants = comp_ants.computeIfAbsent(vc, Antecedents::new);
         ants.add(inv);
         // if (Debug.logOn())
         //  inv.log ("Added to antecedent map " + inv.format() + " compare = "
@@ -857,12 +863,11 @@ public class NIS {
         if (!is_suppressor(inv.getClass())) {
           continue;
         }
-        if (inv.is_false()) false_cnt++;
-        List<Invariant> antecedents = antecedent_map.get(inv.getClass());
-        if (antecedents == null) {
-          antecedents = new ArrayList<Invariant>();
-          antecedent_map.put(inv.getClass(), antecedents);
+        if (inv.is_false()) {
+          false_cnt++;
         }
+        List<Invariant> antecedents =
+            antecedent_map.computeIfAbsent(inv.getClass(), __ -> new ArrayList<Invariant>());
         antecedents.add(inv);
       }
     }
@@ -885,11 +890,16 @@ public class NIS {
     }
   }
 
-  /** Returns true if the specified class is an antecedent in any NI suppression. */
+  /**
+   * Returns true if the specified class is an antecedent in any NI suppression.
+   *
+   * @param cls the class for some subtype of Invariant
+   * @return true if the specified class is an antecedent in any NI suppression
+   */
   @RequiresNonNull("NIS.suppressor_map")
   @Pure
-  public static boolean is_suppressor(Class<? extends Invariant> cls) {
-    return (suppressor_map.containsKey(cls));
+  public static boolean is_suppressor(Class<? extends @MustCallUnknown Invariant> cls) {
+    return suppressor_map.containsKey(cls);
   }
 
   /** Dump out the suppressor map. */
@@ -928,12 +938,16 @@ public class NIS {
       this.suppressee = suppressee;
       this.vis = vis;
       this.ppt = ppt;
-      if (Debug.logOn()) log("Created " + suppressee);
+      if (Debug.logOn()) {
+        log("Created " + suppressee);
+      }
     }
 
     /** Track Log the specified message. */
     public void log(@UnknownInitialization(SupInv.class) SupInv this, String message) {
-      if (Debug.logOn()) Debug.log(suppressee.sup_class, ppt, vis, message);
+      if (Debug.logOn()) {
+        Debug.log(suppressee.sup_class, ppt, vis, message);
+      }
     }
 
     /** Equal iff classes / swap variable / and variables match exactly. */
@@ -992,8 +1006,9 @@ public class NIS {
 
       NISuppressionSet ss = suppressee.sample_inv.get_ni_suppressions();
       assert ss != null
-          : "@AssumeAssertion(nullness):  dependent:  this invariant's class can be suppressed, so ss != null";
-      return (ss.suppressed(ppt, vis));
+          : "@AssumeAssertion(nullness):  dependent:  this invariant's class can be suppressed, so"
+              + " ss != null";
+      return ss.suppressed(ppt, vis);
     }
 
     /** Instantiate this invariant on the specified ppt. */
@@ -1092,7 +1107,9 @@ public class NIS {
         }
       }
 
-      if (inv.is_false()) false_cnt++;
+      if (inv.is_false()) {
+        false_cnt++;
+      }
 
       // Add the invariant to the map for its class
       List<Invariant> antecedents = get(inv.getClass());

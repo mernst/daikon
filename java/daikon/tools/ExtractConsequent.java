@@ -1,11 +1,12 @@
 package daikon.tools;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
 
 import daikon.Daikon;
 import daikon.FileIO;
 import daikon.Global;
-import daikon.LogHelper;
 import daikon.Ppt;
 import daikon.PptMap;
 import daikon.PptTopLevel;
@@ -32,7 +33,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Extract the consequents of all Implication invariants that are predicated by membership in a
@@ -74,8 +75,9 @@ public class ExtractConsequent {
   private static Map<String, Map<String, Map<String, HashedConsequent>>> pptname_to_conditions =
       new HashMap<>();
 
+  /** The usage message for this program. */
   private static String usage =
-      UtilPlume.joinLines(
+      StringsPlume.joinLines(
           "Usage: java daikon.ExtractConsequent [OPTION]... FILE",
           "  -h, --" + Daikon.help_SWITCH,
           "      Display this usage message",
@@ -100,10 +102,10 @@ public class ExtractConsequent {
    * appropriate to be called progrmmatically.
    *
    * @param args command-line arguments, like those of {@link #main}
+   * @throws IOException if there is trouble reading the file
    */
-  public static void mainHelper(final String[] args)
-      throws FileNotFoundException, IOException, ClassNotFoundException {
-    daikon.LogHelper.setupLogs(daikon.LogHelper.INFO);
+  public static void mainHelper(final String[] args) throws IOException {
+    daikon.LogHelper.setupLogs(INFO);
     LongOpt[] longopts =
         new LongOpt[] {
           new LongOpt(Daikon.suppress_redundant_SWITCH, LongOpt.NO_ARGUMENT, null, 0),
@@ -130,7 +132,7 @@ public class ExtractConsequent {
           } else if (Daikon.debugAll_SWITCH.equals(option_name)) {
             Global.debugAll = true;
           } else if (Daikon.debug_SWITCH.equals(option_name)) {
-            LogHelper.setLevel(Daikon.getOptarg(g), LogHelper.FINE);
+            daikon.LogHelper.setLevel(Daikon.getOptarg(g), FINE);
           } else {
             throw new RuntimeException("Unknown long option received: " + option_name);
           }
@@ -288,7 +290,7 @@ public class ExtractConsequent {
           for (int i = 0; i < maybe.ppt.var_infos.length; i++) {
             VarInfo vi = maybe.ppt.var_infos[i];
             if (vi.isDerivedParam()) {
-              continue;
+              // continue;
             }
           }
         }
@@ -300,8 +302,12 @@ public class ExtractConsequent {
         // extract the consequent (predicate) if the predicate
         // (consequent) uses the variable "cluster".  Ignore if they
         // both depend on "cluster"
-        if (consequent.usesVarDerived("cluster")) cons_uses_cluster = true;
-        if (predicate.usesVarDerived("cluster")) pred_uses_cluster = true;
+        if (consequent.usesVarDerived("cluster")) {
+          cons_uses_cluster = true;
+        }
+        if (predicate.usesVarDerived("cluster")) {
+          pred_uses_cluster = true;
+        }
 
         if (!(pred_uses_cluster ^ cons_uses_cluster)) {
           continue;
@@ -408,15 +414,22 @@ public class ExtractConsequent {
     return false;
   }
 
-  // remove non-word characters and everything after ":::" from the
-  // program point name, leaving PackageName.ClassName.MethodName
+  /**
+   * Remove non-word characters and everything after "(" (which includes everything after ":::")
+   * from the program point name, leaving "PackageName.ClassName.MethodName".
+   *
+   * @param pptname a program point name
+   * @return the argument, without non-word characters and without parens or ":::" suffix
+   */
   private static String cleanup_pptname(String pptname) {
     int index;
-    if ((index = pptname.indexOf("(")) > 0) {
+    if ((index = pptname.indexOf('(')) > 0) {
       pptname = pptname.substring(0, index);
     }
 
-    if (pptname.endsWith(".")) pptname = pptname.substring(0, pptname.length() - 2);
+    if (pptname.endsWith(".")) {
+      pptname = pptname.substring(0, pptname.length() - 2);
+    }
 
     Matcher m = non_word_pattern.matcher(pptname);
     return m.replaceAll(".");
@@ -424,10 +437,13 @@ public class ExtractConsequent {
 
   /**
    * Prevents the occurence of "equivalent" inequalities, or inequalities which produce the same
-   * pair of splits at a program point, for example "x <= y" and "x &gt; y". Replaces "&ge;" with
-   * "<", "&le;" with ">", and "!=" with "==" so that the occurence of equivalent inequalities can
-   * be detected. However it tries not to be smart ... If there is more than one inequality in the
-   * expression, it doesn't perform a substitution.
+   * pair of splits at a program point, for example "x &le; y" and "x &gt; y". Replaces "&ge;" with
+   * "&lt;", "&le;" with "&gt;", and "!=" with "==" so that the occurence of equivalent inequalities
+   * can be detected. However it tries not to be smart ... If there is more than one inequality in
+   * the expression, it doesn't perform a substitution.
+   *
+   * @param condition a boolean equation
+   * @return the condition, with some equalities canonicalized
    */
   private static String simplify_inequalities(String condition) {
     if (contains_exactly_one(condition, inequality_pattern)) {
@@ -447,7 +463,7 @@ public class ExtractConsequent {
   private static boolean contains_exactly_one(String string, Pattern pattern) {
     Matcher m = pattern.matcher(string);
     // return true if first call returns true and second returns false
-    return (m.find() && !m.find());
+    return m.find() && !m.find();
   }
 
   static Pattern orig_pattern, dot_class_pattern, non_word_pattern;

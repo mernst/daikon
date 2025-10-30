@@ -1,24 +1,21 @@
 package daikon.test;
 
+import static org.junit.Assert.assertEquals;
+
 import daikon.tools.jtb.*;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import jtb.*;
 import jtb.syntaxtree.*;
 import jtb.visitor.*;
 import junit.framework.*;
-import org.plumelib.util.UtilPlume;
+import org.junit.Test;
+import org.plumelib.util.StringsPlume;
 
-public final class TestClassOrInterfaceTypeDecorateVisitor extends TestCase {
-
-  public static void main(String[] args) {
-    junit.textui.TestRunner.run(new TestSuite(TestClassOrInterfaceTypeDecorateVisitor.class));
-  }
-
-  public TestClassOrInterfaceTypeDecorateVisitor(String name) {
-    super(name);
-  }
+public final class TestClassOrInterfaceTypeDecorateVisitor {
 
   public static class UngenerifiedTypeCollector extends DepthFirstVisitor {
     // These two lists have the same length.
@@ -64,21 +61,25 @@ public final class TestClassOrInterfaceTypeDecorateVisitor extends TestCase {
     }
   }
 
+  @Test
   public void testTheVisitor() {
-
-    // Parse the file "GenericTestClass.java" (under same dir as this class)
-    InputStream sourceIn = this.getClass().getResourceAsStream("GenericTestClass.java");
-    if (sourceIn == null) {
-      throw new Error("Couldn't find file GenericTestClass.java");
-    }
-    JavaParser parser = new JavaParser(sourceIn);
 
     CompilationUnit compilationUnit;
 
-    try {
-      compilationUnit = parser.CompilationUnit();
-    } catch (ParseException e) {
-      throw new Error(e);
+    // Parse the file "GenericTestClass.java" (under same dir as this class)
+    try (InputStream sourceIn = this.getClass().getResourceAsStream("GenericTestClass.java")) {
+      if (sourceIn == null) {
+        throw new Error("Couldn't find file GenericTestClass.java");
+      }
+      JavaParser parser = new JavaParser(sourceIn);
+
+      try {
+        compilationUnit = parser.CompilationUnit();
+      } catch (ParseException e) {
+        throw new Error(e);
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
 
     UngenerifiedTypeCollector ungenerifiedCollector = new UngenerifiedTypeCollector();
@@ -98,10 +99,10 @@ public final class TestClassOrInterfaceTypeDecorateVisitor extends TestCase {
     */
 
     String result = ungenerifiedCollector.collectionResults().trim();
-    String[] result_arr = UtilPlume.splitLines(result);
+    String[] result_arr = StringsPlume.splitLines(result);
 
-    // UtilPlume.writeFile(new File("expected.txt"), expected);
-    // UtilPlume.writeFile(new File("result.txt"), result);
+    // FilesPlume.writeFile(new File("expected.txt"), expected);
+    // FilesPlume.writeFile(new File("result.txt"), result);
 
     assertEquals(expectedAnswerLines.length, result_arr.length);
     for (int ii = 0; ii < expectedAnswerLines.length; ii++) {

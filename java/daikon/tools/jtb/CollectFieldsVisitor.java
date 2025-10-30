@@ -26,16 +26,24 @@ class CollectFieldsVisitor extends DepthFirstVisitor {
   /** True if this visitor should include nested classes, false otherwise. */
   private boolean include_nested_classes;
 
+  /** All FieldDeclarations declared in this class or in nested/inner classes. */
   private List<FieldDeclaration> fieldDecls = new ArrayList<>();
 
-  // Why does this class store arrays instead of, say, List<String>?  Is
-  // that just for efficiency?
+  /** Names of all fields. */
   private List<String> allNames;
+
+  /** Names of all fields with owner annotations. */
   private List<String> ownedNames;
+
+  /** Names of all final fields. */
   private List<String> finalNames;
-  // True if the above three lists are up-to-date.
+
+  /**
+   * True if the fields {@code allNames}, {@code ownedNames}, and {@code finalNames} are up-to-date.
+   */
   private boolean cached = false;
 
+  /** Update the fields {@code allNames}, {@code ownedNames}, and {@code finalNames}. */
   @RequiresNonNull("fieldDecls")
   @EnsuresNonNull({"allNames", "ownedNames", "finalNames"})
   private void updateCache(@UnknownInitialization CollectFieldsVisitor this) {
@@ -62,8 +70,12 @@ class CollectFieldsVisitor extends DepthFirstVisitor {
       {
         String name = name(fd.f1);
         allNames.add(name);
-        if (isFinal) finalNames.add(name);
-        if (isOwned) ownedNames.add(name);
+        if (isFinal) {
+          finalNames.add(name);
+        }
+        if (isOwned) {
+          ownedNames.add(name);
+        }
       }
       NodeListOptional fds = fd.f2;
       if (fds.present()) {
@@ -75,8 +87,12 @@ class CollectFieldsVisitor extends DepthFirstVisitor {
           }
           String name = name((VariableDeclarator) ns.elementAt(1));
           allNames.add(name);
-          if (isFinal) finalNames.add(name);
-          if (isOwned) ownedNames.add(name);
+          if (isFinal) {
+            finalNames.add(name);
+          }
+          if (isOwned) {
+            ownedNames.add(name);
+          }
         }
       }
     }

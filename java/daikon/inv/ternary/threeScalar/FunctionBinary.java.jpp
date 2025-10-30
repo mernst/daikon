@@ -14,7 +14,7 @@
   #define SUPERCLASS ThreeScalar
   #define PRIMITIVE long
   #define PRIMITIVE_CNAME Long
-  #define EQUAL(a,b) ((a) == (b))
+  #define EQUAL(a,b) (a == b)
   #define IS_INTEGRAL isIntegral()
   #define POW MathPlume.pow
   #define EQUALITY IntEqual
@@ -114,13 +114,8 @@ import typequals.prototype.qual.Prototype;
  * here. The subclasses basically define the function and return information describing the function
  * and permutation to these methods.
  */
-@SuppressWarnings({"UnusedVariable",  // generated code, complex rules for when var is used
-     "UnnecessaryParentheses"  // generated code, parens are sometimes necessary
-})
+@SuppressWarnings("UnusedVariable")  // generated code, complex rules for when var is used
 public abstract class CLASSNAME extends SUPERCLASS {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20031030L;
 
   /** Boolean. True if CLASSNAME invariants should be considered. */
@@ -148,13 +143,11 @@ public abstract class CLASSNAME extends SUPERCLASS {
     super();
   }
 
-  /** returns whether or not this invariant is enabled */
   @Override
   public boolean enabled() {
     return dkconfig_enabled;
   }
 
-  /** CLASSNAME is only valid on IS_INTEGRAL types. */
   @Override
   public boolean instantiate_ok(VarInfo[] vis) {
 
@@ -197,7 +190,7 @@ public abstract class CLASSNAME extends SUPERCLASS {
   private static void build_func_list() {
 
     // Reflection seems to confuse clover
-    ///CLOVER:OFF
+    // CLOVER:OFF
 
     // Build the map of functions to array of instances for that function
     debug.fine("Processing " + #CLASSNAME);
@@ -237,7 +230,7 @@ public abstract class CLASSNAME extends SUPERCLASS {
       debug.fine("Adding " + function + " " + fb.getClass().getName()
                   + " " + fb.get_var_order() + " " + fb.get_function_id());
     }
-    ///CLOVER:ON
+    // CLOVER:ON
   }
 
 #if 0
@@ -347,7 +340,7 @@ public abstract class CLASSNAME extends SUPERCLASS {
   /**
    * Reorganize our already-seen state as if the variables had shifted order underneath us
    * (re-arrangement given by the permutation). We accomplish this by returning the class that
-   * corresponds to the the new permutation.
+   * corresponds to the new permutation.
    */
   @Override
   protected Invariant resurrect_done(int[] permutation) {
@@ -410,7 +403,7 @@ public abstract class CLASSNAME extends SUPERCLASS {
     assert fb_arr != null;
     for (int ii = 0; ii < fb_arr.length; ii++) {
       if ((fb_arr[ii] != null) && (fb_arr[ii].get_var_order() == var_order)) {
-        return (fb_arr[ii].instantiate_dyn(ppt));
+        return fb_arr[ii].instantiate_dyn(ppt);
       }
     }
 

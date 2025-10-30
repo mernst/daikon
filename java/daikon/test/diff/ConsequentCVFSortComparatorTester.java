@@ -1,5 +1,9 @@
 package daikon.test.diff;
 
+import static java.util.logging.Level.INFO;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import daikon.*;
 import daikon.diff.*;
 import daikon.inv.*;
@@ -7,19 +11,21 @@ import daikon.inv.unary.scalar.*;
 import daikon.test.*;
 import java.util.Comparator;
 import junit.framework.*;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
+/** Daikon unit test class. */
 @SuppressWarnings("nullness") // testing code
-public class ConsequentCVFSortComparatorTester extends TestCase {
+public class ConsequentCVFSortComparatorTester {
 
-  public static void main(String[] args) {
-    daikon.LogHelper.setupLogs(LogHelper.INFO);
-    junit.textui.TestRunner.run(new TestSuite(ConsequentCVFSortComparatorTester.class));
+  /** prepare for tests */
+  @BeforeClass
+  public static void setUpClass() {
+    daikon.LogHelper.setupLogs(INFO);
+    FileIO.new_decl_format = true;
   }
 
-  public ConsequentCVFSortComparatorTester(String name) {
-    super(name);
-  }
-
+  @Test
   public void testCompare() {
     VarInfo[] vars = {
       DiffTester.newIntVarInfo("a"),

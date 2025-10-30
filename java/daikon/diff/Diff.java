@@ -1,5 +1,8 @@
 package daikon.diff;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+
 import daikon.Daikon;
 import daikon.FileIO;
 import daikon.Ppt;
@@ -7,7 +10,8 @@ import daikon.PptConditional;
 import daikon.PptMap;
 import daikon.PptTopLevel;
 import daikon.inv.Invariant;
-import gnu.getopt.*;
+import gnu.getopt.Getopt;
+import gnu.getopt.LongOpt;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,16 +25,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.FilesPlume;
+import org.plumelib.util.IPair;
 import org.plumelib.util.OrderedPairIterator;
-import org.plumelib.util.Pair;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Diff is the main class for the invariant diff program. The invariant diff program outputs the
@@ -51,10 +55,12 @@ import org.plumelib.util.UtilPlume;
  */
 public final class Diff {
 
+  /** Debug logger. */
   public static final Logger debug = Logger.getLogger("daikon.diff.Diff");
 
+  /** The usage message for this program. */
   private static String usage =
-      UtilPlume.joinLines(
+      StringsPlume.joinLines(
           "Usage:",
           "    java daikon.diff.Diff [flags...] file1 [file2]",
           "  file1 and file2 are serialized invariants produced by Daikon.",
@@ -112,8 +118,11 @@ public final class Diff {
       @Nullable @ClassGetName String invSortComparator2Classname,
       @Nullable @ClassGetName String invPairComparatorClassname,
       Comparator<Invariant> defaultComparator)
-      throws ClassNotFoundException, IllegalAccessException, InstantiationException,
-          InvocationTargetException, NoSuchMethodException {
+      throws ClassNotFoundException,
+          IllegalAccessException,
+          InstantiationException,
+          InvocationTargetException,
+          NoSuchMethodException {
     this.examineAllPpts = examineAllPpts;
     this.ignoreNumberedExits = ignoreNumberedExits;
     this.invSortComparator1 = selectComparator(invSortComparator1Classname, defaultComparator);
@@ -126,9 +135,15 @@ public final class Diff {
    * as necessary, and diff the InvMaps.
    */
   public static void main(String[] args)
-      throws FileNotFoundException, StreamCorruptedException, OptionalDataException, IOException,
-          ClassNotFoundException, IllegalAccessException, InstantiationException,
-          InvocationTargetException, NoSuchMethodException {
+      throws FileNotFoundException,
+          StreamCorruptedException,
+          OptionalDataException,
+          IOException,
+          ClassNotFoundException,
+          IllegalAccessException,
+          InstantiationException,
+          InvocationTargetException,
+          NoSuchMethodException {
     try {
       mainHelper(args);
     } catch (Daikon.DaikonTerminationException e) {
@@ -141,10 +156,16 @@ public final class Diff {
    * appropriate to be called progrmmatically.
    */
   public static void mainHelper(final String[] args)
-      throws FileNotFoundException, StreamCorruptedException, OptionalDataException, IOException,
-          ClassNotFoundException, InstantiationException, IllegalAccessException,
-          InvocationTargetException, NoSuchMethodException {
-    daikon.LogHelper.setupLogs(daikon.LogHelper.INFO);
+      throws FileNotFoundException,
+          StreamCorruptedException,
+          OptionalDataException,
+          IOException,
+          ClassNotFoundException,
+          InstantiationException,
+          IllegalAccessException,
+          InvocationTargetException,
+          NoSuchMethodException {
+    daikon.LogHelper.setupLogs(INFO);
 
     boolean printDiff = false;
     boolean printAll = false;
@@ -167,8 +188,8 @@ public final class Diff {
 
     boolean optionSelected = false;
 
-    daikon.LogHelper.setupLogs(daikon.LogHelper.INFO);
-    //     daikon.LogHelper.setLevel ("daikon.diff", daikon.LogHelper.FINE);
+    daikon.LogHelper.setupLogs(INFO);
+    //     daikon.LogHelper.setLevel ("daikon.diff", FINE);
 
     LongOpt[] longOpts =
         new LongOpt[] {
@@ -278,7 +299,7 @@ public final class Diff {
           }
           String outputFilename = Daikon.getOptarg(g);
           outputFile = new File(outputFilename);
-          if (!UtilPlume.canCreateAndWrite(outputFile)) {
+          if (!FilesPlume.canCreateAndWrite(outputFile)) {
             throw new Error("Cannot write to file " + outputFile);
           }
           break;
@@ -312,9 +333,13 @@ public final class Diff {
       printDiff = true;
     }
 
-    if (logging) System.err.println("Invariant Diff: Starting Log");
+    if (logging) {
+      System.err.println("Invariant Diff: Starting Log");
+    }
 
-    if (logging) System.err.println("Invariant Diff: Creating Diff Object");
+    if (logging) {
+      System.err.println("Invariant Diff: Creating Diff Object");
+    }
 
     Comparator<Invariant> defaultComparator;
     if (minus || xor || union) {
@@ -355,7 +380,9 @@ public final class Diff {
     InvMap invMap1 = null;
     InvMap invMap2 = null;
 
-    if (logging) System.err.println("Invariant Diff: Reading Files");
+    if (logging) {
+      System.err.println("Invariant Diff: Reading Files");
+    }
 
     if (numFiles == 1) {
       String filename1 = args[firstFileIndex];
@@ -399,9 +426,13 @@ public final class Diff {
       throw new Daikon.NormalTermination();
     }
 
-    if (logging) System.err.println("Invariant Diff: Creating Tree");
+    if (logging) {
+      System.err.println("Invariant Diff: Creating Tree");
+    }
 
-    if (logging) System.err.println("Invariant Diff: Visiting Tree");
+    if (logging) {
+      System.err.println("Invariant Diff: Visiting Tree");
+    }
 
     RootNode root = diff.diffInvMap(invMap1, invMap2, includeUnjustified);
 
@@ -432,7 +463,7 @@ public final class Diff {
       if (outputFile != null) {
         MinusVisitor v = new MinusVisitor();
         root.accept(v);
-        UtilPlume.writeObject(v.getResult(), outputFile);
+        FilesPlume.writeObject(v.getResult(), outputFile);
         // System.out.println("Output written to: " + outputFile);
       } else {
         throw new Error("no output file specified on command line");
@@ -444,8 +475,8 @@ public final class Diff {
         XorVisitor v = new XorVisitor();
         root.accept(v);
         InvMap resultMap = v.getResult();
-        UtilPlume.writeObject(resultMap, outputFile);
-        if (debug.isLoggable(Level.FINE)) {
+        FilesPlume.writeObject(resultMap, outputFile);
+        if (debug.isLoggable(FINE)) {
           debug.fine("Result: " + resultMap.toString());
         }
 
@@ -459,21 +490,30 @@ public final class Diff {
       if (outputFile != null) {
         UnionVisitor v = new UnionVisitor();
         root.accept(v);
-        UtilPlume.writeObject(v.getResult(), outputFile);
+        FilesPlume.writeObject(v.getResult(), outputFile);
         // System.out.println("Output written to: " + outputFile);
       } else {
         throw new Error("no output file specified on command line");
       }
     }
 
-    if (logging) System.err.println("Invariant Diff: Ending Log");
+    if (logging) {
+      System.err.println("Invariant Diff: Ending Log");
+    }
 
     // finished; return (and end program)
   }
 
-  /** Reads an InvMap from a file that contains a serialized InvMap or PptMap. */
+  /**
+   * Reads an InvMap from a file that contains a serialized InvMap or PptMap.
+   *
+   * @param file a file
+   * @return an InvMap read from the file
+   * @throws IOException if there is trouble reading the file
+   * @throws ClassNotFoundException if an object in the serialized file has an unloadable class
+   */
   private InvMap readInvMap(File file) throws IOException, ClassNotFoundException {
-    Object o = UtilPlume.readObject(file);
+    Object o = FilesPlume.readObject(file);
     if (o instanceof InvMap) {
       return (InvMap) o;
     } else {
@@ -537,15 +577,15 @@ public final class Diff {
   public RootNode diffInvMap(InvMap map1, InvMap map2, boolean includeUnjustified) {
     RootNode root = new RootNode();
 
-    Iterator<Pair<@Nullable PptTopLevel, @Nullable PptTopLevel>> opi =
+    Iterator<IPair<@Nullable PptTopLevel, @Nullable PptTopLevel>> opi =
         new OrderedPairIterator<PptTopLevel>(
             map1.pptSortedIterator(PPT_COMPARATOR),
             map2.pptSortedIterator(PPT_COMPARATOR),
             PPT_COMPARATOR);
     while (opi.hasNext()) {
-      Pair<@Nullable PptTopLevel, @Nullable PptTopLevel> ppts = opi.next();
-      PptTopLevel ppt1 = ppts.a;
-      PptTopLevel ppt2 = ppts.b;
+      IPair<@Nullable PptTopLevel, @Nullable PptTopLevel> ppts = opi.next();
+      PptTopLevel ppt1 = ppts.first;
+      PptTopLevel ppt2 = ppts.second;
       if (shouldAdd(ppt1) || shouldAdd(ppt2)) {
         PptNode node = diffPptTopLevel(ppt1, ppt2, map1, map2, includeUnjustified);
         root.add(node);
@@ -622,12 +662,12 @@ public final class Diff {
       invs2 = new ArrayList<Invariant>();
     }
 
-    Iterator<Pair<@Nullable Invariant, @Nullable Invariant>> opi =
+    Iterator<IPair<@Nullable Invariant, @Nullable Invariant>> opi =
         new OrderedPairIterator<Invariant>(invs1.iterator(), invs2.iterator(), invPairComparator);
     while (opi.hasNext()) {
-      Pair<@Nullable Invariant, @Nullable Invariant> invariants = opi.next();
-      Invariant inv1 = invariants.a;
-      Invariant inv2 = invariants.b;
+      IPair<@Nullable Invariant, @Nullable Invariant> invariants = opi.next();
+      Invariant inv1 = invariants.first;
+      Invariant inv2 = invariants.second;
       if (!includeUnjustified) {
         if ((inv1 != null) && !inv1.justified()) {
           inv1 = null;
@@ -659,8 +699,11 @@ public final class Diff {
    */
   private static Comparator<Invariant> selectComparator(
       @Nullable @ClassGetName String classname, Comparator<Invariant> defaultComparator)
-      throws ClassNotFoundException, IllegalAccessException, InstantiationException,
-          InvocationTargetException, NoSuchMethodException {
+      throws ClassNotFoundException,
+          IllegalAccessException,
+          InstantiationException,
+          InvocationTargetException,
+          NoSuchMethodException {
 
     if (classname != null) {
       Class<?> cls = Class.forName(classname);

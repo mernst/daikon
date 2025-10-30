@@ -64,9 +64,6 @@
  * scalars. EXTRA_INV_DOC
  */
 public static class CNAME(FUNCTION,PERM_NAME) extends CLASSNAME {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20031030L;
 
   #ifdef ARG1_BOUND
@@ -86,7 +83,6 @@ public static class CNAME(FUNCTION,PERM_NAME) extends CLASSNAME {
     return proto;
   }
 
-  /** instantiate an invariant on the specified slice */
   @Override
   protected CNAME(FUNCTION,PERM_NAME) instantiate_dyn(@Prototype CNAME(FUNCTION,PERM_NAME) this, PptSlice slice) {
     return new CNAME(FUNCTION,PERM_NAME) (slice);
@@ -138,6 +134,9 @@ public static class CNAME(FUNCTION,PERM_NAME) extends CLASSNAME {
   }
 
   @Override
+  #if FTYPE == FTYPE_RshiftUnsigned
+  @SuppressWarnings("signedness:shift.unsigned") // RshiftUnsigned treats arg1 as unsigned, though we do not know how the program under test treats it
+  #endif
   public PRIMITIVE func(PRIMITIVE arg1, PRIMITIVE arg2) {
     #ifdef ARG1_BOUND
       if ((arg1 < arg1_bound[0]) || (arg1 > arg1_bound[1])) {
@@ -162,13 +161,13 @@ public static class CNAME(FUNCTION,PERM_NAME) extends CLASSNAME {
       }
     #endif
 
-    return (FUNC(arg1, arg2));
+    return FUNC(arg1, arg2);
   }
 
   @Override
   public InvariantStatus check_modified(PRIMITIVE x, PRIMITIVE y,
                                       PRIMITIVE z, int count) {
-    return (check_ordered(resultvar, arg1, arg2, count));
+    return check_ordered(resultvar, arg1, arg2, count);
   }
 
   @Override
@@ -177,7 +176,7 @@ public static class CNAME(FUNCTION,PERM_NAME) extends CLASSNAME {
     if (Debug.logDetail()) {
       log("result=%s, arg1=%s, arg2=%s", resultvar, arg1, arg2);
     }
-    return (add_ordered(resultvar, arg1, arg2, count));
+    return add_ordered(resultvar, arg1, arg2, count);
   }
 
   @Pure

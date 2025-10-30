@@ -1,19 +1,25 @@
 package daikon.test;
 
-import daikon.*;
+import static java.util.logging.Level.INFO;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import daikon.tools.DtraceDiff;
 import java.net.URL;
-import junit.framework.*;
+import junit.framework.TestSuite;
+import org.junit.Test;
 
-public class DtraceDiffTester extends TestCase {
+/** Daikon unit test class. */
+public class DtraceDiffTester {
 
+  /**
+   * The entry point of DtraceDiffTester
+   *
+   * @param args command-line arguments
+   */
   public static void main(String[] args) {
-    daikon.LogHelper.setupLogs(daikon.LogHelper.INFO);
+    daikon.LogHelper.setupLogs(INFO);
     junit.textui.TestRunner.run(new TestSuite(DtraceDiffTester.class));
-  }
-
-  public DtraceDiffTester(String name) {
-    super(name);
   }
 
   private static boolean diff(String file1, String file2) {
@@ -39,6 +45,7 @@ public class DtraceDiffTester extends TestCase {
     return input_file_location.toExternalForm();
   }
 
+  @Test
   public void test_samples() {
     // these tests should succeed
     assertTrue(diff("AllTypes.dtrace.gz", "AllTypes.dtrace.gz"));

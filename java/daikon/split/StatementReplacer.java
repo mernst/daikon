@@ -4,8 +4,15 @@ import daikon.tools.jtb.Ast;
 import java.util.ArrayList;
 import java.util.List;
 import jtb.ParseException;
-import jtb.syntaxtree.*;
-import jtb.visitor.*;
+import jtb.syntaxtree.ArgumentList;
+import jtb.syntaxtree.Arguments;
+import jtb.syntaxtree.Name;
+import jtb.syntaxtree.Node;
+import jtb.syntaxtree.NodeListOptional;
+import jtb.syntaxtree.NodeToken;
+import jtb.syntaxtree.PrimaryExpression;
+import jtb.syntaxtree.PrimarySuffix;
+import jtb.visitor.DepthFirstVisitor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.dataflow.qual.Pure;
 
@@ -34,7 +41,7 @@ class StatementReplacer extends DepthFirstVisitor {
   private ReplaceStatementMap statementMap;
 
   /**
-   * true iff a match between the method name in the PrimaryExpression currently being visited and
+   * True iff a match between the method name in the PrimaryExpression currently being visited and
    * one of the members of methodNames is found.
    */
   private boolean matchFound = false;
@@ -56,7 +63,7 @@ class StatementReplacer extends DepthFirstVisitor {
    * Makes the replacements in statement that are designated by this. See class description for
    * details.
    *
-   * @param expression a segment of valid java code in which the the replacements should be made
+   * @param expression a segment of valid java code in which the replacements should be made
    * @return statement with the correct replacements made
    */
   public String makeReplacements(String expression) throws ParseException {
@@ -93,8 +100,8 @@ class StatementReplacer extends DepthFirstVisitor {
 
   /**
    * This method should not be used directly by users of this class; however, it must be public to
-   * full-fill the visitor interface. If n is a method call with a replacement, then the variables
-   * of the replacement statement are replaced by the arguments to the method call and then the
+   * fulfill the visitor interface. If n is a method call with a replacement, then the variables of
+   * the replacement statement are replaced by the arguments to the method call and then the
    * replacement statement is substituted for the method call. The first token of n is set to the
    * replace statement. All the other tokens are set to the empty string by visit(NodeToken n).
    *
@@ -155,8 +162,8 @@ class StatementReplacer extends DepthFirstVisitor {
 
   /**
    * This method should not be used directly by users of this class; however, it must be public to
-   * full-fill the visitor interface. Sets all tokens except the first in a Primary expression to
-   * the empty string. All begin columns and endColumns are set to -1, to ensure that Ast printing
+   * fulfill the visitor interface. Sets all tokens except the first in a Primary expression to the
+   * empty string. All begin columns and endColumns are set to -1, to ensure that Ast printing
    * exceptions are not thrown.
    */
   @Override
@@ -189,7 +196,7 @@ class StatementReplacer extends DepthFirstVisitor {
   }
 
   /**
-   * Returns whether n represents a "non-this" call to a method. "Non-this" methods calls are not
+   * Returns true if n represents a "non-this" call to a method. "Non-this" methods calls are not
    * prefixed with "this.". For example "get(5)" and "Collections.sort(new ArrayList())" are
    * "non-this" method calls.
    */
@@ -202,7 +209,7 @@ class StatementReplacer extends DepthFirstVisitor {
   }
 
   /**
-   * Returns whether n represents a "this" call to a method. "This" methods calls are prefixed with
+   * Returns true if n represents a "this" call to a method. "This" methods calls are prefixed with
    * "this.". For example "this.get(5)" is a "this" method call.
    */
   @Pure

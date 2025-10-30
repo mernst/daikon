@@ -1,6 +1,10 @@
 package daikon.test;
 
-import daikon.*;
+import daikon.PptTopLevel;
+import daikon.ProglangType;
+import daikon.VarComparabilityNone;
+import daikon.VarInfo;
+import daikon.VarInfoAux;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +56,9 @@ public class Common {
     // the ppt as well.
     List<VarInfo> vlist = new ArrayList<>();
     for (VarInfo vi : vars) {
-      if (vi.enclosing_var != null) vlist.add(vi.enclosing_var);
+      if (vi.enclosing_var != null) {
+        vlist.add(vi.enclosing_var);
+      }
     }
     if (vlist.size() > 0) {
       VarInfo[] full = new VarInfo[vars.length + vlist.size()];

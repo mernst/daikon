@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jtb.ParseException;
-import jtb.syntaxtree.*;
+import jtb.syntaxtree.NodeToken;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.dataflow.qual.Pure;
@@ -380,7 +380,7 @@ class SplitterJavaSource implements jtb.JavaParserConstants {
    */
   @Pure
   private static boolean isNormalVar(VarInfo varInfo) {
-    return (!isTypeOfVar(varInfo) && !isSizeVar(varInfo) && !isThisVar(varInfo));
+    return !isTypeOfVar(varInfo) && !isSizeVar(varInfo) && !isThisVar(varInfo);
   }
 
   /**
@@ -485,7 +485,9 @@ class SplitterJavaSource implements jtb.JavaParserConstants {
     // originally array names in type infos end in "[..]"
     // but the replace above will change it to "[__]".   (markro)
     if (varInfo.type.isArray()) {
-      if (name.endsWith("[__]")) name = name.substring(0, name.length() - 4);
+      if (name.endsWith("[__]")) {
+        name = name.substring(0, name.length() - 4);
+      }
     }
     return name;
   }

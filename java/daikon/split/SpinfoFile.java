@@ -13,7 +13,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.FilesPlume;
 
 /**
  * SpinfoFile stores information parsed from a {@code .spinfo} file. The constructor parses the
@@ -56,8 +56,7 @@ public class SpinfoFile {
   SpinfoFile(File spinfoFile, String tempDir) {
     this.tempDir = tempDir;
     this.spinfoFileName = spinfoFile.toString();
-    try {
-      LineNumberReader reader = UtilPlume.lineNumberFileReader(spinfoFile);
+    try (LineNumberReader reader = FilesPlume.newLineNumberFileReader(spinfoFile)) {
       parseFile(reader);
     } catch (FileNotFoundException e) {
       throw new RuntimeException(e);
@@ -95,7 +94,7 @@ public class SpinfoFile {
   }
 
   /**
-   * Return the number of splitters (SplitterObject objects) represented by all the files in the
+   * Returns the number of splitters (SplitterObject objects) represented by all the files in the
    * list.
    */
   public static int numSplittterObjects(List<SpinfoFile> spinfoFiles) {
@@ -163,6 +162,8 @@ public class SpinfoFile {
    *
    * @param spinfoFile a LineNumberReader for the spinfo file being parsed
    * @param replaceStatements the List into which the ReplaceStatements are added
+   * @throws IOException if there is a problem reading the file
+   * @throws ParseException if there is a problem parsing
    */
   private void readReplaceStatements(
       @UnknownInitialization SpinfoFile this,
@@ -199,7 +200,7 @@ public class SpinfoFile {
    * @param spinfoFile a LineNumberReader for the spinfo file being parsed
    * @param pptSections the List into which the List of lines for this pptSection are to be added
    * @param pptName name of the ppt
-   * @throws IOException if an I/O error occurs.
+   * @throws IOException if an I/O error occurs
    */
   private void readPptStatements(
       @UnknownInitialization SpinfoFile this,
@@ -292,7 +293,7 @@ public class SpinfoFile {
     }
   }
 
-  /** Returns whether the line is blank (or null). */
+  /** Returns true if the line is blank (or null). */
   @EnsuresNonNullIf(result = false, expression = "#1")
   @Pure
   private static boolean isBlank(@Nullable String line) {
@@ -300,20 +301,20 @@ public class SpinfoFile {
   }
 
   /**
-   * Returns whether the line is a spinfo file comment line. A line is a comment if it starts with a
+   * Returns true if the line is a spinfo file comment line. A line is a comment if it starts with a
    * (possibly indented) "#".
    */
   @Pure
   private static boolean isComment(String line) {
-    return (line.trim().startsWith("#"));
+    return line.trim().startsWith("#");
   }
 
   /**
-   * Returns whether the line is a spinfo file formatting command. A line is a formatting command if
+   * Returns true if the line is a spinfo file formatting command. A line is a formatting command if
    * line is indented with a tab ("\t") or spaces (" ").
    */
   @Pure
   private static boolean isFormatting(String line) {
-    return (line.startsWith("\t") || line.startsWith(" "));
+    return line.startsWith("\t") || line.startsWith(" ");
   }
 }

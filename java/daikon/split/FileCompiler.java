@@ -3,6 +3,8 @@ package daikon.split;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -29,13 +31,16 @@ public final class FileCompiler {
 
   /** The Runtime of the JVM. */
   public static Runtime runtime = java.lang.Runtime.getRuntime();
+
   /** Matches the names of Java source files. Match group 1 is the complete filename. */
   static @Regex(1) Pattern java_filename_pattern;
+
   /**
    * External command used to compile Java files, and command-line arguments. Guaranteed to be
    * non-empty.
    */
   private String @MinLen(1) [] compiler;
+
   /** Time limit for compilation jobs. */
   private long timeLimit;
 
@@ -85,7 +90,7 @@ public final class FileCompiler {
    * @param timeLimit the maximum permitted compilation time, in msec
    */
   @SuppressWarnings("value") // no index checker list support
-  public FileCompiler(/*(at)MinLen(1)*/ ArrayList<String> compiler, @Positive long timeLimit) {
+  public FileCompiler(/*(at)MinLen(1)*/ List<String> compiler, @Positive long timeLimit) {
     this(compiler.toArray(new String[0]), timeLimit);
   }
 
@@ -158,8 +163,8 @@ public final class FileCompiler {
     cmdLine.addArguments(filenames.toArray(new String[0]));
 
     resultHandler = new DefaultExecuteResultHandler();
-    executor = new DefaultExecutor();
-    watchdog = new ExecuteWatchdog(timeLimit);
+    executor = DefaultExecutor.builder().get();
+    watchdog = ExecuteWatchdog.builder().setTimeout(Duration.ofMillis(timeLimit)).get();
     executor.setWatchdog(watchdog);
     outStream = new ByteArrayOutputStream();
     errStream = new ByteArrayOutputStream();
@@ -170,7 +175,7 @@ public final class FileCompiler {
     try {
       executor.execute(cmdLine, resultHandler);
     } catch (IOException e) {
-      throw new Error("exception starting process", e);
+      throw new UncheckedIOException("exception starting process: " + cmdLine, e);
     }
 
     int exitValue = -1;
@@ -183,13 +188,17 @@ public final class FileCompiler {
     boolean timedOut = executor.isFailure(exitValue) && watchdog.killedProcess();
 
     try {
-      compile_errors = errStream.toString();
+      @SuppressWarnings("DefaultCharset") // toString(Charset) was introduced in Java 10
+      String compile_errors_tmp = errStream.toString();
+      compile_errors = compile_errors_tmp;
     } catch (RuntimeException e) {
       throw new Error("Exception getting process error output", e);
     }
 
     try {
-      compile_output = outStream.toString();
+      @SuppressWarnings("DefaultCharset") // toString(Charset) was introduced in Java 10
+      String compile_output_tmp = errStream.toString();
+      compile_output = compile_output_tmp;
     } catch (RuntimeException e) {
       throw new Error("Exception getting process standard output", e);
     }
@@ -200,7 +209,9 @@ public final class FileCompiler {
       // System.out.println ("Compile errors: " + compile_errors);
       // System.out.println ("Compile output: " + compile_output);
       ExecuteException e = resultHandler.getException();
-      if (e != null) e.printStackTrace();
+      if (e != null) {
+        e.printStackTrace();
+      }
       runtime.exit(1);
     }
     return compile_errors;
@@ -246,7 +257,7 @@ public final class FileCompiler {
   }
 
   /**
-   * Return the file path to where a class file for a source file at sourceFilePath would be
+   * Returns the file path to where a class file for a source file at sourceFilePath would be
    * generated.
    *
    * @param sourceFilePath the path to the .java file

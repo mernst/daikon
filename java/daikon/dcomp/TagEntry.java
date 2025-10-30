@@ -181,12 +181,12 @@ class TagEntry extends WeakReference<Object> {
     return root_ref;
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Tracers
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Tracers
+  //
 
   /**
-   * Return information about where the given object interacted with some other object in its set.
+   * Returns information about where the given object interacted with some other object in its set.
    *
    * @param obj an object in the union-find data structure
    * @return information about where the given object interacted with some other object in its set
@@ -196,7 +196,7 @@ class TagEntry extends WeakReference<Object> {
   }
 
   /**
-   * Return the canonical member of this object's set, based on tracers. Returns null if this
+   * Returns the canonical member of this object's set, based on tracers. Returns null if this
    * object's interactions were not recorded.
    *
    * @param obj an object that might be in the union-find data structure
@@ -275,7 +275,7 @@ class TagEntry extends WeakReference<Object> {
   }
 
   /**
-   * Return a description of where an interaction occurred. Is essentially a stack trace of depth
+   * Returns a description of where an interaction occurred. Is essentially a stack trace of depth
    * {@link DynComp#trace_line_depth}.
    *
    * @return a description of where an interaction occurred
@@ -312,20 +312,23 @@ class TagEntry extends WeakReference<Object> {
    * Returns a description of the given StackTraceElement.
    *
    * @param ste a StackTraceElement to describe
-   * @param abbreviate if true, omit package name
-   * @return a description of the given StackTraceElement.
+   * @param abbreviate if true, use simple name (omit package name)
+   * @return a description of the given StackTraceElement
    */
   private static String traceLineToString(StackTraceElement ste, boolean abbreviate) {
     String className = ste.getClassName();
     if (abbreviate) {
-      className = className.substring(className.lastIndexOf("."));
+      int dotPos = className.lastIndexOf('.');
+      if (dotPos != -1) {
+        className = className.substring(dotPos + 1);
+      }
     }
     return className + ":" + ste.getMethodName() + "(), " + ste.getLineNumber();
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Debugging output
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Debugging output
+  //
 
   /**
    * Returns each of the sets with elements in each set on a separate line.
@@ -340,11 +343,7 @@ class TagEntry extends WeakReference<Object> {
     // whose key is its root.
     for (Object obj : object_map.keySet()) {
       Object rep = find(obj);
-      List<Object> set = sets.get(rep);
-      if (set == null) {
-        set = new ArrayList<Object>();
-        sets.put(rep, set);
-      }
+      List<Object> set = sets.computeIfAbsent(rep, __ -> new ArrayList<Object>());
       set.add(obj);
     }
 

@@ -388,9 +388,6 @@ import typequals.prototype.qual.Prototype;
  */
 public final class INTEQUAL extends SUPERCLASS IMPLEMENTSCOMPARISON {
 
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20030822L;
 
   // Variables starting with dkconfig_ should only be set via the
@@ -415,18 +412,17 @@ public final class INTEQUAL extends SUPERCLASS IMPLEMENTSCOMPARISON {
 
   private static @Prototype INTEQUAL proto = new @Prototype INTEQUAL();
 
-  /** Returns the prototype invariant for INTEQUAL */
+  /** Returns the prototype invariant for INTEQUAL. */
   public static @Prototype INTEQUAL get_proto() {
     return proto;
   }
 
-  /** Returns whether or not this invariant is enabled. */
   @Override
   public boolean enabled() {
     return dkconfig_enabled;
   }
 
-  /** Returns whether or not the specified var types are valid for INTEQUAL */
+  /** Returns true if the specified var types are valid for INTEQUAL. */
   @Override
   public boolean instantiate_ok(VarInfo[] vis) {
 
@@ -449,10 +445,10 @@ public final class INTEQUAL extends SUPERCLASS IMPLEMENTSCOMPARISON {
       #endif
     #elif defined (IS_STRING)
       #if defined (EQUALSTRING) || defined (NONEQUALSTRING)
-        boolean result = (!(vis[0].has_typeof() ^ vis[1].has_typeof()));
+        boolean result = !(vis[0].has_typeof() ^ vis[1].has_typeof());
         return result;
       #else
-        boolean result = (!(vis[0].has_typeof() || vis[1].has_typeof()));
+        boolean result = !(vis[0].has_typeof() || vis[1].has_typeof());
         // System.out.printf(INTEQUALstring + ".instantiate_ok(");
         // for (VarInfo vi : vis) {
         //   System.out.printf("%s ", vi.name());
@@ -574,7 +570,6 @@ public final class INTEQUAL extends SUPERCLASS IMPLEMENTSCOMPARISON {
 
   }
 
-  /** Instantiate an invariant on the specified slice. */
   @Override
   protected INTEQUAL instantiate_dyn(@Prototype INTEQUAL this, PptSlice slice) {
     #if defined (NONEQUAL)
@@ -726,7 +721,6 @@ public final class INTEQUAL extends SUPERCLASS IMPLEMENTSCOMPARISON {
         return var1name + ".compareTo(" + var2name +") >= 0";
       #else
         if ((var1name.indexOf("daikon.Quant.collectObject") != -1)
-
             || (var2name.indexOf("daikon.Quant.collectObject") != -1)) {
           return "(warning: it is meaningless to compare hashcodes for values obtained through daikon.Quant.collect... methods:"
             + var1name + " " + EQUALSstring + " " + var2name + ")";
@@ -756,7 +750,6 @@ public final class INTEQUAL extends SUPERCLASS IMPLEMENTSCOMPARISON {
   }
 
   @Override
-  @SuppressWarnings("UnnecessaryParentheses")  // generated code; parens are sometimes necessary
   public InvariantStatus check_modified(PRIMITIVE v1, PRIMITIVE v2, int count) {
     if (!EQUALS(v1, v2)) {
       return InvariantStatus.FALSIFIED;
@@ -812,7 +805,7 @@ public final class INTEQUAL extends SUPERCLASS IMPLEMENTSCOMPARISON {
 #if defined(EQUAL_OP)
   @Override
   public boolean enoughSamples(@GuardSatisfied INTEQUAL this) {
-    return (ppt.num_samples() > 0);
+    return ppt.num_samples() > 0;
   }
 
   // For Comparison interface, which is satisfied only by exact equalities.
@@ -932,7 +925,7 @@ public final class INTEQUAL extends SUPERCLASS IMPLEMENTSCOMPARISON {
         && var1.aux.hasValue(VarInfoAux.MAXIMUM_VALUE)
         && var2.aux.hasValue(VarInfoAux.MINIMUM_VALUE)
         && var2.aux.hasValue(VarInfoAux.MAXIMUM_VALUE)) {
-      @SuppressWarnings("all:argument.type.incompatible") // EnsuresKeyFor for multiple maps; also https://tinyurl.com/cfissue/2586
+      @SuppressWarnings("all:argument") // EnsuresKeyFor for multiple maps; also https://tinyurl.com/cfissue/2586
       int minA = var1.aux.getInt(VarInfoAux.MINIMUM_VALUE),
           maxA = var1.aux.getInt(VarInfoAux.MAXIMUM_VALUE),
           minB = var2.aux.getInt(VarInfoAux.MINIMUM_VALUE),
@@ -1326,7 +1319,7 @@ public final class INTEQUAL extends SUPERCLASS IMPLEMENTSCOMPARISON {
   /** Returns the non-instantiating suppressions for this invariant. */
   @Pure
   @Override
-  public @NonNull NISuppressionSet get_ni_suppressions() {
+  public NISuppressionSet get_ni_suppressions() {
     if (suppressions == null) {
       #if defined(GREATEREQUAL_OP) || defined(LESSEQUAL_OP) || defined(NONEQUAL_OP)
         NISuppressee suppressee = new NISuppressee(INTEQUAL.class, 2);

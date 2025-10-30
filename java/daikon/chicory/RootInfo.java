@@ -10,9 +10,11 @@ import java.util.Arrays;
  * It contains no variable information other than what is stored in its children.
  */
 @SuppressWarnings("nullness") // to do
-public class RootInfo extends DaikonVariableInfo {
+public final class RootInfo extends DaikonVariableInfo {
+
+  /** Creates a RootInfo object. */
   private RootInfo() {
-    // the root needs no name, etc. but set them to preserve nullness property
+    // The root needs no name, etc., but set them to preserve nullness property.
     super(" RootInfo Object ", " RootInfo Object type ", " RootInfo Object reptype ");
   }
 
@@ -28,7 +30,7 @@ public class RootInfo extends DaikonVariableInfo {
     RootInfo root = new RootInfo();
 
     // Don't build a tree for class initializers.
-    if (mi.is_class_init()) {
+    if (mi.is_class_initializer()) {
       return root;
     }
 
@@ -44,7 +46,7 @@ public class RootInfo extends DaikonVariableInfo {
           mi.class_info,
           Modifier.isStatic(mi.member.getModifiers()),
           mi.member.getDeclaringClass(),
-          /*offset = */ "",
+          /* offset= */ "",
           depth);
     }
 
@@ -63,7 +65,7 @@ public class RootInfo extends DaikonVariableInfo {
     RootInfo root = new RootInfo();
 
     // Don't build a tree for class initializers.
-    if (mi.is_class_init()) {
+    if (mi.is_class_initializer()) {
       return root;
     }
 
@@ -121,7 +123,7 @@ public class RootInfo extends DaikonVariableInfo {
     ppt_statics.clear();
 
     root.addClassVars(
-        cinfo, /*dontPrintInstanceVars = */ false, cinfo.clazz, /*offset = */ "", depth);
+        cinfo, /* dontPrintInstanceVars= */ false, cinfo.clazz, /* offset= */ "", depth);
 
     // debug_vars.log("exit getObjectPpt%n");
 
@@ -144,7 +146,7 @@ public class RootInfo extends DaikonVariableInfo {
     ppt_statics.clear();
 
     root.addClassVars(
-        cinfo, /*dontPrintInstanceVars = */ true, cinfo.clazz, /*offset = */ "", depth);
+        cinfo, /* dontPrintInstanceVars= */ true, cinfo.clazz, /* offset= */ "", depth);
 
     // debug_vars.log("exit getClassPpt%n");
 

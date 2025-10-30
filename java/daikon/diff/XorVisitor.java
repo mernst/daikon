@@ -36,7 +36,7 @@ public class XorVisitor extends DepthFirstVisitor {
    */
   @Override
   @SuppressWarnings(
-      "nullness:contracts.precondition.override.invalid") // visitor invariant, because the PptNode
+      "nullness:contracts.precondition.override") // visitor invariant, because the PptNode
   // has already been visited
   @RequiresNonNull("currentPpt")
   // visitor invariant
@@ -63,12 +63,12 @@ public class XorVisitor extends DepthFirstVisitor {
 
   @EnsuresNonNullIf(result = true, expression = "#1")
   private static boolean shouldAddInv1(@Nullable Invariant inv1, @Nullable Invariant inv2) {
-    return ((inv1 != null) && (inv2 == null));
+    return (inv1 != null) && (inv2 == null);
   }
 
   @EnsuresNonNullIf(result = true, expression = "#2")
   private static boolean shouldAddInv2(@Nullable Invariant inv1, @Nullable Invariant inv2) {
-    return ((inv2 != null) && (inv1 == null));
+    return (inv2 != null) && (inv1 == null);
   }
 
   /** Returns the InvMap generated as a result of the traversal. */

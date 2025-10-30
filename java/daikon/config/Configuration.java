@@ -5,7 +5,6 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.plumelib.reflection.ReflectionPlume;
@@ -21,10 +20,14 @@ import org.plumelib.util.EntryReader;
  * configuration, which classloads that class, and we would have a classloading circularity.
  */
 public final class Configuration implements Serializable {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
+  /** If you add or remove fields, change this number to the current date. */
   static final long serialVersionUID = 20020122L;
+
+  // ============================== REPRESENTATION ==============================
+
+  /** The statements that set the configuration. */
+  @SuppressWarnings("serial")
+  private List<String> statements = new ArrayList<>();
 
   // ============================== STATIC COMPONENT ==============================
 
@@ -43,15 +46,16 @@ public final class Configuration implements Serializable {
   }
 
   /**
-   * Returns singleton instance of this class.
+   * Returns the singleton instance of this class.
    *
-   * @return singleton instance of this class
+   * @return the singleton instance of this class
    */
   public static Configuration getInstance() {
     return instance;
   }
 
-  private static volatile @NonNull Configuration instance = new Configuration();
+  /** The singleton instance of this class. */
+  private static volatile Configuration instance = new Configuration();
 
   /**
    * This used to read a file containing all of the configurable options so that when the options
@@ -78,6 +82,7 @@ public final class Configuration implements Serializable {
     public ConfigException() {
       super();
     }
+
     // We are Serializable, so we specify a version to allow changes to
     // method signatures without breaking serialization.  If you add or
     // remove fields, you should change this number to the current date.
@@ -110,18 +115,31 @@ public final class Configuration implements Serializable {
 
   // ============================== ADT COMPONENT ==============================
 
-  private List<String> statements = new ArrayList<>();
-
+  /**
+   * Apply the settings in the given InputStream.
+   *
+   * @param input the commands to set confiuration
+   */
   public void apply(InputStream input) {
     assert input != null;
     for (String line : new EntryReader(input)) {
       line = line.trim();
-      if (line.length() == 0) continue; // skip blank lines
-      if (line.charAt(0) == '#') continue; // skip # comment lines
+      // Skip blank and comment lines
+      if (line.length() == 0) {
+        continue;
+      }
+      if (line.charAt(0) == '#') {
+        continue;
+      }
       apply(line);
     }
   }
 
+  /**
+   * Apply the setting in the given InputStream.
+   *
+   * @param line the command to set confiuration
+   */
   public void apply(String line) {
     assert line != null;
 
@@ -136,6 +154,12 @@ public final class Configuration implements Serializable {
     apply(name, value);
   }
 
+  /**
+   * Set the given setting to the given value.
+   *
+   * @param name the setting to modify
+   * @param value the setting's new value
+   */
   public void apply(String name, String value) {
     assert name != null;
     assert value != null;
@@ -208,9 +232,9 @@ public final class Configuration implements Serializable {
 
     if (type.equals(Boolean.TYPE)) {
       if (unparsed.equals("1") || unparsed.equalsIgnoreCase("true")) {
-        value = Boolean.TRUE;
+        value = true;
       } else if (unparsed.equals("0") || unparsed.equalsIgnoreCase("false")) {
-        value = Boolean.FALSE;
+        value = false;
       } else {
         throw new ConfigException(
             "Badly formatted boolean argument "
@@ -335,12 +359,12 @@ public final class Configuration implements Serializable {
    * @param field a field; must be static
    * @param value the value to set the field to
    * @throws IllegalAccessException if {@code field} is enforcing Java language access control and
-   *     the underlying field is either inaccessible or final.
+   *     the underlying field is either inaccessible or final
    */
   // This method exists to reduce the scope of the warning suppression.
   @SuppressWarnings({
-    "nullness:argument.type.incompatible", // field is static, so object may be null
-    "interning:argument.type.incompatible" // interning is not necessary for how this method is used
+    "nullness:argument", // field is static, so object may be null
+    "interning:argument" // interning is not necessary for how this method is used
   })
   private static void setStaticField(Field field, @Nullable Object value)
       throws IllegalAccessException {

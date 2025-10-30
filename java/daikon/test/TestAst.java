@@ -1,29 +1,26 @@
 package daikon.test;
 
+import static org.junit.Assert.assertEquals;
+
 import daikon.PptName;
 import daikon.tools.jtb.*;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import jtb.*;
 import jtb.syntaxtree.*;
 import jtb.visitor.*;
 import junit.framework.*;
+import org.junit.Test;
 
 /**
  * Tests functionality of some methods in daikon.tools.jtb.Ast.
  *
  * <p>TODO implement and test handling of "..." construct.
  */
-public final class TestAst extends TestCase {
-
-  public static void main(String[] args) {
-    junit.textui.TestRunner.run(new TestSuite(TestAst.class));
-  }
-
-  public TestAst(String name) {
-    super(name);
-  }
+public final class TestAst {
 
   public static class MethodDeclarationHarvester extends DepthFirstVisitor {
     List<MethodDeclaration> decls = new ArrayList<>();
@@ -75,21 +72,25 @@ public final class TestAst extends TestCase {
     }
   }
 
+  @Test
   public void test_Ast_Ppt_Match() {
-
-    // Parse the file "GenericTestClass.java" (under same dir as this class)
-    InputStream sourceIn = this.getClass().getResourceAsStream("GenericTestClass.java");
-    if (sourceIn == null) {
-      throw new Error("Couldn't find file GenericTestClass.java");
-    }
-    JavaParser parser = new JavaParser(sourceIn);
 
     CompilationUnit compilationUnit;
 
-    try {
-      compilationUnit = parser.CompilationUnit();
-    } catch (ParseException e) {
-      throw new Error(e);
+    // Parse the file "GenericTestClass.java" (under same dir as this class)
+    try (InputStream sourceIn = this.getClass().getResourceAsStream("GenericTestClass.java")) {
+      if (sourceIn == null) {
+        throw new Error("Couldn't find file GenericTestClass.java");
+      }
+      JavaParser parser = new JavaParser(sourceIn);
+
+      try {
+        compilationUnit = parser.CompilationUnit();
+      } catch (ParseException e) {
+        throw new Error(e);
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
 
     // Test class declarations
@@ -261,11 +262,13 @@ public final class TestAst extends TestCase {
     decl = methodDecls.get(21);
     assertEquals("foo20", decl.f2.f0.tokenImage);
     checkMatch(
-        "daikon.test.GenericTestClass.foo20(java.lang.Comparable[][][], java.lang.Object[][]):::ENTER",
+        "daikon.test.GenericTestClass.foo20"
+            + "(java.lang.Comparable[][][], java.lang.Object[][]):::ENTER",
         decl,
         matcher);
     checkMatch(
-        "daikon.test.GenericTestClass.foo20(java.lang.Comparable[][][], java.lang.Object[][]):::EXIT53",
+        "daikon.test.GenericTestClass.foo20"
+            + "(java.lang.Comparable[][][], java.lang.Object[][]):::EXIT53",
         decl,
         matcher);
 

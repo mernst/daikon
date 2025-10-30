@@ -1,6 +1,8 @@
 package daikon.tools.jtb;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
 
 import daikon.*;
 import gnu.getopt.*;
@@ -19,7 +21,7 @@ import jtb.syntaxtree.*;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Create a splitter info file from Java source.
@@ -45,10 +47,12 @@ public class CreateSpinfo {
   //  The method printSpinfoFile prints out these expressions and
   //  replace statements in splitter info file format.
 
+  /** Debug logger. */
   public static final Logger debug = Logger.getLogger("daikon.tools.jtb.CreateSpinfo");
 
+  /** The usage message for this program. */
   private static String usage =
-      UtilPlume.joinLines(
+      StringsPlume.joinLines(
           "Usage:  java daikon.tools.CreateSpinfo FILE.java ...",
           "  -o outputfile   Put all output in specified file",
           "  -h              Display this usage message");
@@ -70,7 +74,7 @@ public class CreateSpinfo {
     // If not set, put output in files named after the input (source) files.
     String outputfilename = null;
 
-    daikon.LogHelper.setupLogs(daikon.LogHelper.INFO);
+    daikon.LogHelper.setupLogs(INFO);
     LongOpt[] longopts =
         new LongOpt[] {
           new LongOpt(Daikon.help_SWITCH, LongOpt.NO_ARGUMENT, null, 0),
@@ -91,7 +95,7 @@ public class CreateSpinfo {
           } else if (Daikon.debugAll_SWITCH.equals(option_name)) {
             Global.debugAll = true;
           } else if (Daikon.debug_SWITCH.equals(option_name)) {
-            LogHelper.setLevel(Daikon.getOptarg(g), LogHelper.FINE);
+            daikon.LogHelper.setLevel(Daikon.getOptarg(g), FINE);
           } else {
             throw new RuntimeException("Unknown long option received: " + option_name);
           }
@@ -117,23 +121,23 @@ public class CreateSpinfo {
           "Error: No .java file arguments supplied." + Global.lineSep + usage);
     }
     if (outputfilename != null) {
-      PrintWriter output =
-          new PrintWriter(Files.newBufferedWriter(Paths.get(outputfilename), UTF_8));
-      for (; argindex < args.length; argindex++) {
-        String javaFileName = args[argindex];
-        writeSplitters(javaFileName, output);
+      try (PrintWriter output =
+          new PrintWriter(Files.newBufferedWriter(Paths.get(outputfilename), UTF_8))) {
+        for (; argindex < args.length; argindex++) {
+          String javaFileName = args[argindex];
+          writeSplitters(javaFileName, output);
+        }
+        output.flush();
       }
-      output.flush();
-      output.close();
     } else {
       for (; argindex < args.length; argindex++) {
         String javaFileName = args[argindex];
         String spinfoFileName = spinfoFileName(javaFileName);
-        PrintWriter output =
-            new PrintWriter(Files.newBufferedWriter(Paths.get(spinfoFileName), UTF_8));
-        writeSplitters(javaFileName, output);
-        output.flush();
-        output.close();
+        try (PrintWriter output =
+            new PrintWriter(Files.newBufferedWriter(Paths.get(spinfoFileName), UTF_8))) {
+          writeSplitters(javaFileName, output);
+          output.flush();
+        }
       }
     }
   }
@@ -153,7 +157,7 @@ public class CreateSpinfo {
         "Warning: CreateSpinfo input file " + javaFileName + "does not end in .java.");
 
     // change the file extension to .spinfo
-    int dotPos = javaFileName.indexOf(".");
+    int dotPos = javaFileName.indexOf('.');
     if (dotPos == -1) {
       return javaFileName + ".spinfo";
     } else {
@@ -166,12 +170,12 @@ public class CreateSpinfo {
    *
    * @param javaFileName the name of the java file from which this spinfo file is being made
    * @param output the PrintWriter to which this spinfo file is being wrote
+   * @throws IOException if there is a problem reading or writing files
    */
   private static void writeSplitters(String javaFileName, PrintWriter output) throws IOException {
-    Reader input = Files.newBufferedReader(Paths.get(javaFileName), UTF_8);
-    JavaParser parser = new JavaParser(input);
     Node root;
-    try {
+    try (Reader input = Files.newBufferedReader(Paths.get(javaFileName), UTF_8)) {
+      JavaParser parser = new JavaParser(input);
       root = parser.CompilationUnit();
     } catch (ParseException e) {
       e.printStackTrace();
@@ -190,11 +194,15 @@ public class CreateSpinfo {
     printSpinfoFile(output, conditions, replaceStatements, packageName);
   }
 
-  /** Remove redundant and trivial conditions from conditionMap. Side-effects conditionMap. */
+  /**
+   * Remove redundant and trivial conditions from conditionMap. Side-effects conditionMap.
+   *
+   * @param conditionMap the map from which to remove redundant and trivial conditions
+   */
   private static void filterConditions(Map<String, List<String>> conditionMap) {
     for (Map.Entry<String, List<String>> entry : conditionMap.entrySet()) {
       List<String> conditions = entry.getValue();
-      conditions = CollectionsPlume.removeDuplicates(conditions);
+      conditions = CollectionsPlume.withoutDuplicates(conditions);
       conditions.remove("true");
       conditions.remove("false");
       entry.setValue(conditions);
@@ -268,7 +276,7 @@ public class CreateSpinfo {
    * single space.
    */
   private static String removeNewlines(String target) {
-    String[] lines = UtilPlume.splitLines(target);
+    String[] lines = StringsPlume.splitLines(target);
     for (int i = 0; i < lines.length; i++) {
       lines[i] = lines[i].trim();
     }

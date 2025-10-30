@@ -16,7 +16,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.Intern;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Represents the type of a variable, for its declared type, dtrace file representation, and
@@ -27,7 +27,7 @@ import org.plumelib.util.UtilPlume;
 //  * that ties this to a Java front end, as Class can't represent types of
 //    (say) C variables.  (not a compelling problem)
 //  * that loads the class, which requies that all classes available at
-//    runtime be available at inference time.  (not a compelling problem)
+//    run time be available at inference time.  (not a compelling problem)
 //  * Class does not represent inheritance (but I can do that myself);
 //    and see isAssignableFrom, which might do all I need.
 //  * Class has no "dimensions" field.  isArray() exists, however, as does
@@ -44,9 +44,6 @@ import org.plumelib.util.UtilPlume;
 // known_types = integral_types + ("pointer", "address")
 
 public final @Interned class ProglangType implements Serializable {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20020122L;
 
   /** Maps from a base type name to its ProglangTypes and arrays with that base. */
@@ -89,7 +86,7 @@ public final @Interned class ProglangType implements Serializable {
   private int dimensions;
 
   /**
-   * Return the number of dimensions (zero for a non-array).
+   * Returns the number of dimensions (zero for a non-array).
    *
    * @return the number of dimensions
    */
@@ -105,8 +102,11 @@ public final @Interned class ProglangType implements Serializable {
   /**
    * No public constructor: use parse() instead to get a canonical representation. basetype should
    * be interned.
+   *
+   * @param basetype the base type
+   * @param dimensions the number of dimensions
    */
-  @SuppressWarnings("super.invocation.invalid") // never called twice with the same arguments
+  @SuppressWarnings("super.invocation") // never called twice with the same arguments
   private ProglangType(@Interned String basetype, int dimensions) {
     assert basetype == basetype.intern();
     this.base = basetype;
@@ -174,8 +174,14 @@ public final @Interned class ProglangType implements Serializable {
   //   return this == o;
   // }
 
-  // THIS CODE IS A HOT SPOT (~33% of runtime) [as of January 2002].
-  /** @param t_base must be interned */
+  // THIS CODE IS A HOT SPOT (~33% of run time) [as of January 2002].
+  /**
+   * Searches for an array type with the given base and number of dimensions.
+   *
+   * @param t_base the base type; must be interned
+   * @param t_dims the number of dimensions
+   * @return an array type with the given base and number of dimensions, or null
+   */
   private static @Nullable ProglangType find(@Interned String t_base, int t_dims) {
     // Disabled for performance reasons! this assertion is sound though:
     //    assert t_base == t_base.intern();
@@ -220,11 +226,8 @@ public final @Interned class ProglangType implements Serializable {
     @SuppressWarnings("interning") // test above did not find one, so the new one is interned
     @Interned ProglangType result = new ProglangType(t_base, t_dims);
 
-    List<ProglangType> v = all_known_types.get(t_base);
-    if (v == null) {
-      v = new ArrayList<ProglangType>();
-      all_known_types.put(t_base, v);
-    }
+    List<ProglangType> v =
+        all_known_types.computeIfAbsent(t_base, __ -> new ArrayList<ProglangType>());
 
     v.add(result);
 
@@ -411,7 +414,7 @@ public final @Interned class ProglangType implements Serializable {
         System.out.printf(
             "Proceeding anyway.  Please report a bug in the tool that made the data trace file.");
       }
-      value = UtilPlume.unescapeJava(value);
+      value = StringsPlume.unescapeJava(value);
       return value.intern();
     } else if (base == BASE_CHAR) {
       // This will fail if the character is output as an integer
@@ -420,14 +423,14 @@ public final @Interned class ProglangType implements Serializable {
       if (value.length() == 1) {
         c = value.charAt(0);
       } else if ((value.length() == 2) && (value.charAt(0) == '\\')) {
-        c = UtilPlume.unescapeJava(value).charAt(0);
+        c = StringsPlume.unescapeJava(value).charAt(0);
       } else if ((value.length() == 4) && (value.charAt(0) == '\\')) {
         Byte b = Byte.decode("0" + value.substring(1));
         return Intern.internedLong(b.longValue());
       } else {
         throw new IllegalArgumentException("Bad character: " + value);
       }
-      return Intern.internedLong(Character.getNumericValue(c));
+      return Intern.internedLong((int) c);
     }
     // When parse_value is called from FileIO.read_ppt_decl, we have
     // not set file_rep_type. Hence, rep_type is still file_rep_type
@@ -508,7 +511,8 @@ public final @Interned class ProglangType implements Serializable {
             v.add(parser.sval);
           } else if (parser.ttype == StreamTokenizer.TT_WORD) {
             assert parser.sval != null
-                : "@AssumeAssertion(nullness): dependent: representation invariant of StreamTokenizer";
+                : "@AssumeAssertion(nullness): dependent: representation invariant of"
+                    + " StreamTokenizer";
             if (parser.sval.equals("nonsensical")) {
               return null;
             }
@@ -518,7 +522,9 @@ public final @Interned class ProglangType implements Serializable {
             v.add(Integer.toString((int) parser.nval));
           } else {
             System.out.printf(
-                "Warning: at %s line %d%n  bad ttype %c [int=%d] while parsing %s%n  Proceeding with value 'null'%n",
+                "Warning: at %s line %d%n"
+                    + "  bad ttype %c [int=%d] while parsing %s%n"
+                    + "  Proceeding with value 'null'%n",
                 filename, reader.getLineNumber(), (char) parser.ttype, parser.ttype, value_orig);
             v.add(null);
           }
@@ -557,9 +563,12 @@ public final @Interned class ProglangType implements Serializable {
       for (int i = 0; i < len; i++) {
         if (value_strings[i].equals("nonsensical")) {
           return null;
-        } else if (value_strings[i].equals("null")) result[i] = 0;
-        else if (value_strings[i].equalsIgnoreCase("NaN")) result[i] = Double.NaN;
-        else if (value_strings[i].equalsIgnoreCase("Infinity") || value_strings[i].equals("inf")) {
+        } else if (value_strings[i].equals("null")) {
+          result[i] = 0;
+        } else if (value_strings[i].equalsIgnoreCase("NaN")) {
+          result[i] = Double.NaN;
+        } else if (value_strings[i].equalsIgnoreCase("Infinity")
+            || value_strings[i].equals("inf")) {
           result[i] = Double.POSITIVE_INFINITY;
         } else if (value_strings[i].equalsIgnoreCase("-Infinity")
             || value_strings[i].equals("-inf")) {
@@ -617,7 +626,7 @@ public final @Interned class ProglangType implements Serializable {
 
   @Pure
   public boolean isPrimitive() {
-    return ((dimensions == 0) && baseIsPrimitive());
+    return (dimensions == 0) && baseIsPrimitive();
   }
 
   // Does not include boolean.  Is that intentional?  (If it were added,
@@ -634,20 +643,20 @@ public final @Interned class ProglangType implements Serializable {
 
   @Pure
   public boolean isIntegral() {
-    return ((dimensions == 0) && baseIsIntegral());
+    return (dimensions == 0) && baseIsIntegral();
   }
 
   // More efficient than elementType().isIntegral()
   public boolean elementIsIntegral() {
-    return ((dimensions == 1) && baseIsIntegral());
+    return (dimensions == 1) && baseIsIntegral();
   }
 
   public boolean elementIsFloat() {
-    return ((dimensions == 1) && baseIsFloat());
+    return (dimensions == 1) && baseIsFloat();
   }
 
   public boolean elementIsString() {
-    return ((dimensions == 1) && baseIsString());
+    return (dimensions == 1) && baseIsString();
   }
 
   // Return true if this variable is sensible as an array index.
@@ -660,53 +669,53 @@ public final @Interned class ProglangType implements Serializable {
   public boolean isScalar() {
     // For reptypes, checking against INT is sufficient, rather than
     // calling isIntegral().
-    return (isIntegral() || (this == HASHCODE) || (this == BOOLEAN));
+    return isIntegral() || (this == HASHCODE) || (this == BOOLEAN);
   }
 
   public boolean baseIsScalar() {
-    return (baseIsIntegral() || (base == BASE_BOOLEAN) || (base == BASE_HASHCODE));
+    return baseIsIntegral() || (base == BASE_BOOLEAN) || (base == BASE_HASHCODE);
   }
 
   public boolean baseIsBoolean() {
-    return (base == BASE_BOOLEAN);
+    return base == BASE_BOOLEAN;
   }
 
   public boolean baseIsFloat() {
-    return ((base == BASE_DOUBLE) || (base == BASE_FLOAT));
+    return (base == BASE_DOUBLE) || (base == BASE_FLOAT);
   }
 
   @Pure
   public boolean isFloat() {
-    return ((dimensions == 0) && baseIsFloat());
+    return (dimensions == 0) && baseIsFloat();
   }
 
   /**
-   * Return true if this is java.lang.Object.
+   * Returns true if this is java.lang.Object.
    *
    * @return true if this is java.lang.Object
    */
   @Pure
   public boolean isObject() {
-    return ((dimensions == 0) && baseIsObject());
+    return (dimensions == 0) && baseIsObject();
   }
 
   /**
-   * Return true if the base (the final element type) is a reference type rather than integer,
+   * Returns true if the base (the final element type) is a reference type rather than integer,
    * float, or boolean.
    *
    * @return true if the base is Object
    */
   public boolean baseIsObject() {
-    return (!baseIsIntegral() && !baseIsFloat() && !(base == BASE_BOOLEAN));
+    return !baseIsIntegral() && !baseIsFloat() && !(base == BASE_BOOLEAN);
   }
 
   public boolean baseIsString() {
-    return (base == BASE_STRING);
+    return base == BASE_STRING;
   }
 
   @Pure
   public boolean isString() {
-    return ((dimensions == 0) && baseIsString());
+    return (dimensions == 0) && baseIsString();
   }
 
   public boolean baseIsHashcode() {
@@ -715,17 +724,17 @@ public final @Interned class ProglangType implements Serializable {
 
   @Pure
   public boolean isHashcode() {
-    return ((dimensions == 0) && baseIsHashcode());
+    return (dimensions == 0) && baseIsHashcode();
   }
 
   /** Does this type represent a pointer? Should only be applied to file_rep types. */
   @Pure
   public boolean isPointerFileRep() {
-    return (base == BASE_HASHCODE);
+    return base == BASE_HASHCODE;
   }
 
   /**
-   * Return true if these two types can be sensibly compared to one another, or if one can be cast
+   * Returns true if these two types can be sensibly compared to one another, or if one can be cast
    * to the other. For instance, int is castable to long, but boolean is not castable to float, and
    * int is not castable to int[]. This is a reflexive relationship, but not a transitive one
    * because it might not be true for two children of a superclass, even though it's true for the
@@ -753,13 +762,14 @@ public final @Interned class ProglangType implements Serializable {
   }
 
   /**
-   * Return true if these two types can be sensibly compared to one another, and if non-integral,
+   * Returns true if these two types can be sensibly compared to one another, and if non-integral,
    * whether this could be a superclass of other. A List is comparableOrSuperclassOf to a ArrayList,
    * but not the other way around. This is a transitive method, but not reflexive.
    */
   public boolean comparableOrSuperclassOf(ProglangType other) {
-    if (this == other) // ProglangType objects are interned
-    return true;
+    if (this == other) { // ProglangType objects are interned
+      return true;
+    }
     if (this.dimensions != other.dimensions) {
       return false;
     }
@@ -769,8 +779,9 @@ public final @Interned class ProglangType implements Serializable {
       return true;
     }
     // Make Object castable to everything, except booleans
-    if ((this.base == BASE_OBJECT) && other.baseIsObject()) // interned strings
-    return true;
+    if ((this.base == BASE_OBJECT) && other.baseIsObject()) { // interned strings
+      return true;
+    }
 
     return false;
   }
@@ -798,8 +809,8 @@ public final @Interned class ProglangType implements Serializable {
   }
 
   /**
-   * Returns whether or not this declared type is a function pointer Only valid if the front end
-   * marks the function pointer with the name '*func'.
+   * Returns true if this declared type is a function pointer Only valid if the front end marks the
+   * function pointer with the name '*func'.
    */
   @Pure
   public boolean is_function_pointer() {
