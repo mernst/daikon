@@ -5,7 +5,6 @@ import daikon.ProglangType;
 import daikon.ValueTuple;
 import daikon.VarInfo;
 import daikon.inv.DummyInvariant;
-import daikon.split.*;
 import daikon.split.Splitter;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
@@ -14,9 +13,6 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 // This splitter tests the condition "return == true".
 public final class ReturnTrueSplitter extends Splitter {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20020122L;
 
   private @Nullable VarInfo return_varinfo;
@@ -30,8 +26,7 @@ public final class ReturnTrueSplitter extends Splitter {
     instantiated = true;
   }
 
-  @SuppressWarnings(
-      "nullness:return.type.incompatible") // why is "new ...Splitter" @UnderInitialization?
+  @SuppressWarnings("nullness:return") // why is "new ...Splitter" @UnderInitialization?
   @Override
   public Splitter instantiateSplitter(@UnknownInitialization(Ppt.class) Ppt ppt) {
     return new ReturnTrueSplitter(ppt);
@@ -40,11 +35,11 @@ public final class ReturnTrueSplitter extends Splitter {
   @EnsuresNonNullIf(result = true, expression = "return_varinfo")
   @Override
   public boolean valid() {
-    return ((return_varinfo != null) && (return_varinfo.type == ProglangType.BOOLEAN));
+    return (return_varinfo != null) && (return_varinfo.type == ProglangType.BOOLEAN);
   }
 
   @SuppressWarnings(
-      "nullness:contracts.precondition.override.invalid") // application invariant about private
+      "nullness:contracts.precondition.override") // application invariant about private
   // variable
   @RequiresNonNull("return_varinfo")
   @Override

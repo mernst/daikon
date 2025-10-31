@@ -2,7 +2,8 @@
 
 # Forked from $DAIKONDIR/tests/kvasir-tests/Makefile.common
 
-DAIKONDIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST)))../..)
+# DAIKONDIR is the clone of the 'daikon' project.
+DAIKONDIR ?= $(realpath $(dir $(lastword $(MAKEFILE_LIST)))../..)
 
 ifeq ($(shell uname -m),x86_64)
 VALGRIND_ARCH := amd64
@@ -17,7 +18,7 @@ CFLAGS += -gdwarf-2
 # We turn if back off to get baseline results to match Fedora.
 CFLAGS += -fno-stack-protector
 VALGRIND = ${DAIKONDIR}/fjalar/valgrind/inst/bin/valgrind
-KVASIR_SKIN = ${DAIKONDIR}/fjalar/valgrind/inst/lib/valgrind/fjalar-$(VALGRIND_ARCH)-linux
+KVASIR_SKIN = ${DAIKONDIR}/fjalar/valgrind/inst/libexec/valgrind/fjalar-$(VALGRIND_ARCH)-linux
 KVASIR_SCRIPT = ${DAIKONDIR}/scripts/kvasir-dtrace
 # --dyncomp is now the default; turn back off to minimize changes to this Makefile
 KVASIR_OPTIONS := $(KVASIR_OPTIONS) --no-dyncomp
@@ -40,25 +41,12 @@ AFTER_RUN ?= @:
 DAIKON_CLASSPATH := ${DAIKONDIR}/java:${DAIKONDIR}/java/lib/*:${DAIKONDIR}/daikon.jar
 
 # gtest needs a lot of memory and I don't think it matters to give same large amount to all tests.
-DAIKON := java -Xmx2500M -XX:MaxPermSize=960M -cp "${DAIKON_CLASSPATH}" daikon.Daikon --no_text_output --no_show_progress --config_option daikon.derive.Derivation.disable_derived_variables=true --config_option daikon.DynamicConstants.OneOf_only=true --config_option daikon.Debug.show_stack_trace=true
-PRINT_INV := java -Xmx2500M -XX:MaxPermSize=960M -cp "${DAIKON_CLASSPATH}" daikon.PrintInvariants
+DAIKON := java -Xmx3600M -cp "${DAIKON_CLASSPATH}" daikon.Daikon --no_text_output --no_show_progress --config_option daikon.derive.Derivation.disable_derived_variables=true --config_option daikon.DynamicConstants.OneOf_only=true --config_option daikon.Debug.show_stack_trace=true
+PRINT_INV := java -Xmx3600M -cp "${DAIKON_CLASSPATH}" daikon.PrintInvariants
 
 default: summary
 
-# Set up potential OS_ID and OS_ID+OS_REL specific goal targets.
-OS_ID := $(shell lsb_release -si)
-OS_REL := $(shell lsb_release -sr)
-
-# Function to compute goal filename extension.  If we are on x86_64 then
-# use filename.test.goal.  If not x86_64 (which we assume means 386) then
-# if filename.test.goal.386 exists, use it; otherwise, use filename.test.goal.
-# The argument ($(1)) is '<filename>.<test>'
-goal_name = $(if $(findstring x86_64, $(shell uname -m)), \
-			$(1).goal, \
-			$(if $(shell if [ -f $(1).goal.386 ] ; then echo true; fi), \
-				$(1).goal.386, \
-				$(1).goal) \
-			)
+goal_name = $(1).goal
 
 ifdef COMPRESS_DTRACE
 export DTRACEGZIP := 1
@@ -84,11 +72,8 @@ C_EXT ?= c
 COMPILER := $(CC)
 endif
 
-ifneq ($(OS_ID),CentOS)
-# Ubuntu (17.10) sets -pie on by default
-# we must turn it back off
+# Don't create a position-independent executable.
 CFLAGS += -no-pie
-endif
 
 SOURCES ?= $(NAME).$(C_EXT)
 

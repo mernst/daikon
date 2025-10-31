@@ -10,7 +10,6 @@ import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.plumelib.util.ArraysPlume;
-import org.plumelib.util.UtilPlume;
 
 /**
  * Debug class used with the logger to create standardized output. It can be setup to track
@@ -148,10 +147,10 @@ public final class Debug {
   // Note that throughout this file, inv_class is not necessarily a
   // subclass of Invariant -- for instance, it might be a subclass of
   // BinaryDerivationFactory.
-  /** cached class: class to use by default when calling variants of log() with few arguments */
+  /** cached class: class to use by default when calling variants of log() with few arguments. */
   public @Nullable Class<?> cache_class;
 
-  /** cached ppt: ppt to use by default when calling variants of log() with few arguments */
+  /** Cached ppt: ppt to use by default when calling variants of log() with few arguments. */
   public @Nullable Ppt cache_ppt;
 
   /**
@@ -272,7 +271,9 @@ public final class Debug {
       System.out.println("vis = null");
     } else {
       for (int i = 0; i < vis.length; i++) {
-        if (vis[i] == null) System.out.println("vis[" + i + "] == null");
+        if (vis[i] == null) {
+          System.out.println("vis[" + i + "] == null");
+        }
       }
     }
     cache_match = class_match(c) && ppt_match(ppt) && var_match(vis);
@@ -288,14 +289,14 @@ public final class Debug {
   public static boolean dkconfig_show_stack_trace = false;
 
   /**
-   * Determines whether or not traceback information is printed for each call to log.
+   * Returns true if traceback information is printed for each call to log.
    *
    * @see #log(Logger, Class, Ppt, String)
    */
   public static boolean dkconfig_showTraceback = false;
 
   /**
-   * Determines whether or not detailed info (such as from {@code add_modified}) is printed.
+   * Returns true if detailed info (such as from {@code add_modified}) is printed.
    *
    * @see #log(Logger, Class, Ppt, String)
    * @see #logDetail()
@@ -303,18 +304,18 @@ public final class Debug {
   public static boolean dkconfig_logDetail = false;
 
   /**
-   * Returns whether or not detailed logging is on. Note that this check is not performed inside the
+   * Returns true if detailed logging is on. Note that this check is not performed inside the
    * logging calls themselves, it must be performed by the caller.
    *
    * @see #log(Logger, Class, Ppt, String)
    * @see #logOn()
    */
   public static final boolean logDetail() {
-    return (dkconfig_logDetail && debugTrack.isLoggable(Level.FINE));
+    return dkconfig_logDetail && debugTrack.isLoggable(Level.FINE);
   }
 
   /**
-   * Returns whether or not logging is on.
+   * Returns true if logging is on.
    *
    * @see #log(Logger, Class, Ppt, String)
    */
@@ -327,7 +328,9 @@ public final class Debug {
    * described in {@link #log(Logger, Class, Ppt, VarInfo[], String)}.
    */
   public void log(Logger debug, String msg) {
-    if (cache_match) log(debug, cache_class, cache_ppt, cache_vis, msg);
+    if (cache_match) {
+      log(debug, cache_class, cache_ppt, cache_vis, msg);
+    }
   }
 
   /**
@@ -397,7 +400,7 @@ public final class Debug {
     } else {
       @SuppressWarnings("nullness") // getPackage(): invariant class always has a package
       @NonNull String packageName = inv_class.getPackage().getName() + ".";
-      class_str = UtilPlume.replaceString(inv_class.getName(), packageName, "");
+      class_str = inv_class.getName().replace(packageName, "");
     }
 
     String vars = "";
@@ -441,26 +444,26 @@ public final class Debug {
    * Logs a description of the cached class, ppt, and variables and the specified msg via the logger
    * as described in {@link #log(Logger, Class, Ppt, VarInfo[], String)}
    *
-   * @return whether or not it logged anything
+   * @return true if it logged anything
    */
   public boolean log(String msg) {
     if (!logOn()) {
       return false;
     }
-    return (log(cache_class, cache_ppt, cache_vis, msg));
+    return log(cache_class, cache_ppt, cache_vis, msg);
   }
 
   /**
    * Logs a description of the class, ppt, ppt variables and the specified msg via the logger as
    * described in {@link #log(Logger, Class, Ppt, VarInfo[], String)}.
    *
-   * @return whether or not it logged anything
+   * @return true if it logged anything
    */
   // 3-argument form
   public static boolean log(
       Class<?> inv_class, @UnknownInitialization(PptTopLevel.class) Ppt ppt, String msg) {
 
-    return (log(inv_class, ppt, ppt.var_infos, msg));
+    return log(inv_class, ppt, ppt.var_infos, msg);
   }
 
   /**
@@ -468,7 +471,11 @@ public final class Debug {
    * described in {@link #log(Logger, Class, Ppt, String)}. Accepts vis because sometimes the
    * variables are different from those in the ppt.
    *
-   * @return whether or not it logged anything
+   * @param inv_class the class to be logged
+   * @param ppt the program point to be logged
+   * @param vis the VarInfos for the ppt
+   * @param msg the message to be logged
+   * @return true if it logged something
    */
   // 4-argument form
   public static boolean log(
@@ -501,7 +508,7 @@ public final class Debug {
     if (inv_class != null) {
       @SuppressWarnings("nullness") // getPackage(): invariant class always has a package
       @NonNull String packageName = inv_class.getPackage().getName() + ".";
-      class_str = UtilPlume.replaceString(inv_class.getName(), packageName, "");
+      class_str = inv_class.getName().replace(packageName, "");
     }
 
     // Get a string with all of the variable names.  Each is separated by ': '.
@@ -549,29 +556,28 @@ public final class Debug {
     return true;
   }
 
-  /** Returns whether or not the specified class matches the classes being tracked. */
+  /** Returns true if the specified class matches the classes being tracked. */
   public static boolean class_match(@Nullable Class<?> inv_class) {
 
     if ((debugTrackClass.length > 0) && (inv_class != null)) {
-      return (strContainsElem(inv_class.getName(), debugTrackClass));
+      return strContainsElem(inv_class.getName(), debugTrackClass);
     }
     return true;
   }
 
-  /** Returns whether or not the specified ppt matches the ppts being tracked. */
+  /** Returns true if the specified ppt matches the ppts being tracked. */
   public static boolean ppt_match(
       @Nullable @UnknownInitialization(daikon.PptTopLevel.class) Ppt ppt) {
 
     if (debugTrackPpt.length > 0) {
-      return ((ppt != null) && strContainsElem(ppt.name(), debugTrackPpt));
+      return (ppt != null) && strContainsElem(ppt.name(), debugTrackPpt);
     }
     return true;
   }
 
   /**
-   * Returns whether or not the specified vars match the ones being tracked. Also, sets
-   * Debug.ourvars with the names of the variables matched if they are not the leader of their
-   * equality sets.
+   * Returns true if the specified vars match the ones being tracked. Also, sets Debug.ourvars with
+   * the names of the variables matched if they are not the leader of their equality sets.
    */
   public static boolean var_match(VarInfo @Nullable [] vis) {
 
@@ -621,17 +627,25 @@ public final class Debug {
                 this_match = true;
                 if (!cv[j].equals(vis[j].name())) {
                   ourvars[j] = v.name();
-                  if (j != k) ourvars[j] += " (" + j + "/" + k + ")";
-                  if (v.isCanonical()) ourvars[j] += " (Leader)";
+                  if (j != k) {
+                    ourvars[j] += " (" + j + "/" + k + ")";
+                  }
+                  if (v.isCanonical()) {
+                    ourvars[j] += " (Leader)";
+                  }
                 }
                 break eachvis;
               }
             }
           } else { // sometimes, no equality set
-            if (cv[j].equals("*") || cv[j].equals(vis[k].name())) this_match = true;
+            if (cv[j].equals("*") || cv[j].equals(vis[k].name())) {
+              this_match = true;
+            }
           }
         }
-        if (!this_match) continue outer;
+        if (!this_match) {
+          continue outer;
+        }
       }
       match = true;
       break outer;
@@ -660,15 +674,21 @@ public final class Debug {
     boolean found = false;
 
     for (PptTopLevel ppt : all_ppts.ppt_all_iterable()) {
-      if (ppt_match(ppt)) debugTrack.fine("Matched ppt '" + ppt.name() + "' at " + msg);
+      if (ppt_match(ppt)) {
+        debugTrack.fine("Matched ppt '" + ppt.name() + "' at " + msg);
+      }
       for (PptSlice slice : ppt.views_iterable()) {
         for (int k = 0; k < slice.invs.size(); k++) {
           Invariant inv = slice.invs.get(k);
-          if (inv.log("%s: found #%s=%s in slice %s", msg, k, inv.format(), slice)) found = true;
+          if (inv.log("%s: found #%s=%s in slice %s", msg, k, inv.format(), slice)) {
+            found = true;
+          }
         }
       }
     }
-    if (!found) debugTrack.fine("Found no points at '" + msg + "'");
+    if (!found) {
+      debugTrack.fine("Found no points at '" + msg + "'");
+    }
   }
 
   /** Returns a string containing the integer variables and their values. */
@@ -707,9 +727,13 @@ public final class Debug {
             if ((mod == ValueTuple.MISSING_FLOW) || (mod == ValueTuple.MISSING_NONSENSICAL)) {
               out += " (missing)";
             }
-            if (v.missingOutOfBounds()) out += " (out of bounds)";
+            if (v.missingOutOfBounds()) {
+              out += " (out of bounds)";
+            }
             if (v.equalitySet != null) {
-              if (!v.isCanonical()) out += " (leader=" + v.canonicalRep().name() + ")";
+              if (!v.isCanonical()) {
+                out += " (leader=" + v.canonicalRep().name() + ")";
+              }
             }
             // out += " mod=" + mod;
             out += ": ";
@@ -777,10 +801,16 @@ public final class Debug {
       out.append(v.name());
       out.append("=");
       out.append(toString(val));
-      if (v.isMissing(vt)) out.append(" (missing)");
-      if (v.missingOutOfBounds()) out.append(" (out of bounds)");
+      if (v.isMissing(vt)) {
+        out.append(" (missing)");
+      }
+      if (v.missingOutOfBounds()) {
+        out.append(" (out of bounds)");
+      }
       if (v.equalitySet != null) {
-        if (!v.isCanonical()) out.append(" (leader=" + v.canonicalRep().name() + ")");
+        if (!v.isCanonical()) {
+          out.append(" (leader=" + v.canonicalRep().name() + ")");
+        }
       }
       out.append(": ");
     }
@@ -795,7 +825,7 @@ public final class Debug {
    * <pre>{@code class|class|...<var,var,var>@ppt}</pre>
    *
    * As shown, multiple class arguments can be specified separated by pipe symbols (|). The
-   * variables are specified in angle brackets (&lt;&gt;) and the program point is preceeded by an
+   * variables are specified in angle brackets ({@code <>}) and the program point is preceeded by an
    * at sign (@). Each is optional and can be left out. The add_track routine can be called multiple
    * times. An invariant that matches any of the specifications will be tracked.
    */
@@ -807,11 +837,13 @@ public final class Debug {
 
     // Get the classes, vars, and ppt
     int var_start = def.indexOf('<');
-    int ppt_start = def.indexOf("@");
+    int ppt_start = def.indexOf('@');
     if ((var_start == -1) && (ppt_start == -1)) {
       classes = def;
     } else if (var_start != -1) {
-      if (var_start > 0) classes = def.substring(0, var_start);
+      if (var_start > 0) {
+        classes = def.substring(0, var_start);
+      }
       if (ppt_start == -1) {
         vars = def.substring(var_start + 1, def.length() - 1);
       } else {
@@ -819,7 +851,9 @@ public final class Debug {
         ppt = def.substring(ppt_start + 1, def.length());
       }
     } else {
-      if (ppt_start > 0) classes = def.substring(0, ppt_start);
+      if (ppt_start > 0) {
+        classes = def.substring(0, ppt_start);
+      }
       ppt = def.substring(ppt_start + 1, def.length());
     }
 

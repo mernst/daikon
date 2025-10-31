@@ -5,14 +5,17 @@ import daikon.plumelib.bcelutil.BcelUtil;
 import daikon.plumelib.bcelutil.SimpleLog;
 import daikon.plumelib.options.Option;
 import daikon.plumelib.options.Options;
-import daikon.plumelib.util.RegexUtil;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.regex.Pattern;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 /**
  * This is the main class for DynComp. It uses the -javaagent switch to Java (which allows classes
@@ -21,25 +24,36 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class DynComp {
 
+  /** Display usage information. */
+  @Option("-h Display usage information")
+  public static boolean help = false;
+
   /** Print information about the classes being transformed. */
-  @Option("-v Print information about the classes being transformed")
+  @Option("-v Print progress information")
   public static boolean verbose = false;
 
-  /** Dump the instrumented classes to disk. */
-  @Option("-d Dump the instrumented classes to disk")
+  /**
+   * Dump the instrumented classes to disk, for diagnostic purposes. The directory is specified by
+   * {@code --debug-dir} (default {@code debug}).
+   */
+  @Option("Dump the instrumented classes to disk")
+  public static boolean dump = false;
+
+  /** Output debugging information. */
+  @Option("-d Output debugging information (implies --dump)")
   public static boolean debug = false;
 
   /** The directory in which to dump instrumented class files. */
   @Option("Directory in which to create debug files")
   public static File debug_dir = new File("debug");
 
-  /** The directory in which to create output files. */
+  /** The directory in which to create output files (i.e., Daikon input files). */
   @Option("Directory in which to create output files")
   public static File output_dir = new File(".");
 
   /** Output filename for .decls file suitable for input to Daikon. */
   @Option("-f Output filename for Daikon decl file")
-  public static @Nullable String decl_file = null;
+  public static @MonotonicNonNull String decl_file = null;
 
   /** Output filename for a more easily human-readable file summarizing comparability sets. */
   @Option("Output file for comparability sets")
@@ -51,7 +65,10 @@ public class DynComp {
   // Null if shouldn't do output
   public static @MonotonicNonNull File trace_file = null;
 
-  /** Controls size of the stack displayed in tracing the interactions that occurred. */
+  /**
+   * Controls size of the stack displayed in tracing the interactions that occurred. Used in {@code
+   * daikon.dcomp.TagEntry}.
+   */
   @Option("Depth of call hierarchy for line tracing")
   public static int trace_line_depth = 1;
 
@@ -67,24 +84,40 @@ public class DynComp {
   @Option("Ignore program points matching the regex")
   public static List<Pattern> ppt_omit_pattern = new ArrayList<>();
 
-  /** Do not track Java primitive values (of type boolean, int, long, etc.). */
-  @Option("Don't track primitives")
-  public static boolean no_primitives = false;
-
   /** Specifies the location of the instrumented JDK. */
   @Option("jar file containing an instrumented JDK")
   public static @Nullable File rt_file = null;
 
   /** Causes DynComp to traverse exactly those fields visible from a given program point. */
-  @Option("use standard visibility")
+  @Option("Use standard visibility")
   public static boolean std_visibility = false;
 
   /** Depth to which to examine structure components. */
-  @Option("variable nesting depth")
+  @Option("Variable nesting depth")
   public static int nesting_depth = 2;
 
-  /** Do not use the instrumented JDK. No longer an option, now derived from rt_file option. */
-  public static boolean no_jdk = false;
+  /**
+   * Path to Java agent .jar file that performs the transformation. The "main" procedure is {@code
+   * Premain.premain()}.
+   *
+   * @see daikon.dcomp.Premain#premain
+   */
+  // Set by start_target()
+  @Option("Path to the DynComp agent jar file (usually dcomp_premain.jar)")
+  public static @Nullable File premain = null;
+
+  /** Holds the path to "daikon.jar" or to "daikon/java:daikon/java/lib/*". */
+  // Set by start_target()
+  public static String daikonPath = "";
+
+  /** The current class path. */
+  static @MonotonicNonNull String cp = null;
+
+  /** Contains the expansion of java/lib/* if it is on the classpath. */
+  static @Nullable String java_lib_classpath = null;
+
+  /** The contents of DAIKONDIR environment setting. */
+  static @Nullable String daikon_dir = null;
 
   // The following are internal debugging options primarily for use by the DynComp maintainers.
   // They are not documented in the Daikon User Manual.
@@ -97,20 +130,15 @@ public class DynComp {
   @Option("Print detailed information on variables being observed")
   public static boolean debug_decl_print = false;
 
-  /**
-   * Path to java agent jar file that performs the transformation. The "main" procedure is
-   * Premain.premain().
-   *
-   * @see daikon.dcomp.Premain#premain
-   */
-  // Set by start_target()
-  @Option("Path to the DynComp agent jar file (usually dcomp_premain.jar)")
-  public static @MonotonicNonNull File premain = null;
+  // Note that this is derived from the rt_file option.  There is no command-line argument that
+  // corresponds to this variable.
+  /** Do not use the instrumented JDK. */
+  public static boolean no_jdk = false;
 
   /** starting time (msecs) */
   public static long start = System.currentTimeMillis();
 
-  /** Log file if debugging is enabled. */
+  /** Log file if debug is enabled. */
   private static final SimpleLog basic = new SimpleLog(false);
 
   /** Synopsis for the DynComp command line. */
@@ -125,19 +153,19 @@ public class DynComp {
 
     // Parse our arguments
     Options options = new Options(synopsis, DynComp.class);
-    // options.ignore_options_after_arg (true);
-    String[] target_args = options.parse(true, args);
-    check_args(options, target_args);
+    options.setParseAfterArg(false);
+    String[] targetArgs = options.parse(true, args);
+    check_args(options, targetArgs);
 
-    // Turn on basic logging if the debug was selected
+    // Turn on basic logging if debug was selected
     basic.enabled = debug;
-    basic.log("target_args = %s%n", Arrays.toString(target_args));
+    basic.log("targetArgs = %s%n", Arrays.toString(targetArgs));
 
     // Start the target.  Pass the same options to the premain as
     // were passed here.
 
     DynComp dcomp = new DynComp();
-    dcomp.start_target(options.getOptionsString(), target_args);
+    dcomp.start_target(options.getOptionsString(), targetArgs);
   }
 
   /**
@@ -145,15 +173,19 @@ public class DynComp {
    * error.
    *
    * @param options set of legal options to DynComp
-   * @param target_args arguments being passed to the target program
+   * @param targetArgs arguments being passed to the target program
    */
-  public static void check_args(Options options, String[] target_args) {
+  public static void check_args(Options options, String[] targetArgs) {
+    if (help) {
+      options.printUsage();
+      System.exit(1);
+    }
     if (nesting_depth < 0) {
       System.out.printf("nesting depth (%d) must not be negative%n", nesting_depth);
       options.printUsage();
       System.exit(1);
     }
-    if (target_args.length == 0) {
+    if (targetArgs.length == 0) {
       System.out.println("target program must be specified");
       options.printUsage();
       System.exit(1);
@@ -171,75 +203,47 @@ public class DynComp {
   }
 
   /**
-   * Starts the target program with the java agent setup to do the transforms. All java agent
-   * arguments are passed to it. Our classpath is passed to the new JVM.
+   * Starts the target program with the Java agent set up to do the transforms. All Java agent
+   * arguments are passed to it. The current classpath is passed to the new JVM.
+   *
+   * @param premain_args the Java agent argument list
+   * @param targetArgs the test program name and its argument list
    */
-  /*TO DO: @PostNonNull("premain")*/
-  void start_target(String premain_args, String[] target_args) {
+  /*TO DO: @EnsuresNonNull("premain")*/
+  @EnsuresNonNull("cp")
+  void start_target(String premain_args, String[] targetArgs) {
 
-    String target_class = target_args[0].replaceFirst(".*[/.]", "");
-
-    // Default the decls file to <target-program-name>.decls-DynComp
+    // Default the decls file name to <target-program-name>.decls-DynComp
     if (decl_file == null) {
+      String target_class = targetArgs[0].replaceFirst(".*[/.]", "");
       decl_file = String.format("%s.decls-DynComp", target_class);
-      premain_args = "--decl-file=" + decl_file + " " + premain_args;
+      premain_args += " --decl-file=" + decl_file;
     }
 
     // Get the current classpath
-    String cp = System.getProperty("java.class.path");
+    cp = System.getProperty("java.class.path");
     basic.log("classpath = '%s'%n", cp);
     if (cp == null) {
       cp = ".";
     }
 
-    // The the separator for items in the class path
-    String path_separator = System.getProperty("path.separator");
-    basic.log("path_separator = %s%n", path_separator);
-    if (!RegexUtil.isRegex(path_separator)) {
-      throw new Daikon.BugInDaikon(
-          "Bad regexp "
-              + path_separator
-              + " for path.separator: "
-              + RegexUtil.regexError(path_separator));
-    }
+    // Get location of DAIKONDIR, may be null.
+    daikon_dir = System.getenv("DAIKONDIR");
 
-    // Look for dcomp_premain.jar along the classpath
+    // The separator for items in the class path.
+    basic.log("File.pathSeparator = %s%n", File.pathSeparator);
+
+    // Look for location of dcomp_premain.jar
     if (premain == null) {
-      String[] cpath = cp.split(path_separator);
-      for (String path : cpath) {
-        File poss_premain;
-        if (path.endsWith("dcomp_premain.jar")) {
-          poss_premain = new File(path);
-        } else {
-          poss_premain = new File(path, "dcomp_premain.jar");
-        }
-        // System.out.printf("looking for file %s%n", poss_premain);
-        if (poss_premain.canRead()) {
-          premain = poss_premain;
-          break;
-        }
-      }
+      premain = locateFile("dcomp_premain.jar");
     }
-
-    // If not on the classpath look in ${DAIKONDIR}/java
-    String daikon_dir = System.getenv("DAIKONDIR");
-    if (premain == null) {
-      if (daikon_dir != null) {
-        String file_separator = System.getProperty("file.separator");
-        File poss_premain = new File(daikon_dir + file_separator + "java", "dcomp_premain.jar");
-        if (poss_premain.canRead()) {
-          premain = poss_premain;
-        }
-      }
-    }
-
-    // If we didn't find a premain, give up
+    // If we didn't find a premain it's a fatal error.
     if (premain == null) {
       System.err.printf("Can't find dcomp_premain.jar on the classpath");
       if (daikon_dir == null) {
         System.err.printf(" and $DAIKONDIR is not set.%n");
       } else {
-        System.err.printf(" or in $DAIKONDIR/java .%n");
+        System.err.printf(" or in %s/java .%n", daikon_dir);
       }
       System.err.printf("It should be found in the directory where Daikon was installed.%n");
       System.err.printf("Use the --premain switch to specify its location,%n");
@@ -247,78 +251,74 @@ public class DynComp {
       System.exit(1);
     }
 
-    // Look for rt-file
+    // Are we using the instrumented JDK?
     if (!no_jdk) {
-      // Look for dcomp_rt.jar along the classpath
+      // Yes we are - We need to locate dcomp_rt.jar and add Daikon to the boot classpath.
+      // Look for location of dcomp_rt.jar
       if (rt_file == null) {
-        String[] cpath = cp.split(path_separator);
-        for (String path : cpath) {
-          File poss_rt;
-          if (path.endsWith("dcomp_rt.jar")) {
-            poss_rt = new File(path);
-          } else {
-            poss_rt = new File(path, "dcomp_rt.jar");
-          }
-          if (poss_rt.canRead()) {
-            rt_file = poss_rt;
-            break;
-          }
-        }
+        rt_file = locateFile("dcomp_rt.jar");
       }
-
-      // If not on the classpath look in ${DAIKONDIR}/java
-      if (rt_file == null) {
-        if (daikon_dir != null) {
-          String file_separator = System.getProperty("file.separator");
-          File poss_rt = new File(daikon_dir + file_separator + "java", "dcomp_rt.jar");
-          if (poss_rt.canRead()) rt_file = poss_rt;
-        }
-      }
-
-      // If we didn't find a rt-file, give up
+      // If we didn't find a rt-file it's a fatal error.
       if (rt_file == null) {
         System.err.printf("Can't find dcomp_rt.jar on the classpath");
         if (daikon_dir == null) {
           System.err.printf(" and $DAIKONDIR is not set.%n");
         } else {
-          System.err.printf(" or in $DAIKONDIR/java .%n");
+          System.err.printf(" or in %s/java .%n", daikon_dir);
         }
         System.err.printf("Probably you forgot to build it.%n");
         System.err.printf(
             "See the Daikon manual, section \"Instrumenting the JDK with DynComp\" for help.%n");
         System.exit(1);
       }
+      // Add the location of Daikon to the boot classpath.  For each element of the classpath, if it
+      // is part of Daikon, append it to the boot classpath.
+      for (String path : cp.split(File.pathSeparator)) {
+        if (isDaikonOnPath(path)) {
+          daikonPath = daikonPath + File.pathSeparator + path;
+        }
+      }
+      basic.log("daikonPath = '%s'%n", daikonPath);
     }
 
-    // Build the command line to execute the target with the javaagent
+    // Build the command line to execute the target with the javaagent.
     List<String> cmdlist = new ArrayList<>();
     cmdlist.add("java");
     // cmdlist.add ("-verbose:class");
+
     cmdlist.add("-cp");
     cmdlist.add(cp);
     cmdlist.add("-ea");
     cmdlist.add("-esa");
-    // get max memory given DynComp and pass on to dcomp_premain
-    // rounded up to nearest G(igabyte)
+    // Get max memory given DynComp and pass on to dcomp_premain rounded up to nearest gigabyte.
     cmdlist.add(
         "-Xmx" + (int) Math.ceil(java.lang.Runtime.getRuntime().maxMemory() / 1073741824.0) + "G");
 
     if (BcelUtil.javaVersion <= 8) {
       if (!no_jdk) {
-        // prepend to rather than replace bootclasspath
-        cmdlist.add("-Xbootclasspath/p:" + rt_file + path_separator + cp);
+        // prepend to rather than replace boot classpath
+        // If daikonPath is nonempty, it starts with a pathSeparator.
+        cmdlist.add("-Xbootclasspath/p:" + rt_file + daikonPath);
       }
     } else {
+      // allow DCRuntime to make reflective access to java.land.Object.clone() without a warning
+      cmdlist.add("--add-opens");
+      cmdlist.add("java.base/java.lang=ALL-UNNAMED");
       if (!no_jdk) {
-        // If we are processing JDK classes, then we need our code on the bootclasspath as well.
+        // If we are processing JDK classes, then we need our code on the boot classpath as well.
         // Otherwise, references to DCRuntime from the JDK would fail.
-        cmdlist.add("-Xbootclasspath/a:" + rt_file + path_separator + cp);
+        // If daikonPath is nonempty, it starts with a pathSeparator.
+        cmdlist.add("-Xbootclasspath/a:" + rt_file + daikonPath);
         // allow java.base to access daikon.jar (for instrumentation runtime)
         cmdlist.add("--add-reads");
         cmdlist.add("java.base=ALL-UNNAMED");
         // allow DCRuntime to make reflective access to sun.util.locale (equals_dcomp_instrumented)
         cmdlist.add("--add-exports");
         cmdlist.add("java.base/sun.util.locale=ALL-UNNAMED");
+        if (BcelUtil.javaVersion >= 24) {
+          cmdlist.add("--add-opens");
+          cmdlist.add("java.base/sun.util.resources=ALL-UNNAMED");
+        }
         // replace default java.base with our instrumented version
         cmdlist.add("--patch-module");
         cmdlist.add("java.base=" + rt_file);
@@ -327,38 +327,45 @@ public class DynComp {
 
     cmdlist.add(String.format("-javaagent:%s=%s", premain, premain_args));
 
-    for (String target_arg : target_args) {
+    // A `for` loop is needed because targetArgs is an array and cmdlist is a list.
+    for (String target_arg : targetArgs) {
       cmdlist.add(target_arg);
     }
     if (verbose) {
-      System.out.printf("%nExecuting target program: %s%n", args_to_string(cmdlist));
+      System.out.printf("%nExecuting target program: %s%n", argsToString(cmdlist));
     }
-    String[] cmdline = cmdlist.toArray(new String[cmdlist.size()]);
+    String[] cmdline = cmdlist.toArray(new String[0]);
 
-    // Execute the command, sending all output to our streams
+    // Execute the command, sending all output to our streams.
     java.lang.Runtime rt = java.lang.Runtime.getRuntime();
     Process dcomp_proc;
     try {
       dcomp_proc = rt.exec(cmdline);
-    } catch (Throwable e) {
-      System.out.printf("Exception '%s' while executing '%s'%n", e, cmdline);
+    } catch (Exception e) {
+      System.out.printf("Exception '%s' while executing: %s%n", e, cmdline);
       System.exit(1);
       throw new Error("Unreachable control flow");
     }
-    @SuppressWarnings("UnusedVariable") // TODO check result!
-    int result = redirect_wait(dcomp_proc);
+
+    int targetResult = redirect_wait(dcomp_proc);
+    if (targetResult != 0) {
+      System.out.printf("Warning: Target exited with %d status.%n", targetResult);
+    }
+    System.exit(targetResult);
   }
 
   /** Wait for stream redirect threads to complete. */
   public int redirect_wait(Process p) {
 
     // Create the redirect threads and start them.
+    StreamRedirectThread in_thread =
+        new StreamRedirectThread("stdin", System.in, p.getOutputStream(), false);
     StreamRedirectThread err_thread =
         new StreamRedirectThread("stderr", p.getErrorStream(), System.err, true);
-
     StreamRedirectThread out_thread =
         new StreamRedirectThread("stdout", p.getInputStream(), System.out, true);
 
+    in_thread.start();
     err_thread.start();
     out_thread.start();
 
@@ -384,21 +391,147 @@ public class DynComp {
     return result;
   }
 
-  /** Returns elapsed time as a String since the start of the program. */
+  /**
+   * Returns elapsed time since the start of the program.
+   *
+   * @return elapsed time since the start of the program
+   */
   public static String elapsed() {
-    return ("[" + (System.currentTimeMillis() - start) + " msec]");
+    return "[" + elapsedMsecs() + " msec]";
   }
 
-  public static long elapsed_msecs() {
-    return (System.currentTimeMillis() - start);
+  /**
+   * Returns number of milliseconds since the start of the program.
+   *
+   * @return number of milliseconds since the start of the program
+   */
+  public static long elapsedMsecs() {
+    return System.currentTimeMillis() - start;
   }
 
-  /** convert a list of arguments into a command line string */
-  public String args_to_string(List<String> args) {
+  /**
+   * Convert a list of arguments into a command-line string. Only used for debugging output.
+   *
+   * @param args the list of arguments
+   * @return argument string
+   */
+  public String argsToString(List<String> args) {
     String str = "";
     for (String arg : args) {
+      if (arg.indexOf(' ') != -1) {
+        arg = "'" + arg + "'";
+      }
       str += arg + " ";
     }
-    return (str.trim());
+    return str.trim();
+  }
+
+  /**
+   * Returns true if Daikon or a Daikon library jar file is on the path argument. There are three
+   * cases:
+   *
+   * <ul>
+   *   <li>a jar file that contains "DynComp.class"
+   *   <li>a path that ends in "java/lib/<em>something</em>.jar"
+   *   <li>a path that leads to "daikon/DynComp.class"
+   * </ul>
+   *
+   * @param path classpath element to inspect for Daikon
+   * @return true if found
+   */
+  boolean isDaikonOnPath(String path) {
+    if (path.endsWith(".jar")) {
+      // path ends in ".jar".
+      try (JarFile jar = new JarFile(path)) {
+        JarEntry entry = jar.getJarEntry("daikon/DynComp.class");
+        if (entry != null) {
+          return true;
+        }
+      } catch (Exception e) {
+        // do nothing, try next case
+      }
+      // check to see if path is .../java/lib/...
+      String pathElements[] = path.split(Pattern.quote(File.separator));
+      int pathLength = pathElements.length;
+      if (pathLength == 0) {
+        // Can never happen? Fatal error if it does.
+        System.err.printf("classpath appears to be empty.%n");
+        System.exit(1);
+      }
+      if (pathLength > 2) {
+        if (pathElements[pathLength - 2].equals("lib")
+            && pathElements[pathLength - 3].equals("java")) {
+          File javaLibJarFile = new File(path);
+          if (javaLibJarFile.canRead()) {
+            return true;
+          }
+        }
+      }
+    } else {
+      // path does not end in ".jar"
+      File dyncompClassFile =
+          new File(path + File.separator + "daikon" + File.separator + "DynComp.class");
+      if (dyncompClassFile.canRead()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Search for a file on the current classpath, then in ${DAIKONDIR}/java. Returns null if not
+   * found.
+   *
+   * @param fileName the relative name of a file to look for
+   * @return path to fileName or null
+   */
+  @RequiresNonNull("cp")
+  public @Nullable File locateFile(String fileName) {
+    File poss_file = findOnClasspath(fileName);
+    if (poss_file != null) {
+      return poss_file;
+    }
+
+    // If not on the classpath look in ${DAIKONDIR}/java.
+    if (daikon_dir != null) {
+      poss_file = new File(new File(daikon_dir, "java"), fileName);
+      if (poss_file.canRead()) {
+        return poss_file;
+      }
+    }
+    // Couldn't find fileName
+    return null;
+  }
+
+  /**
+   * Search for a file on the current classpath. Returns null if not found.
+   *
+   * @param fileName the relative name of a file to look for
+   * @return path to fileName or null
+   */
+  @RequiresNonNull("cp")
+  public @Nullable File findOnClasspath(String fileName) {
+    for (String path : cp.split(File.pathSeparator)) {
+      File poss_file;
+      if (path.endsWith(fileName)) {
+        int start = path.indexOf(fileName);
+        // There are three cases:
+        //   path == fileName (start == 0)
+        //   path == <something>/fileName (charAt(start-1) == separator)
+        //   path == <something>/<something>fileName (otherwise)
+        // The first two are good, the last is not what we are looking for.
+        if (start == 0 || path.charAt(start - 1) == File.separatorChar) {
+          poss_file = new File(path);
+        } else {
+          poss_file = new File(path, fileName);
+        }
+      } else {
+        poss_file = new File(path, fileName);
+      }
+      if (poss_file.canRead()) {
+        return poss_file;
+      }
+    }
+    return null;
   }
 }

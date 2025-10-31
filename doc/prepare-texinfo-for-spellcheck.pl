@@ -2,12 +2,12 @@
 
 # prepare-texinfo-for-spellcheck.pl
 # argument: .texinfo file
-# 
+#
 # Reads the input .texinfo file and outputs a filtered
 # version that elides the texinfo commands.  It also
 # removes other text that is not appropriate as input
 # to spellcheckx such as examples and comments.
-# 
+#
 # The resulting file can be spell-checked in batch mode
 # to output misspelled words; then the user can correct
 # those misspellings in the original version.
@@ -167,12 +167,12 @@ while (<>) {
 
     #skip blank lines
     if (/^[     ]*$/ ) {
-        next;             
+        next;
     }
-    
-    # preprocess input line to set up for tokenizing  
+
+    # preprocess input line to set up for tokenizing
     # quotewords doesn't like appostrope's
-    $_ =~ s/'/''/g;         
+    $_ =~ s/'/''/g;
     # make } a separate token
     $_ =~ s/}/  } /g;
     # make { a separate token
@@ -201,21 +201,17 @@ while (<>) {
                 # we're in the middle of skip until matching @end
                 next;
             }
-            given ($line_operators{$tokens[0]}) {
-                when (SKIP_LINE) {
-                    next;
-                }
-                when (SKIP_TO_MATCHING_END) {
-                    $skip_to_match = substr $tokens[0], 1;
-                    # don't output line
-                    next;
-                }
-                default {
-                    # its either unknown or a token operator
-                    # we'll just fall into loop below to process
-                }
+            my $lop = $line_operators{$tokens[0]};
+            if ($lop eq SKIP_LINE) {
+                next;
+            } elsif ($lop eq SKIP_TO_MATCHING_END) {
+                $skip_to_match = substr $tokens[0], 1;
+                # don't output line
+                next;
             }
-        }    
+            # its either unknown or a token operator
+            # we'll just fall into loop below to process
+        }
     }
 
     for ( ; $index < $#tokens; $index++) {
@@ -230,59 +226,47 @@ while (<>) {
 
         if ($tokens[$index] =~ /^}$/) {
             # we have a '}'; process according to current state
-            given ($cur_state) {
-                when (NORMAL) {
-                    print "} "; 
-                }
-                when (SKIPPING_TO_BRACE) {
-                    if ($#state_stack < 0) { die "Missmatched \'{}\', stopped"; }
-                    $cur_state = pop @state_stack;
-                }
-                when (PRINTING_TO_BRACE) {
-                    if ($#state_stack < 0) { die "Missmatched \'{}\', stopped"; }
-                    $cur_state = pop @state_stack;
-                }
+            if ($cur_state eq NORMAL) {
+                print "} ";
+            } elsif ($cur_state eq SKIPPING_TO_BRACE) {
+                if ($#state_stack < 0) { die "Missmatched \'{}\', stopped"; }
+                $cur_state = pop @state_stack;
+            } elsif ($cur_state eq PRINTING_TO_BRACE) {
+                if ($#state_stack < 0) { die "Missmatched \'{}\', stopped"; }
+                $cur_state = pop @state_stack;
             }
         } elsif ($tokens[$index] =~ /^@/) {
-            given ($token_operators{$tokens[$index]}) {
-                when (SKIP_ARG) {
-                    push @state_stack, $cur_state;
-                    $cur_state = SKIPPING_TO_BRACE;
+            my $top = $token_operators{$tokens[$index]};
+            if ($top eq SKIP_ARG) {
+                push @state_stack, $cur_state;
+                $cur_state = SKIPPING_TO_BRACE;
+            } elsif ($top eq OUTPUT_ARG) {
+                push @state_stack, $cur_state;
+                # skipping takes precedence over printing
+                if ($cur_state != SKIPPING_TO_BRACE) {
+                    $cur_state = PRINTING_TO_BRACE;
                 }
-                when (OUTPUT_ARG) {
-                    push @state_stack, $cur_state;
-                    # skipping takes precedence over printing
-                    if ($cur_state != SKIPPING_TO_BRACE) {
-                        $cur_state = PRINTING_TO_BRACE;
-                    }
-                    # we assume next token is "{" - skip it
-                    $index++;
-                }
-                when (SKIP_TOKEN) {
-                }
-                when (SKIP_REST) {
-                    next;
-                }
-                when (OUTPUT_TOKEN) {
-                    print substr $tokens[$index], 1;
-                }
-                default {
-                    if ($tokens[$index] eq "\@") {
-                        print " ";
-                    } else{
-                        # it's an unknown operator
-                        print STDERR "unknown $tokens[$index] at line ", $. + 1, "\n";
-                    }
-                }
-            }    
+                # we assume next token is "{" - skip it
+                $index++;
+            } elsif ($top eq SKIP_TOKEN) {
+            } elsif ($top eq SKIP_REST) {
+                next;
+            } elsif ($top eq OUTPUT_TOKEN) {
+                print substr $tokens[$index], 1;
+            } elsif ($tokens[$index] eq "\@") {
+                print " ";
+            } else {
+                # it's an unknown operator
+                print STDERR "unknown $tokens[$index] at line ", $. + 1, "\n";
+            }
         } else {
             # regular text
             if ($cur_state == NORMAL || $cur_state == PRINTING_TO_BRACE) {
                 # need to undouble single quotes
-                $tokens[$index] =~ s/''/'/g;         
-                # now get rid of any remaining double quotes as 
+                $tokens[$index] =~ s/''/'/g;
+                # now get rid of any remaining double quotes as
                 # they confuse the spell checker.
-                $tokens[$index] =~ s/''//g;         
+                $tokens[$index] =~ s/''//g;
                 print "$tokens[$index] ";
             }
         }
@@ -290,5 +274,5 @@ while (<>) {
 
 } continue {
     # end of line; print it out
-    print "\n";  
+    print "\n";
 }

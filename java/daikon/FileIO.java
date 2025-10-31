@@ -10,11 +10,14 @@ import static daikon.VarInfo.VarKind;
 import static daikon.tools.nullness.NullnessUtil.castNonNullDeep;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import daikon.Daikon.BugInDaikon;
 import daikon.config.Configuration;
 import daikon.derive.ValueAndModified;
 import daikon.diff.InvMap;
 import daikon.inv.Invariant;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -27,10 +30,13 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -41,15 +47,19 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.UsesObjectEquals;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
+import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.KeyFor;
@@ -60,8 +70,10 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.FilesPlume;
+import org.plumelib.util.StringsPlume;
 
+/** File I/O utilities. */
 public final class FileIO {
 
   /** Nobody should ever instantiate a FileIO. */
@@ -69,41 +81,53 @@ public final class FileIO {
     throw new Error();
   }
 
-  /// Constants
+  // Constants
 
+  /** Introduces a declaration in a declaration file. */
   static final String declaration_header = "DECLARE";
 
   // Program point name tags
   /** String used to append a ppt type to a ppt name. */
   public static final String ppt_tag_separator = ":::";
+
   /** String used to identify entry ppt names. */
   public static final String enter_suffix = "ENTER";
+
   /** String used to mark entry ppt names. */
   public static final String enter_tag = ppt_tag_separator + enter_suffix;
+
   // EXIT does not necessarily appear at the end of the program point name;
   // a number may follow it.
   /** String used to identify exit ppt names. */
   public static final String exit_suffix = "EXIT";
+
   /** String used to mark exit ppt names. */
   public static final String exit_tag = ppt_tag_separator + exit_suffix;
+
   /** To be deleted. */
   public static final String throws_suffix = "THROWS";
+
   /** To be deleted. */
   public static final String throws_tag = ppt_tag_separator + throws_suffix;
 
   public static final String object_suffix = "OBJECT";
+
   /** String used to mark object ppt names. */
   public static final String object_tag = ppt_tag_separator + object_suffix;
+
   /** String used to identify class ppt names. */
   public static final String class_static_suffix = "CLASS";
+
   /** String used to mark class ppt names. */
   public static final String class_static_tag = ppt_tag_separator + class_static_suffix;
+
   /** String used to identify global ppt names. */
   public static final String global_suffix = "GLOBAL";
 
+  /** The line separator. */
   private static final String lineSep = Global.lineSep;
 
-  /// Settings
+  // Settings
 
   // Variables starting with dkconfig_ should only be set via the
   // daikon.config.Configuration interface.
@@ -181,7 +205,7 @@ public final class FileIO {
    */
   public static boolean dkconfig_rm_stack_dups = false;
 
-  /// Variables
+  // Variables
 
   // This hashmap maps every program point to an array, which contains the
   // old values of all variables in scope the last time the program point
@@ -209,6 +233,7 @@ public final class FileIO {
 
   /** Debug tracer for reading. */
   public static final Logger debugRead = Logger.getLogger("daikon.FileIO.read");
+
   /** Debug tracer for printing. */
   public static final Logger debugPrint = Logger.getLogger("daikon.FileIO.printDtrace");
 
@@ -234,8 +259,15 @@ public final class FileIO {
     @Override
     public String toString(@GuardSatisfied ParentRelation this) {
       return parent_ppt_name + "[" + id + "] " + rel_type;
-    };
+    }
 
+    /**
+     * Intern the ppt name.
+     *
+     * @param in the input stream from which to read the object
+     * @throws IOException if there is a problem reading the stream
+     * @throws ClassNotFoundException if a class cannot be loaded
+     */
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
       in.defaultReadObject();
       if (parent_ppt_name != null) {
@@ -251,11 +283,18 @@ public final class FileIO {
     return s != null && (s.startsWith("//") || s.startsWith("#"));
   }
 
+  /**
+   * Returns true if the next line is a comment.
+   *
+   * @param reader the reader whose next line to check
+   * @return true if the next line is a comment
+   */
   // Nullness-checking of read_data_trace_record(ParseState) works even
   // without these two lines, since StringJoiner accepts null values.
   @SuppressWarnings(
-      "nullness:contracts.conditional.postcondition.not.satisfied") // readLine() assertion is
-  // ensured by call to reset()
+      "nullness:contracts.conditional.postcondition" // readLine() assertion is ensured by call to
+  // reset()
+  )
   @EnsuresNonNullIf(result = true, expression = "#1.readLine()")
   public static final boolean nextLineIsComment(BufferedReader reader) {
     boolean result = false;
@@ -269,14 +308,14 @@ public final class FileIO {
     try {
       reader.reset();
     } catch (IOException e) {
-      throw new Error(e);
+      throw new UncheckedIOException(e);
     }
     return result;
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Declaration files
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Declaration files
+  //
 
   /**
    * Returns a new PptMap containing declarations read from the files listed in the argument;
@@ -330,9 +369,9 @@ public final class FileIO {
     String ppt_name = need(state, scanner, "ppt name");
     ppt_name = user_mod_ppt_name(ppt_name);
 
-    /** Information that will populate the new program point. */
+    // Information that will populate the new program point.
     Map<String, VarDefinition> varmap = new LinkedHashMap<>();
-    /** The VarDefinition we are in the middle of reading, or null if we are not. */
+    // The VarDefinition we are in the middle of reading, or null if we are not.
     VarDefinition vardef = null;
     List<ParentRelation> ppt_parents = new ArrayList<>();
     EnumSet<PptFlags> ppt_flags = EnumSet.noneOf(PptFlags.class);
@@ -359,7 +398,9 @@ public final class FileIO {
             // There is no need to check "varmap.containsKey(vardef.name)"
             // because this is the first variable.
             assert varmap.isEmpty();
-            if (var_included(vardef.name)) varmap.put(vardef.name, vardef);
+            if (var_included(vardef.name)) {
+              varmap.put(vardef.name, vardef);
+            }
           } else if (record == "ppt-type") { // interned
             ppt_type = parse_ppt_type(state, scanner);
           } else {
@@ -400,7 +441,9 @@ public final class FileIO {
             if (varmap.containsKey(vardef.name)) {
               decl_error(state, "var %s declared twice", vardef.name);
             }
-            if (var_included(vardef.name)) varmap.put(vardef.name, vardef);
+            if (var_included(vardef.name)) {
+              varmap.put(vardef.name, vardef);
+            }
           } else if (record == "min-value") { // interned
             vardef.parse_min_value(scanner);
           } else if (record == "max-value") { // interned
@@ -441,7 +484,7 @@ public final class FileIO {
       @Interned VarInfo vi = new VarInfo(vd);
       vi_list.add(vi);
     }
-    VarInfo[] vi_array = vi_list.toArray(new VarInfo[vi_list.size()]);
+    VarInfo[] vi_array = vi_list.toArray(new VarInfo[0]);
 
     // Check to see if the program point is new
     if (state.all_ppts.containsName(ppt_name)) {
@@ -587,7 +630,7 @@ public final class FileIO {
       var_infos.add(vi);
     }
 
-    VarInfo[] result = var_infos.toArray(new VarInfo[var_infos.size()]);
+    VarInfo[] result = var_infos.toArray(new VarInfo[0]);
     return result;
   }
 
@@ -663,7 +706,7 @@ public final class FileIO {
           file,
           filename);
     }
-    /// XXX
+    // XXX
 
     int hash_position = proglang_type_string_and_aux.indexOf('#');
     String aux_string = "";
@@ -803,11 +846,11 @@ public final class FileIO {
     @Interned String version = need(state, scanner, "declaration version number");
     need_eol(state, scanner);
     boolean new_df;
-    if (version == "2.0") // interned
-    new_df = true;
-    else if (version == "1.0") // interned
-    new_df = false;
-    else {
+    if (version == "2.0") { // interned
+      new_df = true;
+    } else if (version == "1.0") { // interned
+      new_df = false;
+    } else {
       decl_error(state, "'%s' found where 1.0 or 2.0 expected", version);
       throw new Error("Can't get here"); // help out definite assignment analysis
     }
@@ -840,14 +883,19 @@ public final class FileIO {
     return result.toString();
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// invocation tracking for dtrace files entry/exit grouping
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // invocation tracking for dtrace files entry/exit grouping
+  //
 
+  /** Represents an instance/invocation of a program point. */
   static final class Invocation implements Comparable<Invocation> {
-    PptTopLevel ppt; // used in printing and in suppressing duplicates
-    // Rather than a valuetuple, place its elements here.
+    /** The program point; used in printing and in suppressing duplicates. */
+    PptTopLevel ppt;
+
+    /** The values. This array is used rather than a valuetuple. */
     @Nullable Object[] vals;
+
+    /** The modbits. */
     int[] mods;
 
     static Object canonical_hashcode = new Object();
@@ -858,14 +906,23 @@ public final class FileIO {
       this.mods = mods;
     }
 
-    // Print the Invocation on two lines, indented by two spaces
-    // The receiver Invocation may be canonicalized or not.
+    /**
+     * Returns a string representation of this. The Invocation is formatted on two lines, indented
+     * by two spaces. The receiver Invocation may be canonicalized or not.
+     *
+     * @return a string representation of this
+     */
     String format(@GuardSatisfied Invocation this) {
       return format(true);
     }
 
-    // Print the Invocation on one or two lines, indented by two spaces.
-    // The receiver Invocation may be canonicalized or not.
+    /**
+     * Returns a string representation of this. The Invocation is formatted on two lines, indented
+     * by two spaces. The receiver Invocation may be canonicalized or not.
+     *
+     * @param show_values if true, show values; otherwise, return just the Ppt name
+     * @return a string representation of this
+     */
     String format(@GuardSatisfied Invocation this, boolean show_values) {
       if (!show_values) {
         return "  " + ppt.ppt_name.getNameWithoutPoint();
@@ -892,9 +949,11 @@ public final class FileIO {
             val)) // succeeds only for canonicalized Invocations.  Can be an == test, but there is
           // little point.  val can be null, so it cannot be the receiver.
           pw.print("<hashcode>");
-        else if (val instanceof int[]) pw.print(Arrays.toString((int[]) val));
-        else if (val instanceof String) pw.print(UtilPlume.escapeNonASCII((String) val));
-        else {
+        else if (val instanceof int[]) {
+          pw.print(Arrays.toString((int[]) val));
+        } else if (val instanceof String) {
+          pw.print(StringsPlume.escapeNonASCII((String) val));
+        } else {
           pw.print(val);
         }
       }
@@ -1086,41 +1145,36 @@ public final class FileIO {
           "Warning: Daikon is using a dataflow"
               + " hierarchy analysis on a data trace"
               + " that does not appear to be over a"
-              + " program execution, consider running"
+              + " program execution.  Consider running"
               + " Daikon with the --nohierarchy flag.");
     }
   }
 
-  private static InputStream connectToChicory() {
+  /**
+   * Connect to Chicory.
+   *
+   * @return the stream that is connected to Chicory
+   */
+  private static @Owning InputStream connectToChicory() throws IOException {
+    Socket chicSocket = null;
 
-    ServerSocket daikonServer;
-    try {
-      daikonServer = new ServerSocket(0); // bind to any free port
-
+    // bind to any free port
+    try (ServerSocket daikonServer = new ServerSocket(0)) {
       // tell Chicory what port we have!
       System.out.println("DaikonChicoryOnlinePort=" + daikonServer.getLocalPort());
-
       daikonServer.setReceiveBufferSize(64000);
-
-    } catch (IOException e) {
-      throw new RuntimeException("Unable to create server", e);
-    }
-
-    Socket chicSocket;
-    try {
       daikonServer.setSoTimeout(5000);
-
-      // System.out.println("waiting for chicory connection on port " +
-      // daikonServer.getLocalPort());
       chicSocket = daikonServer.accept();
-    } catch (IOException e) {
-      throw new RuntimeException("Unable to connect to Chicory", e);
-    }
-
-    try {
       return chicSocket.getInputStream();
-    } catch (IOException e) {
-      throw new RuntimeException("Unable to get Chicory's input stream", e);
+    } catch (Exception e) {
+      if (chicSocket != null) {
+        try {
+          chicSocket.close();
+        } catch (Exception closeException) {
+          // do nothing
+        }
+      }
+      throw e;
     }
   }
 
@@ -1191,19 +1245,30 @@ public final class FileIO {
 
   /** The type of the record that was most recently read. */
   public enum RecordType {
-    SAMPLE, // got a sample
+    /** Got a sample. */
+    SAMPLE,
 
-    DECL, // got a ppt decl
-    DECL_VERSION, // got an indication of the ppt decl format
-    COMPARABILITY, // got a VarComparability declaration
-    LIST_IMPLEMENTORS, // got a ListImplementors declaration
-    INPUT_LANGUAGE, // got an input-language declaration
+    /** Got a ppt decl. */
+    DECL,
+    /** Got an indication of the ppt decl format. */
+    DECL_VERSION,
+    /** Got a VarComparability declaration. */
+    COMPARABILITY,
+    /** Got a ListImplementors declaration. */
+    LIST_IMPLEMENTORS,
+    /** Got an input-language declaration. */
+    INPUT_LANGUAGE,
 
-    NULL, // haven't read anything yet
-    COMMENT, // got a comment
-    EOF, // reached end of file
-    TRUNCATED, // dkconfig_max_line_number reached (without error)
-    ERROR, // continuable error; fatal errors thrown as exceptions
+    /** Haven't read anything yet. */
+    NULL,
+    /** Got a comment. */
+    COMMENT,
+    /** Reached end of file. */
+    EOF,
+    /** Dkconfig_max_line_number reached (without error). */
+    TRUNCATED,
+    /** Continuable error; fatal errors thrown as exceptions. */
+    ERROR,
   };
 
   /**
@@ -1219,7 +1284,7 @@ public final class FileIO {
    * </ol>
    */
   @UsesObjectEquals
-  public static class ParseState {
+  @MustCall("close") public static class ParseState implements Closeable {
 
     //
     // This is the global information about the state of the parser.
@@ -1241,7 +1306,7 @@ public final class FileIO {
     public PptMap all_ppts;
 
     /** Input stream. */
-    public LineNumberReader reader;
+    public final @Owning LineNumberReader reader;
 
     /** Total number of lines in the input file. */
     public long total_lines;
@@ -1259,7 +1324,7 @@ public final class FileIO {
 
     /**
      * Current ppt. Used when status=DECL or SAMPLE. Can be null if this declaration was skipped
-     * because of --ppt-select-pattern or --ppt-omit-pattern.
+     * because of {@code --ppt-select-pattern} or {@code --ppt-omit-pattern}.
      */
     public @Nullable PptTopLevel ppt;
 
@@ -1272,7 +1337,16 @@ public final class FileIO {
     /** Miscellaneous text in the parsed item. */
     public @Nullable Object payload; // used when status=COMMENT
 
-    /** Start parsing the given file. */
+    /**
+     * Start parsing the given file.
+     *
+     * @param raw_filename the file name supplied by the user; may be "-" or "+"
+     * @param decl_file_p true if the file is a declaration file
+     * @param ppts_may_be_new true if declarations of ppts read from the data trace file are new
+     *     (and thus are not in all_ppts). false if the ppts may already be there.
+     * @param ppts the program points
+     * @throws IOException if there is a problem reading or writing a file
+     */
     @SuppressWarnings("StaticAssignmentInConstructor") // for progress output
     public ParseState(
         String raw_filename, boolean decl_file_p, boolean ppts_may_be_new, PptMap ppts)
@@ -1314,7 +1388,7 @@ public final class FileIO {
 
       if (count_lines) {
         Daikon.progress = "Checking size of " + filename;
-        total_lines = UtilPlume.countLines(raw_filename);
+        total_lines = FilesPlume.countLines(raw_filename);
       } else {
         // System.out.printf("no count %b %d %s %d %d%n", is_decl_file,
         //                    dkconfig_dtrace_line_count, filename,
@@ -1331,16 +1405,23 @@ public final class FileIO {
         InputStreamReader chicReader = new InputStreamReader(chicoryInput, UTF_8);
         reader = new LineNumberReader(chicReader);
       } else if (is_url) {
-        URL url = new URL(raw_filename);
-        InputStream stream = url.openStream();
-        if (raw_filename.endsWith(".gz")) {
-          GZIPInputStream gzip_stream = new GZIPInputStream(stream);
-          reader = new LineNumberReader(new InputStreamReader(gzip_stream, UTF_8));
-        } else {
-          reader = new LineNumberReader(new InputStreamReader(stream, UTF_8));
+        URL url = URI.create(raw_filename).toURL();
+        InputStream stream = null; // dummy initialization for compiler's definite assignment check
+        try {
+          stream = url.openStream();
+          InputStream gzip_stream =
+              raw_filename.endsWith(".gz") ? new GZIPInputStream(stream) : stream;
+          InputStreamReader isr = new InputStreamReader(gzip_stream, UTF_8);
+          LineNumberReader lnr = new LineNumberReader(isr);
+          reader = lnr;
+        } catch (IOException e) {
+          if (stream != null) {
+            stream.close();
+          }
+          throw e;
         }
       } else {
-        reader = UtilPlume.lineNumberFileReader(raw_filename);
+        reader = FilesPlume.newLineNumberFileReader(raw_filename);
       }
 
       varcomp_format = VarComparability.IMPLICIT;
@@ -1348,7 +1429,22 @@ public final class FileIO {
       ppt = null;
     }
 
-    /** Returns the current line number in the input file, or -1 if not available. */
+    /** Releases resources held by this. */
+    @Override
+    @EnsuresCalledMethods(value = "reader", methods = "close")
+    public void close(@GuardSatisfied ParseState this) {
+      try {
+        reader.close();
+      } catch (IOException e) {
+        throw new BugInDaikon(e);
+      }
+    }
+
+    /**
+     * Returns the current line number in the input file, or -1 if not available.
+     *
+     * @return the current line number in the input file, or -1 if not available
+     */
     public int get_linenum() {
       return reader.getLineNumber();
     }
@@ -1398,6 +1494,7 @@ public final class FileIO {
   // The @MonotonicNonNull property is not true globally, but within every
   // method it's true, so it is a useful annotation.
   public static @MonotonicNonNull ParseState data_trace_state = null;
+
   // The variable is only ever cleared at the end of a routine that set it.
   @SuppressWarnings("nullness") // reinitialization
   private static void clear_data_trace_state() {
@@ -1435,62 +1532,73 @@ public final class FileIO {
               + ((Daikon.ppt_omit_regexp != null) ? " " + Daikon.ppt_omit_regexp.pattern() : ""));
     }
 
-    ParseState data_trace_state = new ParseState(filename, is_decl_file, ppts_may_be_new, all_ppts);
-    FileIO.data_trace_state = data_trace_state;
+    try (ParseState data_trace_state =
+        new ParseState(filename, is_decl_file, ppts_may_be_new, all_ppts)) {
+      FileIO.data_trace_state = data_trace_state;
 
-    // Used for debugging: write new data trace file.
-    if (Global.debugPrintDtrace) {
-      Global.dtraceWriter =
-          new PrintWriter(Files.newBufferedWriter(new File(filename + ".debug").toPath(), UTF_8));
-    }
-
-    while (true) {
-      read_data_trace_record(data_trace_state);
-
-      if (data_trace_state.rtype == RecordType.SAMPLE) {
-        assert data_trace_state.ppt != null
-            : "@AssumeAssertion(nullness): dependent: RecordType.SAMPLE";
-        assert data_trace_state.vt != null
-            : "@AssumeAssertion(nullness): dependent: RecordType.SAMPLE";
-        // Nonce may be null
-        samples_processed++;
-        // Add orig and derived variables; pass to inference (add_and_flow)
+      // Used for debugging: write new data trace file.
+      if (Global.debugPrintDtrace) {
+        Path p = new File(filename + ".debug").toPath();
+        BufferedWriter bw = null; // dummy initialization for compiler's definite assignment check
         try {
-          processor.process_sample(
-              data_trace_state.all_ppts,
-              data_trace_state.ppt,
-              data_trace_state.vt,
-              data_trace_state.nonce);
-        } catch (Error e) {
-          // e.printStackTrace();
-          if (!dkconfig_continue_after_file_exception) {
-            throw new Daikon.UserError(e, data_trace_state);
-          } else {
-            System.out.println();
-            System.out.println(
-                "WARNING: Error while processing trace file; subsequent records ignored.");
-            System.out.print("Ignored backtrace:");
-            e.printStackTrace(System.out);
-            System.out.println();
+          bw = Files.newBufferedWriter(p, UTF_8);
+          Global.dtraceWriter = new PrintWriter(bw);
+        } catch (IOException e) {
+          if (bw != null) {
+            bw.close();
           }
+          throw e;
         }
-      } else if ((data_trace_state.rtype == RecordType.EOF)
-          || (data_trace_state.rtype == RecordType.TRUNCATED)) {
-        break;
-      } else {
-        // don't need to do anything explicit for other records found
       }
+
+      while (true) {
+        read_data_trace_record(data_trace_state);
+
+        if (data_trace_state.rtype == RecordType.SAMPLE) {
+          assert data_trace_state.ppt != null
+              : "@AssumeAssertion(nullness): dependent: RecordType.SAMPLE";
+          assert data_trace_state.vt != null
+              : "@AssumeAssertion(nullness): dependent: RecordType.SAMPLE";
+          // Nonce may be null
+          samples_processed++;
+          // Add orig and derived variables; pass to inference (add_and_flow)
+          try {
+            processor.process_sample(
+                data_trace_state.all_ppts,
+                data_trace_state.ppt,
+                data_trace_state.vt,
+                data_trace_state.nonce);
+          } catch (Error e) {
+            // e.printStackTrace();
+            if (!dkconfig_continue_after_file_exception) {
+              throw new Daikon.UserError(e, data_trace_state);
+            } else {
+              System.out.println();
+              System.out.println(
+                  "WARNING: Error while processing trace file; subsequent records ignored.");
+              System.out.print("Ignored backtrace:");
+              e.printStackTrace(System.out);
+              System.out.println();
+            }
+          }
+        } else if ((data_trace_state.rtype == RecordType.EOF)
+            || (data_trace_state.rtype == RecordType.TRUNCATED)) {
+          break;
+        } else {
+          // don't need to do anything explicit for other records found
+        }
+      }
+
+      if (Global.debugPrintDtrace) {
+        assert Global.dtraceWriter != null
+            : "@AssumeAssertion(nullness): dependent: set if debugPrintDtrace is true";
+        Global.dtraceWriter.close();
+      }
+
+      Daikon.progress = "Finished reading " + data_trace_state.filename;
+
+      clear_data_trace_state();
     }
-
-    if (Global.debugPrintDtrace) {
-      assert Global.dtraceWriter != null
-          : "@AssumeAssertion(nullness): dependent: set if debugPrintDtrace is true";
-      Global.dtraceWriter.close();
-    }
-
-    Daikon.progress = "Finished reading " + data_trace_state.filename;
-
-    clear_data_trace_state();
   }
 
   /**
@@ -1583,7 +1691,7 @@ public final class FileIO {
         if (state.ppt != null) {
           if (!state.all_ppts.containsName(state.ppt.name())) {
             state.all_ppts.add(state.ppt);
-            assert state.ppt != null; // for nullness checker
+            assert state.ppt != null : "@AssumeAssertion(nullness)";
             try {
               Daikon.init_ppt(state.ppt, state.all_ppts);
             } catch (Exception e) {
@@ -1605,7 +1713,10 @@ public final class FileIO {
         return;
       }
       String ppt_name = line;
-      if (new_decl_format) ppt_name = unescape_decl(line); // interning bugfix: no need to intern
+      if (new_decl_format) {
+        // interning bugfix: no need to intern
+        ppt_name = unescape_decl(line);
+      }
       ppt_name = user_mod_ppt_name(ppt_name);
       if (!ppt_included(ppt_name)) {
         // System.out.printf("skipping ppt %s%n", line);
@@ -1618,7 +1729,9 @@ public final class FileIO {
         if (!new_decl_format && line.startsWith("ppt ")) {
           throw new Daikon.UserError(
               String.format(
-                  "Declaration file %s is not version 2.0, but line %d looks like a version 2.0 declaration: %s%nPerhaps the file is missing a \"decl-version 2.0\" record at the beginning",
+                  "Declaration file %s is not version 2.0, but line %d looks like a version 2.0"
+                      + " declaration: %s%nPerhaps the file is missing a \"decl-version 2.0\""
+                      + " record at the beginning",
                   state.filename, state.reader.getLineNumber(), line));
         }
         throw new Daikon.UserError(
@@ -1642,7 +1755,9 @@ public final class FileIO {
 
       if (state.all_ppts.size() == 0) {
         throw new Daikon.UserError(
-            "No declarations were provided before the first sample.  Perhaps you did not supply the proper .decls file to Daikon.  (Or, there could be a bug in the front end that created the .dtrace file "
+            "No declarations were provided before the first sample.  Perhaps you did not supply"
+                + " the proper .decls file to Daikon.  (Or, there could be a bug in the front end"
+                + " that created the .dtrace file "
                 + state.filename
                 + ".)");
       }
@@ -1733,7 +1848,6 @@ public final class FileIO {
     }
 
     state.rtype = RecordType.EOF;
-    return;
   }
 
   /**
@@ -1800,10 +1914,7 @@ public final class FileIO {
       return;
     }
 
-    @SuppressWarnings({
-      "UnusedVariable",
-      "nullness:flowexpr.parse.error"
-    }) // https://tinyurl.com/cfissue/862
+    @SuppressWarnings({"UnusedVariable", "nullness:contracts.precondition"})
     Object dummy = ppt.add_bottom_up(vt, 1);
 
     if (debugVars.isLoggable(Level.FINE)) {
@@ -1844,7 +1955,9 @@ public final class FileIO {
     if (!call_stack.isEmpty() || !call_hashmap.isEmpty()) {
       System.out.println();
       System.out.print(
-          "No return from procedure observed " + UtilPlume.nplural(unmatched_count, "time") + ".");
+          "No return from procedure observed "
+              + StringsPlume.nplural(unmatched_count, "time")
+              + ".");
       if (Daikon.use_dataflow_hierarchy) {
         System.out.print("  Unmatched entries are ignored!");
       }
@@ -1869,7 +1982,7 @@ public final class FileIO {
         if (dkconfig_verbose_unmatched_procedure_entries) {
           System.out.println(
               "Remaining "
-                  + UtilPlume.nplural(unmatched_count, "stack")
+                  + StringsPlume.nplural(unmatched_count, "stack")
                   + " call summarized below.");
           print_invocations_verbose(call_stack);
         } else {
@@ -1910,7 +2023,7 @@ public final class FileIO {
     // Print the invocations in sorted order.
     for (Map.Entry<@Interned String, Integer> invokEntry : counter.entrySet()) {
       System.out.println(
-          invokEntry.getKey() + " : " + UtilPlume.nplural(invokEntry.getValue(), "invocation"));
+          invokEntry.getKey() + " : " + StringsPlume.nplural(invokEntry.getValue(), "invocation"));
     }
   }
 
@@ -2286,7 +2399,7 @@ public final class FileIO {
       int vi_index = 0;
       for (int val_index = 0; val_index < ppt.num_orig_vars; val_index++) {
         VarInfo vi = vis[ppt.num_tracevars + ppt.num_static_constant_vars + val_index];
-        assert (!vi.is_static_constant) : "orig constant " + vi;
+        assert !vi.is_static_constant : "orig constant " + vi;
 
         // Skip over constants in the entry point
         while (invoc.ppt.var_infos[vi_index].is_static_constant) {
@@ -2338,9 +2451,9 @@ public final class FileIO {
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Serialized PptMap files
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Serialized PptMap files
+  //
 
   /**
    * Use a special record type. Saving as one object allows for reference-sharing, easier saves and
@@ -2365,21 +2478,33 @@ public final class FileIO {
     public boolean new_decl_format = false;
   }
 
+  /**
+   * Write a serialized PptMap to a file.
+   *
+   * @param map a PptMap
+   * @param file the file to which to write
+   * @throws IOException if there is trouble writing the file
+   */
   public static void write_serialized_pptmap(PptMap map, File file) throws IOException {
     SerialFormat record = new SerialFormat(map, Configuration.getInstance());
-    UtilPlume.writeObject(record, file);
+    FilesPlume.writeObject(record, file);
   }
 
   /**
    * Read either a serialized PptMap or a InvMap and return a PptMap. If an InvMap is specified, it
    * is converted to a PptMap.
+   *
+   * @param file the input file
+   * @param use_saved_config flag
+   * @return a serialized PptMap
+   * @throws IOException if there is trouble reading the file
    */
   @EnsuresNonNull("FileIO.new_decl_format")
   public static PptMap read_serialized_pptmap(File file, boolean use_saved_config)
       throws IOException {
 
     try {
-      Object obj = UtilPlume.readObject(file);
+      Object obj = FilesPlume.readObject(file);
       if (obj instanceof FileIO.SerialFormat) {
         SerialFormat record = (SerialFormat) obj;
         if (use_saved_config) {
@@ -2414,7 +2539,9 @@ public final class FileIO {
       throw (IOException) new IOException("Error while loading inv file").initCause(e);
     } catch (InvalidClassException e) {
       throw new IOException(
-          "It is likely that the .inv file format has changed, because a Daikon data structure has been modified, so your old .inv file is no longer readable by Daikon.  Please regenerate your .inv file."
+          "It is likely that the .inv file format has changed, because a Daikon data structure has"
+              + " been modified, so your old .inv file is no longer readable by Daikon.  Please"
+              + " regenerate your .inv file."
           // + lineSep + e.toString()
           );
     }
@@ -2423,9 +2550,8 @@ public final class FileIO {
   }
 
   /**
-   * Returns whether or not the specified ppt name should be included in processing. Ppts can be
-   * excluded because they match the omit_regexp, don't match ppt_regexp, or are greater than
-   * ppt_max_name.
+   * Returns true if the specified ppt name should be included in processing. Ppts can be excluded
+   * because they match the omit_regexp, don't match ppt_regexp, or are greater than ppt_max_name.
    */
   public static boolean ppt_included(String ppt_name) {
 
@@ -2580,54 +2706,78 @@ public final class FileIO {
       "nullness") // undocumented class needs documentation before annotating with nullness
   public static class VarDefinition implements java.io.Serializable, Cloneable {
     static final long serialVersionUID = 20060524L;
+
     /** Current information about input file and previously parsed values. */
     transient ParseState state;
+
     /** Name of the variable (required). */
     public String name;
+
     /** Type of the variable (required). */
     public VarKind kind = null;
+
     /** Name of variable that contains this variable (optional) */
     // seems non-null for arrays/sequences
     public @Nullable String enclosing_var_name;
+
     /** the simple (not fully specified) name of this variable (optional) */
     public @Nullable String relative_name = null;
+
     /** Type of reference for structure/class variables. */
     public RefType ref_type = RefType.POINTER;
+
     /** Number of array dimensions (0 or 1). */
     public int arr_dims = 0;
+
     /**
      * Non-null iff (vardef.kind == VarKind.FUNCTION). The arguments that were used to create this
      * function application.
      */
+    @SuppressWarnings("serial")
     public @Nullable List<String> function_args = null;
+
     /** The type of the variable as stored in the dtrace file (required) */
     public ProglangType rep_type = null;
+
     /** Declared type of the variable as an arbitrary string (required) */
     public ProglangType declared_type = null;
+
     /** Variable flags (optional) */
     public EnumSet<VarFlags> flags = EnumSet.noneOf(VarFlags.class);
+
     /** Language specific variable flags (optional) */
     public EnumSet<LangFlags> lang_flags = EnumSet.noneOf(LangFlags.class);
+
     /** Comparability of this variable (required. */
+    @SuppressWarnings("serial")
     public VarComparability comparability = null;
+
     /** Parent program points in ppt hierarchy (optional) */
+    @SuppressWarnings("serial")
     public List<VarParent> parents;
+
     /** Non-null if this 'variable' always has the same value (optional) */
+    @SuppressWarnings("serial")
     public @Nullable @Interned Object static_constant_value = null;
+
     /**
      * Non-null if it is statically known that the value of the variable will be always greater than
      * or equal to this value.
      */
     public @Nullable String min_value = null;
+
     /**
      * Non-null if it is statically known that the value of the variable will be always less than or
      * equal to this value.
      */
     public @Nullable String max_value = null;
+
     /** Non-null if it is statically known that the array will have at least this many elements. */
     public @Nullable Integer min_length = null;
+
     /** Non-null if it is statically known that the array will have up to this many elements. */
     public @Nullable Integer max_length = null;
+
     /** Non-null if the set of valid values for the variable is statically known. */
     public @Nullable String valid_values = null;
 
@@ -2653,7 +2803,7 @@ public final class FileIO {
       if (comparability == null) {
         throw new AssertionError("missing comparability information for variable " + name);
       }
-      assert ((kind == VarKind.FUNCTION) || (function_args == null))
+      assert (kind == VarKind.FUNCTION) || (function_args == null)
           : String.format(
               "incompatible kind=%s and function_args=%s for VarDefinition %s",
               kind, function_args, name);
@@ -2894,7 +3044,7 @@ public final class FileIO {
      * if there is no next token.
      */
     public @Interned String need(Scanner scanner, String description) {
-      return (FileIO.need(state, scanner, description));
+      return FileIO.need(state, scanner, description);
     }
 
     /** Throws Daikon.UserError if the scanner is not at end of line */
@@ -2939,7 +3089,7 @@ public final class FileIO {
 
     @Interned String str = need(state, scanner, descr);
     try {
-      E e = Enum.valueOf(enum_class, str.toUpperCase());
+      E e = Enum.valueOf(enum_class, str.toUpperCase(Locale.ENGLISH));
       return e;
     } catch (Exception exception) {
       @SuppressWarnings(
@@ -2947,16 +3097,24 @@ public final class FileIO {
       E @NonNull [] all = enum_class.getEnumConstants();
       StringJoiner msg = new StringJoiner(", ");
       for (E e : all) {
-        msg.add(String.format("'%s'", e.name().toLowerCase()));
+        msg.add(String.format("'%s'", e.name().toLowerCase(Locale.ENGLISH)));
       }
       decl_error(state, "'%s' found where %s expected", str, msg);
       throw new Error("execution cannot get to here, previous line threw an error");
     }
   }
 
-  /** Call this to indicate a malformed declaration. */
+  /**
+   * Call this to indicate a malformed declaration.
+   *
+   * @param state the current parse state
+   * @param format a format string, for the error message
+   * @param args arguments for the format string
+   */
   private static void decl_error(ParseState state, String format, @Nullable Object... args) {
-    @SuppressWarnings("formatter:format.string.invalid") // https://tinyurl.com/cfissue/2584
+    @SuppressWarnings({
+      "formatter:format.string" // https://tinyurl.com/cfissue/2584
+    })
     String msg = String.format(format, args) + state.line_file_message();
     throw new Daikon.UserError(msg);
   }
@@ -2970,14 +3128,14 @@ public final class FileIO {
     throw new Daikon.UserError(cause, msg);
   }
 
-  /** Returns whether the line is the start of a ppt declaration. */
+  /** Returns true if the line is the start of a ppt declaration. */
   @RequiresNonNull("FileIO.new_decl_format")
   @Pure
   private static boolean is_declaration_header(String line) {
     if (new_decl_format) {
-      return (line.startsWith("ppt "));
+      return line.startsWith("ppt ");
     } else {
-      return (line.equals(declaration_header));
+      return line.equals(declaration_header);
     }
   }
 
@@ -2985,6 +3143,9 @@ public final class FileIO {
    * Handle any possible modifications to the ppt name. For now, just support the Applications
    * Communities specific modification to remove duplicate stack entries. But a more generic
    * technique could be implemented in the future.
+   *
+   * @param ppt_name a program point
+   * @return modified ppt name
    */
   public static String user_mod_ppt_name(String ppt_name) {
 

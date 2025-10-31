@@ -16,7 +16,7 @@ import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Class that defines a single non-instantiating suppression. A suppression consists of one or more
@@ -38,9 +38,15 @@ public class NISuppression {
     this.suppressee = suppressee;
   }
 
+  /**
+   * Creates a NISuppression.
+   *
+   * @param suppressor_set the suppressor set
+   * @param suppressee the suppressee
+   */
   public NISuppression(List<NISuppressor> suppressor_set, NISuppressee suppressee) {
 
-    suppressors = suppressor_set.toArray(new NISuppressor[suppressor_set.size()]);
+    suppressors = suppressor_set.toArray(new NISuppressor[0]);
     this.suppressee = suppressee;
   }
 
@@ -127,7 +133,7 @@ public class NISuppression {
   }
 
   /**
-   * Determines whether or not the falsified invariant previously passed to {@link
+   * Returns true if the falsified invariant previously passed to {@link
    * #check(PptTopLevel,VarInfo[],Invariant)} was the first suppressor to be falsified in this
    * suppression. If the falsified invariant is not involved in this suppression, then it can't have
    * been invalidated.
@@ -179,7 +185,9 @@ public class NISuppression {
     VarInfo vis[] = new VarInfo[suppressee.var_count];
     find_suppressed_invs(suppressed_invs, antecedents, vis, 0);
 
-    if (debug) System.out.println("  suppressed invariants: " + suppressed_invs);
+    if (debug) {
+      System.out.println("  suppressed invariants: " + suppressed_invs);
+    }
   }
 
   /**
@@ -207,7 +215,9 @@ public class NISuppression {
       List<Invariant> a = antecedents[i];
       int false_cnt = 0;
       for (Invariant inv : a) {
-        if (inv.is_false()) false_cnt++;
+        if (inv.is_false()) {
+          false_cnt++;
+        }
       }
 
       total_false_cnt += false_cnt;
@@ -223,7 +233,9 @@ public class NISuppression {
     // int old_size = unsuppressed_invs.size();
     Invariant[] cinvs = new Invariant[antecedents.length];
     find_unsuppressed_invs(unsuppressed_invs, antecedents, vis, 0, false, cinvs);
-    if (debug) System.out.println("  unsuppressed invariants: " + unsuppressed_invs);
+    if (debug) {
+      System.out.println("  unsuppressed invariants: " + unsuppressed_invs);
+    }
   }
 
   /**
@@ -356,7 +368,9 @@ public class NISuppression {
 
         // Create descriptions of the suppressed invariants
         List<NIS.SupInv> new_invs = suppressee.find_all(cvis, ppt, cinvs);
-        if (debug) System.out.printf("created %s new invariants", new_invs);
+        if (debug) {
+          System.out.printf("created %s new invariants", new_invs);
+        }
         unsuppressed_invs.addAll(new_invs);
 
         // Check to insure that none of the invariants already exists
@@ -442,7 +456,9 @@ public class NISuppression {
     // Make sure the resulting variables are in the proper order and are
     // compatible
     if (!vis_order_ok(cvis) || !vis_compatible(cvis)) {
-      if (debug) System.out.println("Skipping, cvis has bad order or is incompatible");
+      if (debug) {
+        System.out.println("Skipping, cvis has bad order or is incompatible");
+      }
       return null;
     }
 
@@ -483,7 +499,7 @@ public class NISuppression {
   }
 
   /**
-   * Determines whether the order of the variables in vis a valid permutations (i.e., their
+   * Returns true if the order of the variables in vis a valid permutations (i.e., their
    * varinfo_index's are ordered). Null elements are ignored (and an all-null list is OK).
    */
   private boolean vis_order_ok(VarInfo[] vis) {
@@ -495,7 +511,9 @@ public class NISuppression {
           return false;
         }
       }
-      if (vis[i] != null) prev = vis[i];
+      if (vis[i] != null) {
+        prev = vis[i];
+      }
     }
     return true;
   }
@@ -520,11 +538,11 @@ public class NISuppression {
       }
 
       if (vis[0].rep_type.isArray() == vis[1].rep_type.isArray()) {
-        return (vis[0].compatible(vis[1]));
+        return vis[0].compatible(vis[1]);
       } else if (vis[0].rep_type.isArray()) {
-        return (vis[0].eltsCompatible(vis[1]));
+        return vis[0].eltsCompatible(vis[1]);
       } else {
-        return (vis[1].eltsCompatible(vis[0]));
+        return vis[1].eltsCompatible(vis[0]);
       }
     }
 
@@ -599,7 +617,7 @@ public class NISuppression {
     String suppressorsString =
         (suppressors.length == 1)
             ? suppressors[0].toString()
-            : "(" + UtilPlume.join(" && ", suppressors) + ")";
+            : "(" + StringsPlume.join(" && ", suppressors) + ")";
     return suppressorsString + " ==> " + suppressee;
   }
 

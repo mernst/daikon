@@ -56,9 +56,6 @@ import typequals.prototype.qual.Prototype;
  * z}.
  */
 public final /*(at)Interned*/ class Equality extends Invariant {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20021231L;
 
   public static final Logger debug = Logger.getLogger("daikon.inv.Equality");
@@ -94,10 +91,12 @@ public final /*(at)Interned*/ class Equality extends Invariant {
   }
 
   /**
-   * @param variables variables that are equivalent, with the canonical one first. Elements must be
-   *     of type VarInfo.
+   * Creates a new Equality invariant.
+   *
+   * @param variables variables that are equivalent, with the canonical one first
+   * @param ppt the program point
    */
-  @SuppressWarnings("initialization.invalid.field.write.initialized") // weakness of FBC type system
+  @SuppressWarnings("initialization.field.write.initialized") // weakness of FBC type system
   public Equality(Collection<VarInfo> variables, PptSlice ppt) {
     super(ppt);
     if (debug.isLoggable(Level.FINE)) {
@@ -126,12 +125,13 @@ public final /*(at)Interned*/ class Equality extends Invariant {
     }
   }
 
-  ////////////////////////
+  // ////////////////////////
   // Accessors
 
   private @Nullable VarInfo leaderCache = null;
+
   /**
-   * Return the canonical VarInfo of this. Note that the leader never changes.
+   * Returns the canonical VarInfo of this. Note that the leader never changes.
    *
    * @return the canonical VarInfo of this
    */
@@ -157,7 +157,7 @@ public final /*(at)Interned*/ class Equality extends Invariant {
     return Invariant.CONFIDENCE_JUSTIFIED;
   }
 
-  ////////////////////////
+  // ////////////////////////
   // Printing
 
   // The format methods aren't called, because for output, we
@@ -214,7 +214,9 @@ public final /*(at)Interned*/ class Equality extends Invariant {
       result.append(var.name());
       result.append("[" + var.varinfo_index + "]");
       // result.append("[" + var.comparability + "]");
-      if (var == leader()) result.append("L");
+      if (var == leader()) {
+        result.append("L");
+      }
     }
     return result.toString();
   }
@@ -376,11 +378,11 @@ public final /*(at)Interned*/ class Equality extends Invariant {
     return repr();
   }
 
-  //////////////////////////////////////////////////////////////////////
-  /// Processing of data
+  // //////////////////////////////////////////////////////////////////////
+  // Processing of data
 
   /**
-   * Return a List of VarInfos that do not fit into this set anymore.
+   * Returns a List of VarInfos that do not fit into this set anymore.
    *
    * <p>Originally (8/14/2003), this did not check for the modified bits. It seems however, quite
    * wrong to leave variables in the same equality set when one is missing and the other is not.
@@ -482,7 +484,10 @@ public final /*(at)Interned*/ class Equality extends Invariant {
    * invariant as well since that invariant is used in suppressions and obvious tests.
    */
   public void postProcess() {
-    if (this.numSamples() == 0) return; // All were missing or not present
+    if (this.numSamples() == 0) {
+      // All were missing or not present
+      return;
+    }
     PptTopLevel parent = this.ppt.parent;
     VarInfo[] varArray = this.vars.toArray(new VarInfo[0]);
     if (debugPostProcess.isLoggable(Level.FINE)) {
@@ -590,5 +595,11 @@ public final /*(at)Interned*/ class Equality extends Invariant {
   @Override
   protected @NonPrototype Equality instantiate_dyn(@Prototype Equality this, PptSlice slice) {
     throw new Error("do not invoke " + getClass() + ".instantiate_dyn()");
+  }
+
+  @Override
+  public @Nullable @NonPrototype Equality merge(
+      @Prototype Equality this, List<@NonPrototype Invariant> invs, PptSlice parent_ppt) {
+    throw new Error("Don't merge Equality invariants");
   }
 }

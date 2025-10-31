@@ -355,7 +355,6 @@ rt.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
 PolyCalc.RatPoly.RatPoly(PolyCalc.RatTermVec):::EXIT
 this.terms == orig(rt)
 this.terms.wrapped == rt.wrapped
-this.terms.wrapped[] == rt.wrapped[]
 rt.wrapped == orig(rt.wrapped)
 rt.wrapped[] == orig(rt.wrapped[])
 rt.wrapped != null
@@ -369,11 +368,6 @@ e >= 0
 PolyCalc.RatPoly.RatPoly(int, int):::EXIT
 this.terms.wrapped[].getClass().getName() one of { [], [PolyCalc.RatTerm] }
 size(this.terms.wrapped[]) one of { 0, 1 }
-(orig(c) == 0) ==> (size(this.terms.wrapped[]) == 0)
-(size(this.terms.wrapped[]) == 0) ==> (orig(c) == 0)
-(orig(c) & size(this.terms.wrapped[])-1) == 0
-orig(c) != size(this.terms.wrapped[])-1
-orig(e) >= size(this.terms.wrapped[])-1
 ===========================================================================
 PolyCalc.RatPoly.add(PolyCalc.RatPoly):::ENTER
 p != null
@@ -386,28 +380,24 @@ p.terms.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
 PolyCalc.RatPoly.add(PolyCalc.RatPoly):::EXIT350
 this.terms == return.terms
 this.terms.wrapped == return.terms.wrapped
-this.terms.wrapped[] == return.terms.wrapped[]
 return == orig(this)
 this.terms.wrapped[].getClass().getName() == [PolyCalc.RatTerm]
 p.terms.wrapped[].getClass().getName() one of { [], [PolyCalc.RatTerm] }
+return.terms.wrapped[].getClass().getName() == [PolyCalc.RatTerm]
 size(this.terms.wrapped[]) == 1
 size(p.terms.wrapped[]) one of { 0, 1 }
-size(this.terms.wrapped[]) >= size(p.terms.wrapped[])
-size(this.terms.wrapped[])-1 <= size(p.terms.wrapped[])
-size(this.terms.wrapped[])-1 >= size(p.terms.wrapped[])-1
+size(return.terms.wrapped[]) == 1
 ===========================================================================
 PolyCalc.RatPoly.add(PolyCalc.RatPoly):::EXIT354
 p.terms == return.terms
 p.terms.wrapped == return.terms.wrapped
-p.terms.wrapped[] == return.terms.wrapped[]
 return == orig(p)
 this.terms.wrapped[].getClass().getName() one of { [], [PolyCalc.RatTerm] }
 p.terms.wrapped[].getClass().getName() == [PolyCalc.RatTerm]
+return.terms.wrapped[].getClass().getName() == [PolyCalc.RatTerm]
 size(this.terms.wrapped[]) one of { 0, 1 }
 size(p.terms.wrapped[]) == 1
-size(this.terms.wrapped[]) <= size(p.terms.wrapped[])
-size(this.terms.wrapped[]) >= size(p.terms.wrapped[])-1
-size(this.terms.wrapped[])-1 <= size(p.terms.wrapped[])-1
+size(return.terms.wrapped[]) == 1
 ===========================================================================
 PolyCalc.RatPoly.add(PolyCalc.RatPoly):::EXIT363
 ===========================================================================
@@ -429,7 +419,6 @@ return.terms.wrapped != null
 return.terms.wrapped[] contains no duplicates
 return.terms.wrapped[] elements != null
 return.terms.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
-size(p.terms.wrapped[])-1 <= size(return.terms.wrapped[])
 ===========================================================================
 PolyCalc.RatPoly.appendTerm(java.lang.StringBuffer, PolyCalc.RatTerm):::ENTER
 sb != null
@@ -485,8 +474,6 @@ size(this.terms.wrapped[]) >= 1
 PolyCalc.RatPoly.coeff(int):::EXIT124
 return.numer == 0
 return.denom == 1
-this.terms.wrapped[0..return.numer-1] == []
-return.numer <= size(this.terms.wrapped[])
 ===========================================================================
 PolyCalc.RatPoly.coeff(int):::EXIT
 this.terms == orig(this.terms)
@@ -494,49 +481,32 @@ this.terms.wrapped == orig(this.terms.wrapped)
 this.terms.wrapped[] == orig(this.terms.wrapped[])
 (return.numer != 0)  ==>  (orig(deg) >= 0)
 (return.numer != 0)  ==>  (size(this.terms.wrapped[]) >= 1)
-(return.numer == 0)  ==>  (orig(this.terms.wrapped[0..post(return.numer)-1]) == [])
-(return.numer == 0)  ==>  (orig(this.terms.wrapped[post(return.numer)..]) contains no duplicates)
-(return.numer == 0)  ==>  (orig(this.terms.wrapped[post(return.numer)..]) elements != null)
 (return.numer == 0)  ==>  (return.denom == 1)
 (return.numer == 0)  ==>  (return.numer < return.denom)
-(return.numer == 0)  ==>  (return.numer <= size(this.terms.wrapped[]))
 (return.numer == 0)  ==>  (return.numer is a pointer)
-(return.numer == 0)  ==>  (this.terms.wrapped[0..return.numer-1] == [])
-(return.numer == 0)  ==>  (this.terms.wrapped[return.numer..] contains no duplicates)
-(return.numer == 0)  ==>  (this.terms.wrapped[return.numer..] elements != null)
 return != null
-(size(this.terms.wrapped[]) == 0) ==> (return.numer == 0)
 (return.denom == 0) ==> (orig(deg) == 0)
-(return.denom == 0) ==> (size(this.terms.wrapped[])-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.degree():::ENTER
 ===========================================================================
 PolyCalc.RatPoly.degree():::EXIT102
 size(this.terms.wrapped[]) >= 1
-(return == 0) ==> (size(this.terms.wrapped[])-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.degree():::EXIT105
-return == size(this.terms.wrapped[])
-return == orig(size(this.terms.wrapped[]))
 this.terms.wrapped[] == []
 this.terms.wrapped[].getClass().getName() == []
+return == 0
 ===========================================================================
 PolyCalc.RatPoly.degree():::EXIT
 this.terms == orig(this.terms)
 this.terms.wrapped == orig(this.terms.wrapped)
 this.terms.wrapped[] == orig(this.terms.wrapped[])
-(size(this.terms.wrapped[]) == 0)  ==>  (orig(this.terms.wrapped[0..post(return)-1]) == [])
-(size(this.terms.wrapped[]) == 0)  ==>  (orig(this.terms.wrapped[post(return)..]) == [])
-(size(this.terms.wrapped[]) == 0)  ==>  (return == size(this.terms.wrapped[]))
+(size(this.terms.wrapped[]) == 0)  ==>  (return == 0)
 (size(this.terms.wrapped[]) == 0)  ==>  (return is a pointer)
 (size(this.terms.wrapped[]) == 0)  ==>  (size(this.terms.wrapped[]) is a pointer)
-(size(this.terms.wrapped[]) == 0)  ==>  (this.terms.wrapped[0..return-1] == [])
 (size(this.terms.wrapped[]) == 0)  ==>  (this.terms.wrapped[] == [])
 (size(this.terms.wrapped[]) == 0)  ==>  (this.terms.wrapped[].getClass().getName() == [])
-(size(this.terms.wrapped[]) == 0)  ==>  (this.terms.wrapped[return..] == [])
 return >= 0
-(size(this.terms.wrapped[]) == 0) ==> (return == 0)
-return >= size(this.terms.wrapped[])-1
 ===========================================================================
 PolyCalc.RatPoly.div(PolyCalc.RatPoly):::ENTER
 p != null
@@ -545,8 +515,6 @@ p.terms.wrapped != null
 p.terms.wrapped[] contains no duplicates
 p.terms.wrapped[] elements != null
 p.terms.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
-(size(this.terms.wrapped[]) == 0) ==> (size(p.terms.wrapped[])-1 == 0)
-(size(p.terms.wrapped[]) == 0) ==> (size(this.terms.wrapped[])-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.div(PolyCalc.RatPoly):::EXIT435
 this.terms.wrapped[].getClass().getName() one of { [], [PolyCalc.RatTerm] }
@@ -555,20 +523,9 @@ return.terms.wrapped[].getClass().getName() == [PolyCalc.RatTerm]
 size(this.terms.wrapped[]) one of { 0, 1 }
 size(p.terms.wrapped[]) one of { 0, 1 }
 size(return.terms.wrapped[]) == 1
-size(this.terms.wrapped[]) >= size(p.terms.wrapped[])-1
-size(this.terms.wrapped[]) <= size(return.terms.wrapped[])
-size(this.terms.wrapped[]) >= size(return.terms.wrapped[])-1
-size(this.terms.wrapped[])-1 <= size(p.terms.wrapped[])
-size(this.terms.wrapped[])-1 <= size(return.terms.wrapped[])-1
-size(p.terms.wrapped[]) <= size(return.terms.wrapped[])
-size(p.terms.wrapped[]) >= size(return.terms.wrapped[])-1
-size(p.terms.wrapped[])-1 <= size(return.terms.wrapped[])-1
 ===========================================================================
 PolyCalc.RatPoly.div(PolyCalc.RatPoly):::EXIT438
 size(p.terms.wrapped[]) >= 1
-(size(this.terms.wrapped[]) == 0) ==> (size(return.terms.wrapped[]) == 0)
-size(this.terms.wrapped[]) != size(return.terms.wrapped[])-1
-(size(return.terms.wrapped[])-1 == 0) ==> (size(p.terms.wrapped[])-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.div(PolyCalc.RatPoly):::EXIT
 this.terms == orig(this.terms)
@@ -588,10 +545,6 @@ return.terms.wrapped != null
 return.terms.wrapped[] contains no duplicates
 return.terms.wrapped[] elements != null
 return.terms.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
-(size(this.terms.wrapped[]) == 0) ==> (size(p.terms.wrapped[])-1 == 0)
-(size(p.terms.wrapped[]) == 0) ==> (size(this.terms.wrapped[])-1 == 0)
-(size(p.terms.wrapped[]) == 0) ==> (size(return.terms.wrapped[])-1 == 0)
-(size(return.terms.wrapped[]) == 0) ==> (size(p.terms.wrapped[])-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.divAndRem(PolyCalc.RatPoly):::ENTER
 p != null
@@ -600,7 +553,6 @@ p.terms.wrapped != null
 p.terms.wrapped[] elements != null
 p.terms.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
 size(p.terms.wrapped[]) >= 1
-(size(this.terms.wrapped[]) == 0) ==> (size(p.terms.wrapped[])-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.divAndRem(PolyCalc.RatPoly):::EXIT
 this.terms == orig(this.terms)
@@ -620,8 +572,6 @@ return[].terms elements != null
 return[].terms.wrapped elements != null
 size(p.terms.wrapped[]) >= 1
 size(return[]) == 2
-(size(this.terms.wrapped[]) == 0) ==> (size(p.terms.wrapped[])-1 == 0)
-size(p.terms.wrapped[]) >= size(return[])-1
 ===========================================================================
 PolyCalc.RatPoly.eval(double):::ENTER
 d >= 0.0
@@ -645,17 +595,11 @@ expt >= 0
 size(ts.wrapped[]) >= 1
 ===========================================================================
 PolyCalc.RatPoly.findTermIndex(PolyCalc.RatTermVec, int):::EXIT521
-(size(ts.wrapped[])-1 == 0) ==> (return == 0)
-return <= size(ts.wrapped[])-1
 ===========================================================================
 PolyCalc.RatPoly.findTermIndex(PolyCalc.RatTermVec, int):::EXIT523
-return <= size(ts.wrapped[])-1
 ===========================================================================
 PolyCalc.RatPoly.findTermIndex(PolyCalc.RatTermVec, int):::EXIT526
-return == size(ts.wrapped[])
-return == orig(size(ts.wrapped[]))
 return >= 1
-ts.wrapped[return..] == []
 ===========================================================================
 PolyCalc.RatPoly.findTermIndex(PolyCalc.RatTermVec, int):::EXIT
 ts.wrapped == orig(ts.wrapped)
@@ -666,7 +610,6 @@ ts.wrapped[] elements != null
 ts.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
 return >= 0
 size(ts.wrapped[]) >= 1
-return <= size(ts.wrapped[])
 ===========================================================================
 PolyCalc.RatPoly.hintedGet(PolyCalc.RatTermVec, int, int):::ENTER
 ts != null
@@ -677,67 +620,24 @@ ts.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
 i >= 0
 expt >= 0
 size(ts.wrapped[]) >= 1
-i <= size(ts.wrapped[])
 ===========================================================================
 PolyCalc.RatPoly.hintedGet(PolyCalc.RatTermVec, int, int):::EXIT534
-return == ts.wrapped[orig(i)]
-return in ts.wrapped[]
-return in ts.wrapped[orig(i)..]
-return in ts.wrapped[0..orig(i)]
-(size(ts.wrapped[])-1 == 0) ==> (orig(i) == 0)
-orig(i) <= size(ts.wrapped[])-1
 ===========================================================================
 PolyCalc.RatPoly.hintedGet(PolyCalc.RatTermVec, int, int):::EXIT537
-ts.wrapped[return.coeff.numer] == ts.wrapped[return.coeff.denom-1]
-ts.wrapped[return.coeff.numer] == orig(ts.wrapped[post(return.coeff.denom)-1])
 return.coeff.numer == 0
 return.coeff.denom == 1
 orig(i) >= 1
-ts.wrapped[0..return.coeff.numer-1] == []
 return.coeff.numer <= return.expt
-return.coeff.numer < orig(i)
-return.coeff.numer <= size(ts.wrapped[])-1
-return.coeff.denom <= orig(i)
-return.coeff.denom <= size(ts.wrapped[])
-ts.wrapped[0..return.coeff.numer] elements == ts.wrapped[return.coeff.numer]
 ===========================================================================
 PolyCalc.RatPoly.hintedGet(PolyCalc.RatTermVec, int, int):::EXIT
 ts.wrapped == orig(ts.wrapped)
 ts.wrapped[] == orig(ts.wrapped[])
 return.expt == orig(expt)
 (return.coeff.numer == 0)  ==>  (orig(i) >= 1)
-(return.coeff.numer == 0)  ==>  (orig(ts.wrapped[0..post(return.coeff.denom)-1]) elements == orig(ts.wrapped[post(return.coeff.denom)-1]))
-(return.coeff.numer == 0)  ==>  (orig(ts.wrapped[0..post(return.coeff.denom)-1]) elements == orig(ts.wrapped[post(return.coeff.numer)]))
-(return.coeff.numer == 0)  ==>  (orig(ts.wrapped[0..post(return.coeff.denom)-1]) elements == ts.wrapped[return.coeff.denom-1])
-(return.coeff.numer == 0)  ==>  (orig(ts.wrapped[0..post(return.coeff.denom)-1]) elements == ts.wrapped[return.coeff.numer])
-(return.coeff.numer == 0)  ==>  (orig(ts.wrapped[0..post(return.coeff.numer)-1]) == [])
-(return.coeff.numer == 0)  ==>  (orig(ts.wrapped[0..post(return.coeff.numer)]) elements == orig(ts.wrapped[post(return.coeff.denom)-1]))
-(return.coeff.numer == 0)  ==>  (orig(ts.wrapped[0..post(return.coeff.numer)]) elements == orig(ts.wrapped[post(return.coeff.numer)]))
-(return.coeff.numer == 0)  ==>  (orig(ts.wrapped[0..post(return.coeff.numer)]) elements == ts.wrapped[return.coeff.denom-1])
-(return.coeff.numer == 0)  ==>  (orig(ts.wrapped[0..post(return.coeff.numer)]) elements == ts.wrapped[return.coeff.numer])
-(return.coeff.numer == 0)  ==>  (orig(ts.wrapped[post(return.coeff.numer)..]) contains no duplicates)
-(return.coeff.numer == 0)  ==>  (orig(ts.wrapped[post(return.coeff.numer)..]) elements != null)
-(return.coeff.numer == 0)  ==>  (return.coeff.denom <= orig(i))
-(return.coeff.numer == 0)  ==>  (return.coeff.denom <= size(ts.wrapped[]))
 (return.coeff.numer == 0)  ==>  (return.coeff.denom == 1)
-(return.coeff.numer == 0)  ==>  (return.coeff.numer < orig(i))
 (return.coeff.numer == 0)  ==>  (return.coeff.numer < return.coeff.denom)
 (return.coeff.numer == 0)  ==>  (return.coeff.numer <= return.expt)
-(return.coeff.numer == 0)  ==>  (return.coeff.numer <= size(ts.wrapped[])-1)
 (return.coeff.numer == 0)  ==>  (return.coeff.numer is a pointer)
-(return.coeff.numer == 0)  ==>  (ts.wrapped[0..return.coeff.denom-1] elements == orig(ts.wrapped[post(return.coeff.denom)-1]))
-(return.coeff.numer == 0)  ==>  (ts.wrapped[0..return.coeff.denom-1] elements == orig(ts.wrapped[post(return.coeff.numer)]))
-(return.coeff.numer == 0)  ==>  (ts.wrapped[0..return.coeff.denom-1] elements == ts.wrapped[return.coeff.denom-1])
-(return.coeff.numer == 0)  ==>  (ts.wrapped[0..return.coeff.denom-1] elements == ts.wrapped[return.coeff.numer])
-(return.coeff.numer == 0)  ==>  (ts.wrapped[0..return.coeff.numer-1] == [])
-(return.coeff.numer == 0)  ==>  (ts.wrapped[0..return.coeff.numer] elements == orig(ts.wrapped[post(return.coeff.denom)-1]))
-(return.coeff.numer == 0)  ==>  (ts.wrapped[0..return.coeff.numer] elements == orig(ts.wrapped[post(return.coeff.numer)]))
-(return.coeff.numer == 0)  ==>  (ts.wrapped[0..return.coeff.numer] elements == ts.wrapped[return.coeff.denom-1])
-(return.coeff.numer == 0)  ==>  (ts.wrapped[0..return.coeff.numer] elements == ts.wrapped[return.coeff.numer])
-(return.coeff.numer == 0)  ==>  (ts.wrapped[return.coeff.numer..] contains no duplicates)
-(return.coeff.numer == 0)  ==>  (ts.wrapped[return.coeff.numer..] elements != null)
-(return.coeff.numer == 0)  ==>  (ts.wrapped[return.coeff.numer] == orig(ts.wrapped[post(return.coeff.denom)-1]))
-(return.coeff.numer == 0)  ==>  (ts.wrapped[return.coeff.numer] == ts.wrapped[return.coeff.denom-1])
 ts.wrapped != null
 ts.wrapped[] contains no duplicates
 ts.wrapped[] elements != null
@@ -747,7 +647,6 @@ return.coeff != null
 return.coeff.denom >= 1
 return.expt >= 0
 size(ts.wrapped[]) >= 1
-orig(i) <= size(ts.wrapped[])
 ===========================================================================
 PolyCalc.RatPoly.incremExpt(PolyCalc.RatTermVec, int):::ENTER
 vec != null
@@ -808,36 +707,26 @@ p.terms.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
 PolyCalc.RatPoly.mul(PolyCalc.RatPoly):::EXIT390
 this.terms == return.terms
 this.terms.wrapped == return.terms.wrapped
-this.terms.wrapped[] == return.terms.wrapped[]
 return == orig(this)
 this.terms.wrapped[].getClass().getName() == [PolyCalc.RatTerm]
 p.terms.wrapped[].getClass().getName() one of { [], [PolyCalc.RatTerm] }
+return.terms.wrapped[].getClass().getName() == [PolyCalc.RatTerm]
 size(this.terms.wrapped[]) == 1
 size(p.terms.wrapped[]) one of { 0, 1 }
-size(this.terms.wrapped[]) >= size(p.terms.wrapped[])
-size(this.terms.wrapped[])-1 <= size(p.terms.wrapped[])
-size(this.terms.wrapped[])-1 >= size(p.terms.wrapped[])-1
+size(return.terms.wrapped[]) == 1
 ===========================================================================
 PolyCalc.RatPoly.mul(PolyCalc.RatPoly):::EXIT394
 p.terms == return.terms
 p.terms.wrapped == return.terms.wrapped
-p.terms.wrapped[] == return.terms.wrapped[]
 return == orig(p)
 this.terms.wrapped[].getClass().getName() one of { [], [PolyCalc.RatTerm] }
 p.terms.wrapped[].getClass().getName() == [PolyCalc.RatTerm]
+return.terms.wrapped[].getClass().getName() == [PolyCalc.RatTerm]
 size(this.terms.wrapped[]) one of { 0, 1 }
 size(p.terms.wrapped[]) == 1
-size(this.terms.wrapped[]) <= size(p.terms.wrapped[])
-size(this.terms.wrapped[]) >= size(p.terms.wrapped[])-1
-size(this.terms.wrapped[])-1 <= size(p.terms.wrapped[])-1
+size(return.terms.wrapped[]) == 1
 ===========================================================================
 PolyCalc.RatPoly.mul(PolyCalc.RatPoly):::EXIT404
-(size(p.terms.wrapped[]) == 0) ==> (size(this.terms.wrapped[]) == 0)
-(size(this.terms.wrapped[]) == 0) ==> (size(return.terms.wrapped[]) == 0)
-(size(this.terms.wrapped[])-1 == 0) ==> (size(p.terms.wrapped[])-1 == 0)
-(size(return.terms.wrapped[])-1 == 0) ==> (size(this.terms.wrapped[])-1 == 0)
-(size(p.terms.wrapped[]) == 0) ==> (size(return.terms.wrapped[]) == 0)
-(size(return.terms.wrapped[])-1 == 0) ==> (size(p.terms.wrapped[])-1 == 0)
 ===========================================================================
 PolyCalc.RatPoly.mul(PolyCalc.RatPoly):::EXIT
 this.terms == orig(this.terms)
@@ -857,10 +746,6 @@ return.terms.wrapped != null
 return.terms.wrapped[] contains no duplicates
 return.terms.wrapped[] elements != null
 return.terms.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
-(size(return.terms.wrapped[]) == 0) ==> (size(this.terms.wrapped[]) == 0)
-size(this.terms.wrapped[])-1 != size(return.terms.wrapped[])
-(size(this.terms.wrapped[])-1 == 0) ==> (size(return.terms.wrapped[])-1 == 0)
-size(p.terms.wrapped[])-1 <= size(return.terms.wrapped[])
 ===========================================================================
 PolyCalc.RatPoly.negate():::ENTER
 this.terms.wrapped[].getClass().getName() one of { [], [PolyCalc.RatTerm] }
@@ -870,13 +755,15 @@ PolyCalc.RatPoly.negate():::EXIT
 this.terms == orig(this.terms)
 this.terms.wrapped == orig(this.terms.wrapped)
 this.terms.wrapped[] == orig(this.terms.wrapped[])
-size(this.terms.wrapped[]) == size(return.terms.wrapped[])
 this.terms.wrapped[].getClass().getName() one of { [], [PolyCalc.RatTerm] }
 return != null
 return.terms != null
 return.terms.wrapped != null
 return.terms.wrapped[] elements != null
+return.terms.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
+return.terms.wrapped[].getClass().getName() one of { [], [PolyCalc.RatTerm] }
 size(this.terms.wrapped[]) one of { 0, 1 }
+size(return.terms.wrapped[]) one of { 0, 1 }
 ===========================================================================
 PolyCalc.RatPoly.parse(java.lang.String):::ENTER
 polyStr != null
@@ -904,7 +791,6 @@ ts.wrapped[] elements != null
 ts.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
 index >= 1
 size(ts.wrapped[]) >= 1
-index <= size(ts.wrapped[])
 ===========================================================================
 PolyCalc.RatPoly.replaceExpt(PolyCalc.RatTerm, PolyCalc.RatTermVec, int):::EXIT
 term.coeff == orig(term.coeff)
@@ -912,10 +798,6 @@ term.coeff.numer == orig(term.coeff.numer)
 term.coeff.denom == orig(term.coeff.denom)
 term.expt == orig(term.expt)
 ts.wrapped == orig(ts.wrapped)
-ts.wrapped[orig(index)-1] == orig(ts.wrapped[post(index)-1])
-ts.wrapped[orig(index)-1] == orig(ts.wrapped[index-1])
-ts.wrapped[0..orig(index)-1] == orig(ts.wrapped[0..post(index)-1])
-ts.wrapped[0..orig(index)-1] == orig(ts.wrapped[0..index-1])
 term.coeff != null
 term.coeff.denom >= 1
 term.expt >= 0
@@ -924,8 +806,6 @@ ts.wrapped[] contains no duplicates
 ts.wrapped[] elements != null
 ts.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
 size(ts.wrapped[]) >= 1
-(size(ts.wrapped[])-1 == 0) ==> (term.coeff.numer == 0)
-orig(index) <= size(ts.wrapped[])
 (orig(size(ts.wrapped[])) >> size(ts.wrapped[]) == 0)
 size(ts.wrapped[]) >= orig(size(ts.wrapped[]))-1
 size(ts.wrapped[])-1 <= orig(size(ts.wrapped[]))
@@ -946,7 +826,6 @@ scalar.coeff == orig(scalar.coeff)
 scalar.coeff.numer == orig(scalar.coeff.numer)
 scalar.coeff.denom == orig(scalar.coeff.denom)
 scalar.expt == orig(scalar.expt)
-size(this.terms.wrapped[]) == size(return.terms.wrapped[])
 scalar.coeff != null
 scalar.coeff.denom >= 1
 scalar.expt >= 0
@@ -955,7 +834,9 @@ return.terms != null
 return.terms.wrapped != null
 return.terms.wrapped[] contains no duplicates
 return.terms.wrapped[] elements != null
+return.terms.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
 size(this.terms.wrapped[]) >= 1
+size(return.terms.wrapped[]) >= 1
 ===========================================================================
 PolyCalc.RatPoly.scaleCoeff(PolyCalc.RatTermVec, PolyCalc.RatNum):::ENTER
 vec != null
@@ -993,24 +874,12 @@ PolyCalc.RatPoly.sortedAdd(PolyCalc.RatTermVec, PolyCalc.RatTerm):::EXIT308
 size(vec.wrapped[]) == orig(size(vec.wrapped[]))-1
 newTerm.coeff.denom == 1
 vec.wrapped[] is a subset of orig(vec.wrapped[])
-newTerm.coeff.numer != size(vec.wrapped[])-1
-newTerm.coeff.numer != orig(size(vec.wrapped[]))
-newTerm.coeff.denom <= orig(size(vec.wrapped[]))
-orig(vec.wrapped[0..newTerm.coeff.denom-1]) elements == orig(vec.wrapped[newTerm.coeff.denom-1])
 ===========================================================================
 PolyCalc.RatPoly.sortedAdd(PolyCalc.RatTermVec, PolyCalc.RatTerm):::EXIT312
 size(vec.wrapped[]) == orig(size(vec.wrapped[]))
 ===========================================================================
 PolyCalc.RatPoly.sortedAdd(PolyCalc.RatTermVec, PolyCalc.RatTerm):::EXIT319
 size(vec.wrapped[])-1 == orig(size(vec.wrapped[]))
-vec.wrapped[newTerm.coeff.numer-1] == vec.wrapped[newTerm.coeff.denom]
-vec.wrapped[newTerm.coeff.denom] == vec.wrapped[orig(newTerm.coeff.numer)-1]
-vec.wrapped[newTerm.coeff.denom-1] == orig(vec.wrapped[post(newTerm.coeff.denom)-1])
-vec.wrapped[newTerm.coeff.denom-1] == orig(vec.wrapped[newTerm.coeff.denom-1])
-vec.wrapped[0..newTerm.coeff.denom-1] == orig(vec.wrapped[0..post(newTerm.coeff.denom)-1])
-vec.wrapped[0..newTerm.coeff.denom-1] == orig(vec.wrapped[0..newTerm.coeff.denom-1])
-orig(vec.wrapped[post(newTerm.coeff.numer)-1]) == orig(vec.wrapped[newTerm.coeff.denom])
-orig(vec.wrapped[newTerm.coeff.numer-1]) == orig(vec.wrapped[newTerm.coeff.denom])
 vec.wrapped[].getClass().getName() one of { [PolyCalc.RatTerm, PolyCalc.RatTerm, PolyCalc.RatTerm, PolyCalc.RatTerm, PolyCalc.RatTerm], [PolyCalc.RatTerm, PolyCalc.RatTerm, PolyCalc.RatTerm, PolyCalc.RatTerm, PolyCalc.RatTerm, PolyCalc.RatTerm] }
 newTerm.coeff.numer == 2
 newTerm.coeff.denom == 1
@@ -1018,26 +887,12 @@ newTerm.expt one of { 4, 6 }
 orig(vec.wrapped[].getClass().getName()) one of { [PolyCalc.RatTerm, PolyCalc.RatTerm, PolyCalc.RatTerm, PolyCalc.RatTerm], [PolyCalc.RatTerm, PolyCalc.RatTerm, PolyCalc.RatTerm, PolyCalc.RatTerm, PolyCalc.RatTerm] }
 size(vec.wrapped[]) one of { 5, 6 }
 vec.wrapped[] is a superset of orig(vec.wrapped[])
-orig(newTerm) in vec.wrapped[]
-vec.wrapped[newTerm.coeff.numer] in orig(vec.wrapped[])
-orig(newTerm) in vec.wrapped[newTerm.coeff.denom..]
-vec.wrapped[newTerm.coeff.numer] in orig(vec.wrapped[0..newTerm.coeff.numer])
-vec.wrapped[newTerm.coeff.numer] in orig(vec.wrapped[newTerm.coeff.denom..])
-orig(vec.wrapped[newTerm.coeff.numer]) in vec.wrapped[newTerm.coeff.numer..]
-orig(vec.wrapped[newTerm.coeff.numer+1..]) is a subsequence of vec.wrapped[newTerm.coeff.numer..]
-orig(vec.wrapped[newTerm.coeff.numer+1..]) is a subsequence of vec.wrapped[newTerm.coeff.numer+1..]
-orig(vec.wrapped[newTerm.coeff.denom]) in vec.wrapped[0..newTerm.coeff.numer]
-vec.wrapped[0..newTerm.coeff.denom-1] elements == vec.wrapped[newTerm.coeff.denom-1]
-orig(vec.wrapped[newTerm.coeff.numer]) in vec.wrapped[newTerm.coeff.denom..]
-orig(vec.wrapped[newTerm.coeff.numer+1..]) is a subsequence of vec.wrapped[newTerm.coeff.denom..]
-orig(vec.wrapped[newTerm.coeff.denom]) in vec.wrapped[newTerm.coeff.denom..]
 ===========================================================================
 PolyCalc.RatPoly.sortedAdd(PolyCalc.RatTermVec, PolyCalc.RatTerm):::EXIT328
 size(vec.wrapped[])-1 == orig(size(vec.wrapped[]))
 size(vec.wrapped[]) >= 1
 orig(vec.wrapped[]) is a subsequence of vec.wrapped[]
 vec.wrapped[] is a superset of orig(vec.wrapped[])
-orig(newTerm) in vec.wrapped[]
 ===========================================================================
 PolyCalc.RatPoly.sortedAdd(PolyCalc.RatTermVec, PolyCalc.RatTerm):::EXIT
 vec.wrapped == orig(vec.wrapped)
@@ -1053,7 +908,6 @@ newTerm.coeff != null
 newTerm.coeff.numer != 0
 newTerm.coeff.denom >= 1
 newTerm.expt >= 0
-(size(vec.wrapped[]) == 0) ==> (newTerm.expt == 0)
 (size(vec.wrapped[]) == 0) ==> (orig(size(vec.wrapped[]))-1 == 0)
 size(vec.wrapped[]) >= orig(size(vec.wrapped[]))-1
 (orig(size(vec.wrapped[])) == 0) ==> (size(vec.wrapped[])-1 == 0)
@@ -1069,36 +923,28 @@ p.terms.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
 p.terms.wrapped[].getClass().getName() one of { [], [PolyCalc.RatTerm] }
 size(this.terms.wrapped[]) one of { 0, 1 }
 size(p.terms.wrapped[]) one of { 0, 1 }
-size(this.terms.wrapped[]) >= size(p.terms.wrapped[])-1
-size(this.terms.wrapped[])-1 <= size(p.terms.wrapped[])
 ===========================================================================
 PolyCalc.RatPoly.sub(PolyCalc.RatPoly):::EXIT372
 this.terms == return.terms
 this.terms.wrapped == return.terms.wrapped
-this.terms.wrapped[] == return.terms.wrapped[]
 return == orig(this)
 this.terms.wrapped[].getClass().getName() == [PolyCalc.RatTerm]
+return.terms.wrapped[].getClass().getName() == [PolyCalc.RatTerm]
 size(this.terms.wrapped[]) == 1
-size(this.terms.wrapped[]) >= size(p.terms.wrapped[])
-size(this.terms.wrapped[])-1 >= size(p.terms.wrapped[])-1
+size(return.terms.wrapped[]) == 1
 ===========================================================================
 PolyCalc.RatPoly.sub(PolyCalc.RatPoly):::EXIT376
 p.terms == return.terms
 p.terms.wrapped == return.terms.wrapped
-p.terms.wrapped[] == return.terms.wrapped[]
 return == orig(p)
 p.terms.wrapped[].getClass().getName() == [PolyCalc.RatTerm]
+return.terms.wrapped[].getClass().getName() == [PolyCalc.RatTerm]
 size(p.terms.wrapped[]) == 1
-size(this.terms.wrapped[]) <= size(p.terms.wrapped[])
-size(this.terms.wrapped[])-1 <= size(p.terms.wrapped[])-1
+size(return.terms.wrapped[]) == 1
 ===========================================================================
 PolyCalc.RatPoly.sub(PolyCalc.RatPoly):::EXIT379
 this.terms.wrapped[].getClass().getName() == [PolyCalc.RatTerm]
 size(this.terms.wrapped[]) == 1
-size(this.terms.wrapped[]) >= size(p.terms.wrapped[])
-size(this.terms.wrapped[])-1 >= size(p.terms.wrapped[])-1
-size(this.terms.wrapped[]) == (org.plumelib.util.MathPlume.gcd(size(p.terms.wrapped[]), size(return.terms.wrapped[])))
-size(this.terms.wrapped[])-1 == (size(p.terms.wrapped[])-1 * size(return.terms.wrapped[])-1)
 ===========================================================================
 PolyCalc.RatPoly.sub(PolyCalc.RatPoly):::EXIT
 this.terms == orig(this.terms)
@@ -1121,18 +967,6 @@ return.terms.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
 size(this.terms.wrapped[]) one of { 0, 1 }
 size(p.terms.wrapped[]) one of { 0, 1 }
 size(return.terms.wrapped[]) one of { 0, 1, 2 }
-size(this.terms.wrapped[]) >= size(p.terms.wrapped[])-1
-(size(this.terms.wrapped[]) == 0) ==> (size(return.terms.wrapped[])-1 == 0)
-size(this.terms.wrapped[]) >= size(return.terms.wrapped[])-1
-size(this.terms.wrapped[])-1 <= size(p.terms.wrapped[])
-(size(return.terms.wrapped[]) == 0) ==> (size(this.terms.wrapped[])-1 == 0)
-size(this.terms.wrapped[])-1 <= size(return.terms.wrapped[])
-(size(this.terms.wrapped[])-1 & size(return.terms.wrapped[])-1) == 0
-(size(p.terms.wrapped[]) == 0) ==> (size(return.terms.wrapped[])-1 == 0)
-size(p.terms.wrapped[]) >= size(return.terms.wrapped[])-1
-(size(return.terms.wrapped[]) == 0) ==> (size(p.terms.wrapped[])-1 == 0)
-size(p.terms.wrapped[])-1 <= size(return.terms.wrapped[])
-(size(p.terms.wrapped[])-1 & size(return.terms.wrapped[])-1) == 0
 (size(return.terms.wrapped[]) & size(return.terms.wrapped[])-1) == 0
 ===========================================================================
 PolyCalc.RatPoly.toString():::ENTER
@@ -1171,7 +1005,6 @@ PolyCalc.RatTerm:::OBJECT
 this.coeff != null
 this.coeff.denom >= 0
 this.expt >= 0
-(this.coeff.denom == 0) ==> (this.expt == 0)
 ===========================================================================
 PolyCalc.RatTerm.RatTerm(PolyCalc.RatNum, int):::ENTER
 c != null
@@ -1190,6 +1023,7 @@ c.denom >= 0
 (c.denom == 0) ==> (this.expt == 0)
 ===========================================================================
 PolyCalc.RatTerm.debugPrint():::ENTER
+(this.coeff.denom == 0) ==> (this.expt == 0)
 ===========================================================================
 PolyCalc.RatTerm.debugPrint():::EXIT
 this.coeff == orig(this.coeff)
@@ -1198,6 +1032,7 @@ this.coeff.denom == orig(this.coeff.denom)
 this.expt == orig(this.expt)
 return != null
 return.toString is printable
+(this.coeff.denom == 0) ==> (this.expt == 0)
 ===========================================================================
 PolyCalc.RatTerm.toString():::ENTER
 ===========================================================================
@@ -1226,7 +1061,6 @@ t.coeff.numer != 0
 t.coeff.denom >= 0
 t.expt >= 0
 (t.coeff.denom == 0) ==> (t.expt == 0)
-(t.coeff.denom == 0) ==> (size(this.wrapped[]) == 0)
 ===========================================================================
 PolyCalc.RatTermVec.addElement(PolyCalc.RatTerm):::EXIT
 this.wrapped == orig(this.wrapped)
@@ -1243,50 +1077,35 @@ t.expt >= 0
 size(this.wrapped[]) >= 1
 orig(this.wrapped[]) is a subsequence of this.wrapped[]
 this.wrapped[] is a superset of orig(this.wrapped[])
-orig(t) in this.wrapped[]
 (t.coeff.denom == 0) ==> (t.expt == 0)
-(t.coeff.denom == 0) ==> (size(this.wrapped[])-1 == 0)
 ===========================================================================
 PolyCalc.RatTermVec.copy():::ENTER
 this.wrapped[] contains no duplicates
 ===========================================================================
 PolyCalc.RatTermVec.copy():::EXIT
 this.wrapped == orig(this.wrapped)
-this.wrapped[] == return.wrapped[]
 this.wrapped[] == orig(this.wrapped[])
 this.wrapped[] contains no duplicates
 return != null
 return.wrapped != null
+return.wrapped[] contains no duplicates
+return.wrapped[] elements != null
+return.wrapped[].getClass().getName() elements == PolyCalc.RatTerm.class
 ===========================================================================
 PolyCalc.RatTermVec.get(int):::ENTER
 index >= 0
 size(this.wrapped[]) >= 1
-this.wrapped[index+1..] contains no duplicates
-this.wrapped[0..index] contains no duplicates
-(size(this.wrapped[])-1 == 0) ==> (index == 0)
-index <= size(this.wrapped[])-1
 ===========================================================================
 PolyCalc.RatTermVec.get(int):::EXIT
 this.wrapped == orig(this.wrapped)
 this.wrapped[] == orig(this.wrapped[])
-return == this.wrapped[orig(index)]
 return != null
 return.coeff != null
 return.coeff.denom >= 0
 return.expt >= 0
 size(this.wrapped[]) >= 1
-this.wrapped[orig(index)+1..] contains no duplicates
-this.wrapped[0..orig(index)] contains no duplicates
-return in this.wrapped[]
-return in this.wrapped[orig(index)..]
-return in this.wrapped[0..orig(index)]
 (return.coeff.numer == 0) ==> (return.expt == 0)
-(return.coeff.numer == 0) ==> (orig(index) == 0)
 (return.coeff.denom == 0) ==> (return.expt == 0)
-(return.coeff.denom == 0) ==> (orig(index) == 0)
-(return.coeff.denom == 0) ==> (size(this.wrapped[])-1 == 0)
-(size(this.wrapped[])-1 == 0) ==> (orig(index) == 0)
-orig(index) <= size(this.wrapped[])-1
 ===========================================================================
 PolyCalc.RatTermVec.insert(PolyCalc.RatTerm, int):::ENTER
 t != null
@@ -1294,11 +1113,6 @@ t.coeff != null
 t.coeff.denom >= 1
 t.expt >= 0
 index >= 0
-this.wrapped[0..index-1] contains no duplicates
-(index == 0) ==> (t.expt == 0)
-(size(this.wrapped[]) == 0) ==> (t.expt == 0)
-(size(this.wrapped[]) == 0) ==> (index == 0)
-index <= size(this.wrapped[])
 ===========================================================================
 PolyCalc.RatTermVec.insert(PolyCalc.RatTerm, int):::EXIT
 this.wrapped == orig(this.wrapped)
@@ -1306,26 +1120,12 @@ t.coeff == orig(t.coeff)
 t.coeff.numer == orig(t.coeff.numer)
 t.coeff.denom == orig(t.coeff.denom)
 t.expt == orig(t.expt)
-orig(t) == this.wrapped[orig(index)]
 size(this.wrapped[])-1 == orig(size(this.wrapped[]))
-this.wrapped[orig(index)+1..] == orig(this.wrapped[index..])
-this.wrapped[0..orig(index)-1] == orig(this.wrapped[0..post(index)-1])
-this.wrapped[0..orig(index)-1] == orig(this.wrapped[0..index-1])
 t.coeff != null
 t.coeff.denom >= 1
 t.expt >= 0
 size(this.wrapped[]) >= 1
-this.wrapped[0..orig(index)-1] contains no duplicates
 this.wrapped[] is a superset of orig(this.wrapped[])
-orig(t) in this.wrapped[]
-t.coeff.numer <= size(this.wrapped[])
-(orig(index) == 0) ==> (t.expt == 0)
-t.expt != size(this.wrapped[])
-(size(this.wrapped[])-1 == 0) ==> (t.expt == 0)
-orig(t) in this.wrapped[orig(index)..]
-orig(t) in this.wrapped[0..orig(index)]
-(size(this.wrapped[])-1 == 0) ==> (orig(index) == 0)
-orig(index) <= size(this.wrapped[])-1
 ===========================================================================
 PolyCalc.RatTermVec.printDebug():::ENTER
 ===========================================================================
@@ -1339,20 +1139,12 @@ PolyCalc.RatTermVec.remove(int):::ENTER
 this.wrapped[] contains no duplicates
 index >= 0
 size(this.wrapped[]) >= 1
-(size(this.wrapped[])-1 == 0) ==> (index == 0)
-index <= size(this.wrapped[])-1
 ===========================================================================
 PolyCalc.RatTermVec.remove(int):::EXIT
 this.wrapped == orig(this.wrapped)
 size(this.wrapped[]) == orig(size(this.wrapped[]))-1
-this.wrapped[orig(index)..] == orig(this.wrapped[post(index)+1..])
-this.wrapped[orig(index)..] == orig(this.wrapped[index+1..])
-this.wrapped[0..orig(index)-1] == orig(this.wrapped[0..post(index)-1])
-this.wrapped[0..orig(index)-1] == orig(this.wrapped[0..index-1])
 this.wrapped[] contains no duplicates
 this.wrapped[] is a subset of orig(this.wrapped[])
-(size(this.wrapped[]) == 0) ==> (orig(index) == 0)
-orig(index) <= size(this.wrapped[])
 ===========================================================================
 PolyCalc.RatTermVec.set(PolyCalc.RatTerm, int):::ENTER
 this.wrapped[] contains no duplicates
@@ -1363,10 +1155,6 @@ t.expt >= 0
 index >= 0
 size(this.wrapped[]) >= 1
 (t.coeff.denom == 0) ==> (t.expt == 0)
-(t.coeff.denom == 0) ==> (index == 0)
-(t.coeff.denom == 0) ==> (size(this.wrapped[])-1 == 0)
-(size(this.wrapped[])-1 == 0) ==> (index == 0)
-index <= size(this.wrapped[])-1
 ===========================================================================
 PolyCalc.RatTermVec.set(PolyCalc.RatTerm, int):::EXIT
 this.wrapped == orig(this.wrapped)
@@ -1374,25 +1162,13 @@ t.coeff == orig(t.coeff)
 t.coeff.numer == orig(t.coeff.numer)
 t.coeff.denom == orig(t.coeff.denom)
 t.expt == orig(t.expt)
-orig(t) == this.wrapped[orig(index)]
 size(this.wrapped[]) == orig(size(this.wrapped[]))
-this.wrapped[orig(index)+1..] == orig(this.wrapped[post(index)+1..])
-this.wrapped[orig(index)+1..] == orig(this.wrapped[index+1..])
-this.wrapped[0..orig(index)-1] == orig(this.wrapped[0..post(index)-1])
-this.wrapped[0..orig(index)-1] == orig(this.wrapped[0..index-1])
 this.wrapped[] contains no duplicates
 t.coeff != null
 t.coeff.numer != 0
 t.expt >= 0
 size(this.wrapped[]) >= 1
-orig(t) in this.wrapped[]
 (t.coeff.denom == 0) ==> (t.expt == 0)
-(t.coeff.denom == 0) ==> (orig(index) == 0)
-(t.coeff.denom == 0) ==> (size(this.wrapped[])-1 == 0)
-orig(t) in this.wrapped[orig(index)..]
-orig(t) in this.wrapped[0..orig(index)]
-(size(this.wrapped[])-1 == 0) ==> (orig(index) == 0)
-orig(index) <= size(this.wrapped[])-1
 ===========================================================================
 PolyCalc.RatTermVec.size():::ENTER
 this.wrapped[] contains no duplicates
@@ -1400,10 +1176,8 @@ this.wrapped[] contains no duplicates
 PolyCalc.RatTermVec.size():::EXIT
 this.wrapped == orig(this.wrapped)
 this.wrapped[] == orig(this.wrapped[])
-return == size(this.wrapped[])
-return == orig(size(this.wrapped[]))
 this.wrapped[] contains no duplicates
-this.wrapped[return..] == []
+return >= 0
 ===========================================================================
 PolyCalc.RatTermVec.toString():::ENTER
 ===========================================================================

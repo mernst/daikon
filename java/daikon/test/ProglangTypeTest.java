@@ -1,35 +1,53 @@
 package daikon.test;
 
+import static java.util.logging.Level.INFO;
 import static org.junit.Assert.assertEquals;
 
-import daikon.*;
+import daikon.FileIO;
+import daikon.ProglangType;
 import java.util.Arrays;
 import java.util.Comparator;
-import junit.framework.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.plumelib.util.ArraysPlume;
 
+/** Test the ProglangType class. */
 @SuppressWarnings("nullness") // testing code
 public class ProglangTypeTest {
 
-  static Comparator<long[]> longarrcomparator = new ArraysPlume.LongArrayComparatorLexical();
+  /** Creates a ProglangTypeTest. */
+  public ProglangTypeTest() {}
 
+  /** Comparator for arrays of longs. */
+  static Comparator<long[]> longarrcomparator = ArraysPlume.LongArrayComparatorLexical.it;
+
+  /** Comparator for arrays of Strings. */
   static Comparator<String[]> comparrcomparator =
       new ArraysPlume.ComparableArrayComparatorLexical<String>();
 
+  /** prepare for tests */
   @BeforeClass
   public static void setUpClass() {
-    daikon.LogHelper.setupLogs(LogHelper.INFO);
+    daikon.LogHelper.setupLogs(INFO);
     FileIO.new_decl_format = true;
   }
 
-  // Run-time type of first argument is long[]
+  /**
+   * Asserts that the two arrays are equal.
+   *
+   * @param a the first array; its run-time is long[]
+   * @param b the second array
+   */
   void longarrEquals(Object a, long[] b) {
     assertEquals(0, longarrcomparator.compare((long[]) a, b));
   }
 
-  // Run-time type of first (and second) argument is Comparable[]
+  /**
+   * Asserts that the two arrays are equal.
+   *
+   * @param a the first array; its run-time is Comparable[]
+   * @param b the second array; its run-time is Comparable[]
+   */
   void comparrEquals(Object a, Object[] b) {
     String[] a1 = (String[]) a;
     String[] b1 = (String[]) b;

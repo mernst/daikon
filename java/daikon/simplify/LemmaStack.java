@@ -1,6 +1,7 @@
 package daikon.simplify;
 
 import daikon.inv.Invariant;
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -8,7 +9,12 @@ import java.util.NavigableSet;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
+import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
+import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 
 /**
@@ -17,7 +23,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
  * it's also a convenient place to hang routines that any Simplify client can use.
  */
 @SuppressWarnings("JdkObsolete") // Stack has methods that ArrayDeque lacks, such as elementAt()
-public class LemmaStack {
+@MustCall("close") public class LemmaStack implements Closeable {
   /**
    * Boolean. Controls Daikon's response when inconsistent invariants are discovered while running
    * Simplify. If false, Daikon will give up on using Simplify for that program point. If true,
@@ -47,7 +53,7 @@ public class LemmaStack {
   public static boolean dkconfig_synchronous_errors = false;
 
   private Stack<Lemma> lemmas;
-  private SessionManager session;
+  private @Owning SessionManager session;
 
   /** Tell Simplify to assume a lemma, which should already be on our stack. */
   private void assume(@UnknownInitialization(LemmaStack.class) LemmaStack this, Lemma lemma)
@@ -85,9 +91,17 @@ public class LemmaStack {
   }
 
   /** Try to start Simplify. */
+  @CreatesMustCallFor("this")
   @EnsuresNonNull("session")
   private void startProver(@UnknownInitialization LemmaStack this) throws SimplifyError {
     SessionManager session_try = SessionManager.attemptProverStartup();
+    if (session != null) {
+      try {
+        session.close();
+      } catch (Exception e) {
+        throw new SimplifyError(e);
+      }
+    }
     if (session_try != null) {
       session = session_try;
     } else {
@@ -96,6 +110,7 @@ public class LemmaStack {
   }
 
   /** Try to restart Simplify back where we left off, after killing it. */
+  @CreatesMustCallFor("this")
   private void restartProver(@UnknownInitialization(LemmaStack.class) LemmaStack this)
       throws SimplifyError {
     startProver();
@@ -106,10 +121,13 @@ public class LemmaStack {
     }
   }
 
+  /** Create a new LemmaStack. */
   public LemmaStack() throws SimplifyError {
     startProver();
     lemmas = new Stack<Lemma>();
-    if (daikon.inv.Invariant.dkconfig_simplify_define_predicates) pushLemmas(Lemma.lemmasList());
+    if (daikon.inv.Invariant.dkconfig_simplify_define_predicates) {
+      pushLemmas(Lemma.lemmasList());
+    }
   }
 
   /** Pop a lemma from our and Simplify's stacks. */
@@ -118,7 +136,13 @@ public class LemmaStack {
     lemmas.pop();
   }
 
-  /** Push an assumption onto our and Simplify's stacks. */
+  /**
+   * Push an assumption onto our and Simplify's stacks.
+   *
+   * @param lem the assumption
+   * @return true if success, false if Simplify times out
+   */
+  @SuppressWarnings("builder:reset.not.owning") // only resets conditionally, on exception path
   public boolean pushLemma(@UnknownInitialization(LemmaStack.class) LemmaStack this, Lemma lem)
       throws SimplifyError {
     SimpUtil.assert_well_formed(lem.formula);
@@ -157,7 +181,11 @@ public class LemmaStack {
    * Ask Simplify whether a string is a valid statement, given our assumptions. Returns 'T' if
    * Simplify says yes, 'F' if Simplify says no, or '?' if we have to kill Simplify because it won't
    * answer.
+   *
+   * @param str the string to check
+   * @return 'T' if Simplify says yes, 'F' if Simplify says no, or '?' if Simplify does not answer
    */
+  @SuppressWarnings("builder:reset.not.owning") // only resets conditionally, on exception path
   private char checkString(@UnknownInitialization(LemmaStack.class) LemmaStack this, String str)
       throws SimplifyError {
     SimpUtil.assert_well_formed(str);
@@ -192,7 +220,7 @@ public class LemmaStack {
   }
 
   /**
-   * Return true if all the invariants in invs[i] in invs[] not between min and max (inclusive) for
+   * Returns true if all the invariants in invs[i] in invs[] not between min and max (inclusive) for
    * which excluded[i] is false, together imply the formula conseq.
    */
   private boolean allExceptImply(Lemma[] invs, boolean[] excluded, int min, int max, String conseq)
@@ -256,7 +284,9 @@ public class LemmaStack {
     } while (reduced);
     List<Lemma> new_invs = new ArrayList<>();
     for (int i = 0; i < invs.length; i++) {
-      if (!excluded[i]) new_invs.add(invs[i]);
+      if (!excluded[i]) {
+        new_invs.add(invs[i]);
+      }
     }
     return new_invs;
   }
@@ -299,7 +329,9 @@ public class LemmaStack {
       Set<Class<? extends Invariant>> used = new HashSet<Class<? extends Invariant>>();
       for (Lemma mlem : mini) {
         Class<? extends Invariant> c = mlem.invClass();
-        if (c != null) used.add(c);
+        if (c != null) {
+          used.add(c);
+        }
       }
       for (Lemma mlem : mini) {
         System.err.println(mlem.summarize());
@@ -344,10 +376,12 @@ public class LemmaStack {
   }
 
   /**
-   * Return a minimal set of assumptions from the stack that imply a given string.
+   * Returns a minimal set of assumptions from the stack that imply a given string.
    *
    * @param str the expression to make true
+   * @return a minimal set of assumptions from the stack that imply the given string
    */
+  @SuppressWarnings("builder:reset.not.owning") // only resets conditionally, on exception path
   private List<Lemma> minimizeReasons(String str) throws SimplifyError {
     assert checkString(str) == 'T';
     unAssumeAll(lemmas);
@@ -366,7 +400,7 @@ public class LemmaStack {
   }
 
   /**
-   * Return a set of contradictory assumptions from the stack (as a vector of Lemmas) which are
+   * Returns a set of contradictory assumptions from the stack (as a vector of Lemmas) which are
    * minimal in the sense that no proper subset of them are contradictory as far as Simplify can
    * tell.
    */
@@ -375,7 +409,7 @@ public class LemmaStack {
   }
 
   /**
-   * Return a set of assumptions from the stack (as a vector of Lemmas) that imply the given Lemma
+   * Returns a set of assumptions from the stack (as a vector of Lemmas) that imply the given Lemma
    * and which are minimal in the sense that no proper subset of them imply it as far as Simplify
    * can tell.
    */
@@ -432,7 +466,7 @@ public class LemmaStack {
   }
 
   /**
-   * Return a reference to the current position on the lemma stack. If, after pushing some stuff,
+   * Returns a reference to the current position on the lemma stack. If, after pushing some stuff,
    * you want to get back here, pass the mark to popToMark(). This will only work if you use these
    * routines in a stack-disciplined way, of course. In particular, beware that
    * removeContradiction() invalidates marks, since it can remove a lemma from anywhere on the
@@ -505,7 +539,11 @@ public class LemmaStack {
     }
   }
 
-  public void closeSession() {
+  /** Releases resources held by this. */
+  @SuppressWarnings("builder:contracts.postcondition") // performed on a local alias, not the field
+  @EnsuresCalledMethods(value = "session", methods = "close")
+  @Override
+  public void close(@GuardSatisfied LemmaStack this) {
     // this.session should be effectively final in that it refers
     // to the same value throughout the execution of this method.
     // Unfortunately, the Lock Checker cannot verify this,
@@ -514,7 +552,7 @@ public class LemmaStack {
     // effectively final.  If a bug exists whereby this.session
     // is not effectively final, this would unfortunately mask that error.
     final SessionManager session = this.session;
-    session.session_done();
+    session.close();
     synchronized (session) {
       session.notifyAll();
     }

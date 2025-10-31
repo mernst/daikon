@@ -1,7 +1,3 @@
-/*
- * Created on May 3, 2005
- */
-
 package daikon.chicory;
 
 import java.util.EnumSet;
@@ -18,13 +14,16 @@ public class DaikonClassInfo extends DaikonVariableInfo {
    * Constructs a DaikonClassInfo object.
    *
    * @param theName the name of the variable
+   * @param typeName the name of the type
+   * @param repTypeName the name of the representation type
+   * @param function_args arguments used to create a function
    * @param isArr true iff the variable represents an array of run-time classes
    */
   public DaikonClassInfo(
-      String theName, String typeName, String repTypeName, String receiverName, boolean isArr) {
+      String theName, String typeName, String repTypeName, String function_args, boolean isArr) {
     super(theName, typeName, repTypeName, isArr);
 
-    function_args = receiverName;
+    this.function_args = function_args;
   }
 
   // .class variables are derived, so just keep the parent value
@@ -53,7 +52,7 @@ public class DaikonClassInfo extends DaikonVariableInfo {
   }
 
   /**
-   * Get a String representation of the given Object's run-time type and the corresponding
+   * Returns a String representation of the given Object's run-time type and the corresponding
    * "modified" value.
    *
    * @param val the Object whose run-time class we wish to get a String representation of

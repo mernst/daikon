@@ -2,8 +2,13 @@
 
 package daikon;
 
-import java.util.*;
-import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.util.AbstractCollection;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+
 import org.plumelib.util.ArraysPlume;
 import org.plumelib.util.Intern;
 import org.plumelib.util.FuzzyFloat;
@@ -12,6 +17,7 @@ import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
@@ -25,7 +31,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  *
  * <pre>daikon.Quant.eltsGTE(a, 1)</pre>
  *
- * <h3>Naming</h3>
+ * <h2>Naming</h2>
  *
  * The library methods have names of the following forms, where OP indicates an operation: Equal,
  * NotEqual, GT (greater than), GTE (greater than or equal to), LT, LTE.
@@ -42,12 +48,12 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  *     a[0] OP 0, a[1] OP 1, etc.
  * </ul>
  *
- * <h3>Equality semantics</h3>
+ * <h2>Equality semantics</h2>
  *
  * <p>Whenever a method involves comparing two elements for equality, this is always "==" equality
  * (even for Objects and Strings).
  *
- * <h3>No exceptions thrown</h3>
+ * <h2>No exceptions thrown</h2>
  *
  * <p>The library strives not to throw exceptions, even if illegal arguments are passed to the
  * routines. This has two consequences.
@@ -160,8 +166,8 @@ public final class Quant {
 #include "daikon/QuantBody.java.jpp"
 #undef STRING
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Collection methods (dispatch to array methods)
+  // ///////////////////////////////////////////////////////////////////////////
+  // Collection methods (dispatch to array methods)
   //
 
   // These methods handle calls to quant methods that instead of passing an

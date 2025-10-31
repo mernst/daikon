@@ -2,8 +2,13 @@ package daikon.split;
 
 import daikon.tools.jtb.Ast;
 import jtb.ParseException;
-import jtb.syntaxtree.*;
-import jtb.visitor.*;
+import jtb.syntaxtree.Arguments;
+import jtb.syntaxtree.Name;
+import jtb.syntaxtree.Node;
+import jtb.syntaxtree.NodeToken;
+import jtb.syntaxtree.PrimaryExpression;
+import jtb.syntaxtree.PrimarySuffix;
+import jtb.visitor.DepthFirstVisitor;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.dataflow.qual.Pure;
@@ -116,12 +121,13 @@ class OrigFixer extends DepthFirstVisitor {
     if (withinArgList && isLastTokenVar(n)) {
       lastToken.tokenImage = "orig_" + lastToken.tokenImage;
     }
-    if (lastToken != null) // test is to quiet the Nullness Checker
-    twoTokensAgo = lastToken;
+    if (lastToken != null) { // test is to quiet the Nullness Checker
+      twoTokensAgo = lastToken;
+    }
     lastToken = n;
   }
 
-  /** Returns if the the last token represents a variable name. */
+  /** Returns if the last token represents a variable name. */
   @EnsuresNonNullIf(result = true, expression = "lastToken")
   @Pure
   private boolean isLastTokenVar(NodeToken n) {

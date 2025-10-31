@@ -134,7 +134,12 @@ endif
 
 
 # DAIKONDIR is the clone of the 'daikon' project.
-DAIKONDIR:=$(realpath $(dir $(lastword $(MAKEFILE_LIST)))..)
+# Would like to use simple '?=' but this is recursively expanded while ':=' is simply expanded.
+# The include of Makefile.user (if it exists) will change the value of MAKEFILE_LIST and thus
+# '?=' will not evaluate as we desire.
+ifeq ($(origin DAIKONDIR), undefined)
+  DAIKONDIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST)))..)
+endif
 
 # COMMON_HERE is where the Makefile.common is located.
 COMMON_HERE?=${DAIKONDIR}/tests
@@ -158,7 +163,7 @@ SOURCES?=$(COMMON_HERE)/sources
 # (e.g. esc-experiments/StackAr or daikon-tests/QueueAr)
 CWD:=$(shell pwd)
 # Why is this command echoed in the Travis job output?
-PROJECT_VIA_COMMAND:=$(shell echo ${CWD} | perl -pe 's|.*/(jdk[678]-)?daikon/(workspace/)?tests(\.ver[23])?/||;')
+PROJECT_VIA_COMMAND:=$(shell echo ${CWD} | perl -pe 's|.*/(jdk[678]-)?daikon[^/]*/(workspace/)?tests(\.ver[23])?/||;')
 PROJECT?=${PROJECT_VIA_COMMAND}
 
 # This is the name for the output files ($.inv.gz $.txt-daikon ...)
@@ -168,10 +173,8 @@ PROJECT_FILE?=$(notdir ${PROJECT})
 
 # if another scratch dir is desired (such as /var/autofs/net/manioc/scratch
 # or /tmp) define SCRATCH_BASE to that location.
-SCRATCH_BASE ?= /scratch
-# Test that the directory exists.  There must be a better way to do this.
-SCRATCH_BASE:=$(wildcard $(SCRATCH_BASE))
-ifndef SCRATCH_BASE
+SCRATCH_BASE?=/scratch
+ifeq ("$(wildcard $(SCRATCH_BASE))","")
   SCRATCH_BASE=/tmp
 endif
 SCRATCH_FOR_DAIKON_BASE?=${SCRATCH_BASE}/${USER}/tests
@@ -185,15 +188,24 @@ CP_PARENTS := rsync -aR
 ifeq ($(shell uname), Darwin)
   JAVA_HOME ?= $(/usr/libexec/java_home)
 else
-  JAVA_HOME ?= $(shell readlink -f /usr/bin/javac | sed "s:bin/javac::")
+ifeq ($(shell which javac > /dev/null 2>&1 && echo found || echo nonexistent), found)
+  JAVA_HOME ?= $(shell readlink -f $(shell which javac) | sed "s:/bin/javac::")
+else
+  $(info Failure: Here is the output of: which javac)
+  $(info $(shell which javac))
+  $(error 'which javac' had exit status 1)
 endif
-JAVA  := $(JAVA_HOME)/bin/java
-JAVAC ?= $(JAVA_HOME)/bin/javac
-JAVALIB_CLASSPATH := $(JAVA_HOME)/jre/lib/rt.jar:$(JAVA_HOME)/lib/tools.jar
+endif
+JAVA  := ${JAVA_HOME}/bin/java
+JAVAC ?= ${JAVA_HOME}/bin/javac
+
+JUNIT_CLASSPATH ?=
+
+JAVALIB_CLASSPATH := ${JAVA_HOME}/jre/lib/rt.jar:${JAVA_HOME}/lib/tools.jar
 
 DAIKON_CLASSPATH := ${DAIKONDIR}/java:${DAIKONDIR}/java/lib/*:${DAIKONDIR}/daikon.jar
 
-export DAIKON_TESTS_CLASSPATH := .:$(JAVALIB_CLASSPATH):$(SCRATCH_FOR_DAIKON):$(DAIKON_CLASSPATH)
+export DAIKON_TESTS_CLASSPATH := .:$(JAVALIB_CLASSPATH):$(SCRATCH_FOR_DAIKON):$(JUNIT_CLASSPATH):$(DAIKON_CLASSPATH)
 
 # Dynamic instrumentation based java front end command.
 CHICORY := $(JAVA) -ea -cp "$(DAIKON_TESTS_CLASSPATH)" daikon.Chicory
@@ -201,7 +213,7 @@ CHICORY_EXEC := ${DAIKONDIR}/java/daikon/Chicory.class
 
 # As of JDK 1.3 (and 1.4, I think), don't use "-server" here.
 # It causes incorrect optimizations that are evidenced by ">>" right shifts.
-RUN_JAVA?=$(JAVA) -ea -Xmx1500m -cp "$(DAIKON_TESTS_CLASSPATH)"
+RUN_JAVA?=$(JAVA) -ea -Xmx3600m -cp "$(DAIKON_TESTS_CLASSPATH)"
 DAIKON_CLASS?=${DAIKONDIR}/java/daikon/Daikon.class
 DAIKON = $(RUN_JAVA) $(USER_JAVA_FLAGS) daikon.Daikon
 PRINT_INVARIANTS_CLASS?=${DAIKONDIR}/java/daikon/PrintInvariants.class
@@ -222,52 +234,54 @@ default: help
 # Note that version 11 (or 21 or ...) requires the 'start' anchor below
 # to make the old vs. new test work properly.
 
-JAVA_VERSION_STRING := $(shell javac -version 2>&1 | head -1 | cut "-d " -f2)
-startJVS := $(shell echo start$(JAVA_VERSION_STRING))
+JAVA_VERSION_STRING := $(shell javac -version 2>&1 | head -1 | cut "-d " -f2 | sed 's/-ea//')
+startJVS := $(shell echo start${JAVA_VERSION_STRING})
 ifneq (,$(findstring start1.8,$(startJVS)))
   JAVA_RELEASE_NUMBER := 8
-  JAVA11_OR_NEWER := 0
 else
-  # Old Java releases (e.g. 7) will set JAVA_RELEASE_NUMBER to 1.
+  # Old Java releases (e.g. 1.7) will set JAVA_RELEASE_NUMBER to 1.
   # This will cause the JAVA8_OR_NEWER test to fail as desired.
-  JAVA_RELEASE_NUMBER := $(shell echo $(JAVA_VERSION_STRING) | sed 's/\([0-9]*\)\..*/\1/')
-  ifeq ($(shell expr $(JAVA_RELEASE_NUMBER) \>= 11),1)
-    JAVA11_OR_NEWER := 1
-  else
-    JAVA11_OR_NEWER := 0
-  endif
+  JAVA_RELEASE_NUMBER := $(shell echo ${JAVA_VERSION_STRING} | sed 's/\([0-9]\+\)\(\..*\)\?\(-.*\)\?/\1/')
 endif
 
-ifeq ($(shell expr $(JAVA_RELEASE_NUMBER) \>= 8),1)
-  JAVA8_OR_NEWER := 1
-else
-  JAVA8_OR_NEWER := 0
+JAVA23_OR_NEWER := $(shell expr ${JAVA_RELEASE_NUMBER} \>= 23)
+JAVA21_OR_NEWER := $(shell expr ${JAVA_RELEASE_NUMBER} \>= 21)
+JAVA19_OR_NEWER := $(shell expr ${JAVA_RELEASE_NUMBER} \>= 19)
+JAVA17_OR_NEWER := $(shell expr ${JAVA_RELEASE_NUMBER} \>= 17)
+JAVA11_OR_NEWER := $(shell expr ${JAVA_RELEASE_NUMBER} \>= 11)
+JAVA8_OR_NEWER := $(shell expr ${JAVA_RELEASE_NUMBER} \>= 8)
+
+ifneq (${JAVA8_OR_NEWER}, 1)
+    $(error Must use Java version 8 or later; found ${JAVA_RELEASE_NUMBER} in ${JAVA_VERSION_STRING})
 endif
 
-ifneq ($(JAVA8_OR_NEWER), 1)
-    $(error Must use Java version 8 or later)
-endif
-
-# Function to compute goal filename extension.  Java 8 is now the default.
-# If we are running Java 11 and if filename.test.goal.j11 exists, use it;
-# otherwise, use filename.test.goal
-# Reasons for different behavior between Java 8 and Java 11 include:
+# goal_name is a function that will be called like "$(call goal_name, FILENAME)"
+# to compute goal filename extension.
+# The argument ($(1)) is '<filename>.<test>', which is passed to "$(call goal_name, ...)".
+# The algorithm is:
+#   For every Java version NN:
+#     if we are running Java NN or later and if filename.test.goal.jNN exists, use it.
+#   otherwise, use filename.test.goal
+# Reasons for different behavior between Java versions include:
 # - javac versions 8 & 9 sometimes generate dummy field accessor methods
 #   that javac 11 does not
 # - string concatenation of variables sometimes caused the varaibles to be
 #   associated in Java 8 but not in Java 11. (This is an improvement.)
 #
-# The argument ($(1)) is '<filename>.<test>'
-#
 # This goal_name does not apply to kvasir-tests which
 # have their own goal_name calculation.
-
-goal_name = $(if $(findstring 0, $(JAVA11_OR_NEWER)), \
-				$(1).goal, \
-				$(if $(shell if [ -f $(1).goal.j11 ] ; then echo true; fi), \
-					$(1).goal.j11, \
-					$(1).goal) \
-			)
+goal_name = \
+  $(if $(and $(findstring 1, $(JAVA23_OR_NEWER)), $(wildcard $(1).goal.j23)), \
+       $(1).goal.j23, \
+    $(if $(and $(findstring 1, $(JAVA21_OR_NEWER)), $(wildcard $(1).goal.j21)), \
+         $(1).goal.j21, \
+      $(if $(and $(findstring 1, $(JAVA19_OR_NEWER)), $(wildcard $(1).goal.j19)), \
+	   $(1).goal.j19, \
+	$(if $(and $(findstring 1, $(JAVA17_OR_NEWER)), $(wildcard $(1).goal.j17)), \
+	     $(1).goal.j17, \
+	  $(if $(and $(findstring 1, $(JAVA11_OR_NEWER)), $(wildcard $(1).goal.j11)), \
+	       $(1).goal.j11, \
+             $(1).goal)))))
 
 
 $(PRINT_INVARIANTS_CLASS):
@@ -357,9 +371,10 @@ clean-output:
 	@echo
 	@echo "### clean-output (${PROJECT_FILE})"
 	@echo
-	rm -f *.bak *.diff ${PROJECT_FILE}.{inv.gz,spinfo.inv.gz,decls-DynComp{,-nojdk},txt{,-merge}-{chicory,daikon{,-end2end},simplify,logicalcompare,csharpcontract,esc,jml,cset{,-nojdk},daikon-suppress,daikon-suppress-diffed,jaif,trace{,-nojdk}}{,-failed},esc,stats,spinfo-static}
+	rm -f *.bak *.class *.diff
 	rm -rf merged *txt-chicory.dtrace rtc-violations.txt
-	rm -f *.bak *.diff ${PROJECT_FILE}-suppress.inv.gz ${PROJECT_FILE}-jaif.inv.gz
+	rm -f ${PROJECT_FILE}.{inv.gz,spinfo.inv.gz,decls-DynComp{,-nojdk},txt{,-merge}-{chicory,daikon{,-end2end},simplify,logicalcompare,csharpcontract,esc,jml,cset{,-nojdk},daikon-suppress,daikon-suppress-diffed,jaif,trace{,-nojdk}}{,-failed},esc,stats,spinfo-static}
+	rm -f ${PROJECT_FILE}-suppress.inv.gz ${PROJECT_FILE}-jaif.inv.gz
 ifeq (csv,${STORED_TRACE_FORMAT})
 	rm -f ${PROJECT_FILE}.dtrace.gz ${PROJECT_FILE}.decls
 endif
@@ -390,7 +405,7 @@ PROJECT_HELP:=${PROJECT_HELP} ;\
 create-scratch: ${SCRATCH_FOR_DAIKON}/.exists
 ${SCRATCH_FOR_DAIKON}/.exists:
 #	@echo
-#	@echo JAVA_RELEASE_NUMBER = $(JAVA_RELEASE_NUMBER)
+#	@echo JAVA_RELEASE_NUMBER = ${JAVA_RELEASE_NUMBER}
 	@echo
 	@echo "### create-scratch (${PROJECT_FILE})"
 	@echo
@@ -486,12 +501,12 @@ chicory: $(SCRATCH_FOR_DAIKON)/$(PROJECT_FILE).dtrace.gz
 $(SCRATCH_FOR_DAIKON)/$(PROJECT_FILE).dtrace.gz : $(SCRATCH_FOR_DAIKON)/.copy-timestamp \
 									$(INST_LIST_FILE) $(CHICORY_EXEC)
 	@echo
-	@echo "### compile source and run Chicory (${PROJECT_FILE})"
+	@echo "### Run Chicory (${PROJECT_FILE})"
 	@echo
-	@echo inst_Files: '$(INST_FILES)'
-	cd $(SCRATCH_FOR_DAIKON) && ${JAVAC} -g `cat $(ALL_LIST_FILE)`
+	export LD_LIBRARY_PATH=$(PROJECT) && \
 	cd $(SCRATCH_FOR_DAIKON) && ${CHICORY} $(CHICORY_USER_FLAGS) \
 	  --dtrace-file=$(PROJECT_FILE).dtrace.gz \
+	  --comparability-file=$(CWD)/$(PROJECT_FILE).decls-DynComp \
 	  --ppt-select-pattern='$(INST_FILES)' ${JUNIT} ${MAIN_CLASS} ${MAIN_ARGS}
 	touch $(SCRATCH_FOR_DAIKON)/.run-timestamp
 endif
@@ -539,11 +554,14 @@ $(PROJECT_FILE).decls-DynComp $(PROJECT_FILE).txt-cset \
   $(PROJECT_FILE).decls-DynComp-nojdk $(PROJECT_FILE).txt-cset-nojdk: $(DCOMP_PREMAIN) $(DCOMP_RT) \
 				$(SCRATCH_FOR_DAIKON)/.copy-timestamp $(INST_LIST_FILE)
 	@echo
-	@echo "### Run DynComp (${PROJECT_FILE})"
+	@echo "### Compile source and run DynComp (${PROJECT_FILE})"
 	@echo
+#	@echo inst_Files: '$(INST_FILES)'
 	rm -f $(PROJECT_FILE).decls-DynComp $(PROJECT_FILE).txt-cset
 	cd $(SCRATCH_FOR_DAIKON) && ${JAVAC} -g `cat $(ALL_LIST_FILE)`
+	export LD_LIBRARY_PATH=$(PROJECT) && \
 	$(RUN_JAVA) daikon.DynComp $(DCOMP_ARGS) ${JUNIT} $(MAIN_CLASS) $(MAIN_ARGS)
+	export LD_LIBRARY_PATH=$(PROJECT) && \
 	$(RUN_JAVA) daikon.DynComp '--ppt-select-pattern=$(INST_FILES)' \
 		--comparability-file=$(PROJECT_FILE).txt-cset-nojdk \
 		--decl_file $(PROJECT_FILE).decls-DynComp-nojdk \
@@ -639,6 +657,7 @@ ${SPINFO_INV_FILE}: ${PROJECT_FILE}.decls-DynComp ${PROJECT_FILE}.spinfo-static 
 	@echo
 	@echo "### run Chicory with DynComp input (${PROJECT_FILE})"
 	@echo
+	export LD_LIBRARY_PATH=$(PROJECT) && \
 	cd $(SCRATCH_FOR_DAIKON) && ${CHICORY} $(CHICORY_USER_FLAGS) \
 		--dtrace-file=$(PROJECT_FILE)-dyncomp.dtrace.gz \
 		--comparability-file=${CWD}/$(PROJECT_FILE).decls-DynComp \
@@ -682,11 +701,15 @@ ${PROJECT_FILE}.txt-chicory.diff: $(call goal_name,${PROJECT_FILE}.txt-chicory) 
 	@echo
 	@echo "### dtrace diff (${PROJECT_FILE})"
 	@echo
+ifeq ($(SKIP_DTRACE_DIFF),)
 	-rm -f $@
 	-java -cp "${DAIKON_TESTS_CLASSPATH}" -ea daikon.tools.DtraceDiff \
 		$(call goal_name,${PROJECT_FILE}.txt-chicory) \
 	    ${PROJECT_FILE}.txt-chicory.dtrace > $@ 2>&1
 	cat $@
+else
+	@echo skipping DtraceDiff
+endif
 else
 txt-chicory:
 	@echo "Can't run chicory, trace file is stored, not generated"
@@ -704,12 +727,12 @@ txt-jaif: $(PROJECT_FILE).txt-jaif
 	@echo
 	@echo "### run AnnotateNullable (${PROJECT_FILE})"
 	@echo
-	$(JAVA) -cp "$(DAIKON_TESTS_CLASSPATH)" -ea -Xmx1024M daikon.Daikon --no_text_output --no_show_progress \
+	$(JAVA) -cp "$(DAIKON_TESTS_CLASSPATH)" -ea -Xmx3600M daikon.Daikon --no_text_output --no_show_progress \
 	  $(SCRATCH_FOR_DAIKON)/$(PROJECT_FILE).dtrace.gz \
 	  --config ${DAIKONDIR}/java/daikon/annotate_nullable.config \
 	  --config_option daikon.Debug.show_stack_trace=true \
 	  -o $(PROJECT_FILE)-jaif.inv.gz
-	$(JAVA) -cp "$(DAIKON_TESTS_CLASSPATH)" -ea -Xmx1024M daikon.AnnotateNullable $(PROJECT_FILE)-jaif.inv.gz \
+	$(JAVA) -cp "$(DAIKON_TESTS_CLASSPATH)" -ea -Xmx3600M daikon.AnnotateNullable $(PROJECT_FILE)-jaif.inv.gz \
 	  > $@-failed 2>&1
 	mv $@-failed $@
 else
@@ -846,25 +869,37 @@ txt-all: ${PROJECT_FILE}.txt-daikon ${PROJECT_FILE}.txt-simplify merge;
 endif
 endif
 
+ifdef SKIP_TEST
+diffs:
+	@echo "SKIP_TEST is set for: ${PROJECT_FILE}"
+else
 PROJECT_HELP:=${PROJECT_HELP} ;\
   echo "  make diffs          : run all regression tests and display results"
 diffs: txt-diff results
+endif
 
 PROJECT_HELP:=${PROJECT_HELP} ;\
   echo "  make txt-diff       : makes .diff files (from diff -u $$.goal)"
+
+ifdef SKIP_TEST
+txt-diff:
+	@echo "SKIP_TEST is set for: ${PROJECT_FILE}"
+else
+
+# !SKIP_TEST
 
 ifdef ESC_ON
 ifndef NO_MERGE
 ifndef NO_CSHARP
 # ESC  MERGE  CSHARP
-txt-diff: txt-daikon-diff txt-chicory-diff txt-esc-diff inv-checker-diff \
-		  txt-jml-diff txt-merge-diff spinfo-static-diff txt-daikon-end2end-diff txt-chicory-diff \
-		  dyncomp-diff txt-simplify-diff txt-csharpcontract-diff txt-jaif-diff
+txt-diff: dyncomp-diff txt-daikon-diff txt-chicory-diff txt-esc-diff inv-checker-diff \
+		  txt-jml-diff txt-merge-diff spinfo-static-diff txt-daikon-end2end-diff \
+		  txt-simplify-diff txt-csharpcontract-diff txt-jaif-diff
 else
 # ESC  MERGE  !CSHARP
-txt-diff: txt-daikon-diff txt-chicory-diff txt-esc-diff inv-checker-diff \
-		  txt-jml-diff txt-merge-diff spinfo-static-diff txt-daikon-end2end-diff txt-chicory-diff \
-		  dyncomp-diff txt-simplify-diff txt-jaif-diff
+txt-diff: dyncomp-diff txt-daikon-diff txt-chicory-diff txt-esc-diff inv-checker-diff \
+		  txt-jml-diff txt-merge-diff spinfo-static-diff txt-daikon-end2end-diff \
+		  txt-simplify-diff txt-jaif-diff
 endif
 
 # txt-daikon-suppress-diff;
@@ -879,12 +914,12 @@ txt-merge-diff:
 	@echo 'Nothing to do for merge'
 ifndef NO_CSHARP
 # ESC  !MERGE  CSHARP
-txt-diff: txt-daikon-diff txt-jml-diff spinfo-static-diff txt-daikon-end2end-diff txt-esc-diff \
-		  txt-csharpcontract-diff txt-chicory-diff inv-checker-diff dyncomp-diff
+txt-diff: dyncomp-diff txt-daikon-diff txt-jml-diff spinfo-static-diff txt-daikon-end2end-diff txt-esc-diff \
+		  txt-csharpcontract-diff txt-chicory-diff inv-checker-diff
 else
 # ESC  !MERGE  !CSHARP
-txt-diff: txt-daikon-diff txt-jml-diff spinfo-static-diff txt-daikon-end2end-diff txt-esc-diff \
-		  txt-chicory-diff inv-checker-diff dyncomp-diff
+txt-diff: dyncomp-diff txt-daikon-diff txt-jml-diff spinfo-static-diff txt-daikon-end2end-diff txt-esc-diff \
+		  txt-chicory-diff inv-checker-diff
 endif
 # txt-daikon-suppress-diff;
 endif # ifndef NO_MERGE
@@ -894,16 +929,16 @@ ifdef NO_JML
 # !ESC !JML
 txt-merge-diff:
 	@echo 'Nothing to do for merge'
-txt-diff: txt-daikon-diff txt-chicory-diff dyncomp-diff;
+txt-diff: dyncomp-diff txt-daikon-diff txt-chicory-diff
 else
 # !ESC JML
 ifndef NO_MERGE
 ifndef NO_CSHARP
 # !ESC JML MERGE CSHARP
-txt-diff: txt-daikon-diff txt-jml-diff txt-merge-diff txt-chicory-diff txt-csharpcontract-diff inv-checker-diff dyncomp-diff
+txt-diff: dyncomp-diff txt-daikon-diff txt-jml-diff txt-merge-diff txt-chicory-diff txt-csharpcontract-diff inv-checker-diff
 else
 # !ESC JML MERGE !CSHARP
-txt-diff: txt-daikon-diff txt-jml-diff txt-merge-diff txt-chicory-diff inv-checker-diff dyncomp-diff
+txt-diff: dyncomp-diff txt-daikon-diff txt-jml-diff txt-merge-diff txt-chicory-diff inv-checker-diff
 endif
 # !ESC JML MERGE
 # txt-daikon-suppress-diff;
@@ -925,6 +960,7 @@ endif
 endif # ifndef NO_MERGE
 endif # ifdef NO_JML
 endif # ifdef ESC_ON
+endif # ifdef SKIP_TEST
 
 txt-daikon-diff: ${PROJECT_FILE}.txt-daikon.diff;
 txt-daikon-end2end-diff: ${PROJECT_FILE}.txt-daikon-end2end.diff;
@@ -952,12 +988,29 @@ endif
 txt-jaif-diff: $(PROJECT_FILE).txt-jaif.diff
 
 # Special case for merge: we want to keep track of whitespace
-%-merge-jml.diff: %-merge-jml.goal %-merge-jml
+%-merge-jml.diff: $(call goal_name, %-merge-jml) %-merge-jml
 	@echo
 	@echo "### textual diff (${PROJECT_FILE})"
 	@echo
 	-rm -f $@
-	-diff -u --strip-trailing-cr $^ > $@ 2>&1
+	-diff -u --strip-trailing-cr $(call goal_name, $*-merge-jml) $*-merge-jml > $@ 2>&1
+	cat $@
+
+# Special case for DynComp: we need to ignore date/time stamp
+# so just skip all comment lines
+%-DynComp.diff: $(call goal_name,%-DynComp) %-DynComp
+	@echo
+	@echo "### textual diff (${PROJECT_FILE})"
+	@echo
+	-rm -f $@
+	-diff -u --ignore-matching-lines '^//.*' $(call goal_name,$*-DynComp) $*-DynComp > $@ 2>&1
+	cat $@
+%-DynComp-nojdk.diff: $(call goal_name,%-DynComp-nojdk) %-DynComp-nojdk
+	@echo
+	@echo "### textual diff (${PROJECT_FILE})"
+	@echo
+	-rm -f $@
+	-diff -u --ignore-matching-lines '^//.*' $(call goal_name,$*-DynComp-nojdk) $*-DynComp-nojdk > $@ 2>&1
 	cat $@
 
 # If a prerequisite fails, none of the rules gets run.
@@ -1340,6 +1393,13 @@ showvars:
 	@echo "RUN_JAVA            =" ${RUN_JAVA}
 	@echo "java version:"
 	@${RUN_JAVA} -version
+	@echo "JAVA23_OR_NEWER     =" ${JAVA23_OR_NEWER}
+	@echo "JAVA21_OR_NEWER     =" ${JAVA21_OR_NEWER}
+	@echo "JAVA19_OR_NEWER     =" ${JAVA19_OR_NEWER}
+	@echo "JAVA17_OR_NEWER     =" ${JAVA17_OR_NEWER}
+	@echo "JAVA11_OR_NEWER     =" ${JAVA11_OR_NEWER}
+	@echo "JAVA8_OR_NEWER      =" ${JAVA8_OR_NEWER}
+
 	@echo "CLASSPATH           =" ${CLASSPATH}
 	@echo "DAIKON_TESTS_CLASSPATH =" ${DAIKON_TESTS_CLASSPATH}
 	@echo "SHELL               =" ${SHELL}

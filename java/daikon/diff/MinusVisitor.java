@@ -27,8 +27,9 @@ public class MinusVisitor extends DepthFirstVisitor {
   /** Possibly add the first invariant to the result set. */
   @Override
   @SuppressWarnings(
-      "nullness:contracts.precondition.override.invalid") // visitor invariant, because the PptNode
-  // has already been visited
+      "nullness:contracts.precondition.override" // visitor invariant, because the PptNode has
+  // already been visited
+  )
   @RequiresNonNull("currentPpt")
   public void visit(InvNode node) {
     Invariant inv1 = node.getInv1();
@@ -44,7 +45,7 @@ public class MinusVisitor extends DepthFirstVisitor {
    */
   @EnsuresNonNullIf(result = true, expression = "#1")
   private static boolean shouldAdd(@Nullable Invariant inv1, @Nullable Invariant inv2) {
-    return ((inv1 != null) && (inv2 == null));
+    return (inv1 != null) && (inv2 == null);
   }
 
   /** Returns the InvMap generated as a result of the traversal. */

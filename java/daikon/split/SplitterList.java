@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.logging.Level;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -64,16 +65,11 @@ public abstract class SplitterList {
     if (splits == null) {
       return "null";
     }
-    StringBuilder sb = new StringBuilder();
-    sb.append("[");
-    for (int i = 0; i < splits.length; i++) {
-      if (i != 0) sb.append(", ");
-      sb.append("\"");
-      sb.append(splits[i].condition());
-      sb.append("\"");
+    StringJoiner sj = new StringJoiner(", ", "[", "]");
+    for (Splitter split : splits) {
+      sj.add("\"" + split.condition() + "\"");
     }
-    sb.append("]");
-    return sb.toString();
+    return sj.toString();
   }
 
   public static Splitter @Nullable [] get_raw(String pptname) {
@@ -156,11 +152,11 @@ public abstract class SplitterList {
   //     }
   //     return (Splitter[])splitters.toArray(new Splitter[0]);
   //   }
-  //////////////////////
+  // //////////////////////
 
   /**
-   * Return the splitters associated with this program point name (or null). The resulting splitters
-   * are factories, not instantiated splitters.
+   * Returns the splitters associated with this program point name (or null). The resulting
+   * splitters are factories, not instantiated splitters.
    *
    * @return an array of splitters
    */
@@ -199,7 +195,7 @@ public abstract class SplitterList {
   }
 
   /**
-   * Return all the splitters in this program, The resulting splitters are factories, not
+   * Returns all the splitters in this program, The resulting splitters are factories, not
    * instantiated splitters.
    *
    * @return an array of splitters

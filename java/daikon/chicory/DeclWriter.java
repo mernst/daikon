@@ -4,7 +4,7 @@ import daikon.Chicory;
 import daikon.FileIO;
 import daikon.PptTopLevel.PptType;
 import daikon.plumelib.bcelutil.SimpleLog;
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Member;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
@@ -26,15 +27,13 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * DTraceWriter}.
  */
 @SuppressWarnings("nullness") // to do
-public class DeclWriter extends DaikonWriter {
+public class DeclWriter extends DaikonWriter implements ComparabilityProvider {
   // Notes:
   //
   //  Class.getName() returns JVM names (eg, [Ljava.lang.String;)
 
-  /** Header string before each new method entry or exit point. */
-  public static final String declareHeader = "DECLARE";
-
-  boolean debug = false;
+  /** Debug flag set from Chicory.debug_decl_print. */
+  public boolean debug;
 
   // If the --comparability-file option is active, there might be
   // variables for which DynComp saw no interactions and did not
@@ -50,7 +49,7 @@ public class DeclWriter extends DaikonWriter {
   private static int unique_compare_value;
 
   /** Stream to write to. */
-  private PrintStream outFile;
+  private PrintWriter outFile;
 
   /**
    * Enable parent relations other than methods to their class objects. Turned off for now to match
@@ -63,7 +62,7 @@ public class DeclWriter extends DaikonWriter {
    *
    * @param writer stream to write to
    */
-  public DeclWriter(PrintStream writer) {
+  public DeclWriter(PrintWriter writer) {
     super();
     outFile = writer;
     debug = Chicory.debug_decl_print;
@@ -77,7 +76,8 @@ public class DeclWriter extends DaikonWriter {
    */
   public void printHeaderInfo(String className) {
     outFile.println("// Declarations for " + className);
-    outFile.println("// Declarations written " + LocalDateTime.now(ZoneId.systemDefault()));
+    outFile.println(
+        "// Declarations written by Chicory " + LocalDateTime.now(ZoneId.systemDefault()));
     outFile.println();
 
     // Determine comparability string
@@ -85,17 +85,8 @@ public class DeclWriter extends DaikonWriter {
     if (Runtime.comp_info != null) {
       comparability = "implicit";
     }
-
-    if (Chicory.new_decl_format) {
-      outFile.printf("decl-version 2.0%n%n");
-      outFile.printf("var-comparability %s%n%n", comparability);
-    } else {
-      outFile.printf("VarComparability%n%s%n%n", Runtime.comp_info != null ? "implicit" : "none");
-
-      outFile.println("ListImplementors");
-      outFile.println("java.util.List");
-      outFile.println();
-    }
+    outFile.printf("decl-version 2.0%n");
+    outFile.printf("var-comparability %s%n%n", comparability);
   }
 
   /**
@@ -113,157 +104,12 @@ public class DeclWriter extends DaikonWriter {
    * time to print decls info for a class.
    *
    * @param cinfo class whose declarations should be printed
+   * @param comp_info comparability information
    */
   public void printDeclClass(ClassInfo cinfo, @Nullable DeclReader comp_info) {
-    if (Chicory.new_decl_format) {
-      print_decl_class(cinfo, comp_info);
-      return;
-    }
-
-    // Print all methods and constructors
-    for (MethodInfo mi : cinfo.get_method_infos()) {
-      Member member = mi.member;
-
-      // Don't want to instrument these types of methods
-      if (!shouldInstrumentMethod(member)) {
-        continue;
-      }
-
-      // Gset the root of the method's traversal pattern
-      RootInfo enterRoot = mi.traversalEnter;
-      assert enterRoot != null : "Traversal pattern not initialized at method " + mi.method_name;
-
-      printMethod(enterRoot, methodEntryName(member), comp_info);
-
-      // Print exit program point for EACH exit location in the method
-      // (that was encountered during this execution of the program).
-      Set<Integer> theExits = new HashSet<>(mi.exit_locations);
-      assert theExits.size() > 0 : mi;
-      for (Integer exitLoc : theExits) {
-        // Get the root of the method's traversal pattern
-        RootInfo exitRoot = mi.traversalExit;
-        assert enterRoot != null : "Traversal pattern not initialized at method " + mi.method_name;
-
-        printMethod(exitRoot, methodExitName(member, exitLoc.intValue()), comp_info);
-      }
-    }
-
-    printClassPpt(cinfo, cinfo.class_name + ":::CLASS", comp_info);
-    printObjectPpt(cinfo, classObjectName(cinfo.clazz), comp_info);
-  }
-
-  /**
-   * Prints a method's program point. This includes the declare header ("DECLARE"), the program
-   * point name, and the variable information.
-   *
-   * <p>This method uses variable information from the traversal tree.
-   *
-   * @param root the root of the traversal tree
-   * @param name the program point name
-   * @param comp_info comparability information
-   */
-  private void printMethod(RootInfo root, String name, DeclReader comp_info) {
-    outFile.println(declareHeader);
-    outFile.println(name);
 
     if (debug) {
-      System.out.println("printMethod " + name);
-    }
-
-    for (DaikonVariableInfo childOfRoot : root) {
-      traverseDecl(childOfRoot, ((comp_info == null) ? null : comp_info.find_ppt(name)));
-    }
-
-    outFile.println();
-  }
-
-  /**
-   * Prints the .decls information for a single DaikonVariableInfo object, and recurses on its
-   * children. If the current variable has comparability defined in decl_ppt, that comparability is
-   * used. Otherwise -1 is used if there is comparability information available and the information
-   * in the variable is used if it is not.
-   */
-  private void traverseDecl(DaikonVariableInfo curInfo, DeclReader.@Nullable DeclPpt decl_ppt) {
-    if (curInfo.declShouldPrint()) {
-
-      if (!(curInfo instanceof StaticObjInfo)) {
-        outFile.println(curInfo.getName());
-        outFile.println(curInfo.getTypeName());
-        outFile.println(curInfo.getRepTypeName());
-        String comp_str = curInfo.getCompareString();
-        if (decl_ppt != null) {
-          comp_str = "-1";
-          DeclReader.DeclVarInfo varinfo = decl_ppt.find_var(curInfo.getName());
-          if (varinfo != null) comp_str = varinfo.get_comparability();
-        }
-        outFile.println(comp_str);
-      }
-    }
-
-    // Go through all of the current node's children
-    // and recurse
-    for (DaikonVariableInfo child : curInfo) {
-      traverseDecl(child, decl_ppt);
-    }
-  }
-
-  /**
-   * Prints the object program point. This contains the "this" object and the class's fields.
-   *
-   * @param cinfo information about the class whose program point to print
-   * @param name the program point name
-   * @param comp_info a declaration file
-   */
-  private void printObjectPpt(ClassInfo cinfo, String name, DeclReader comp_info) {
-    outFile.println(declareHeader);
-    outFile.println(name);
-
-    RootInfo root = RootInfo.getObjectPpt(cinfo, Runtime.nesting_depth);
-    for (DaikonVariableInfo childOfRoot : root) {
-      traverseDecl(childOfRoot, ((comp_info == null) ? null : comp_info.find_ppt(name)));
-    }
-
-    outFile.println();
-  }
-
-  /**
-   * Prints the class program point. This contains only the static variables. If there are no static
-   * variables to print, this method does nothing.
-   */
-  private void printClassPpt(ClassInfo cinfo, String name, DeclReader comp_info) {
-    if (num_class_vars(cinfo) == 0) {
-      return;
-    }
-
-    boolean printedHeader = false;
-    RootInfo root = RootInfo.getClassPpt(cinfo, Runtime.nesting_depth);
-
-    for (DaikonVariableInfo childOfRoot : root) {
-      // If we are here, there is at least 1 child
-      if (!printedHeader) {
-        outFile.println(declareHeader);
-        outFile.println(name);
-        printedHeader = true;
-      }
-
-      // Should just print out static fields
-      traverseDecl(childOfRoot, ((comp_info == null) ? null : comp_info.find_ppt(name)));
-    }
-
-    if (printedHeader) outFile.println();
-  }
-
-  /**
-   * Prints declarations for all the methods in the indicated class. This method is called at run
-   * time to print decls info for a class.
-   *
-   * @param cinfo class whose declarations should be printed
-   * @param comp_info comparability information
-   */
-  public void print_decl_class(ClassInfo cinfo, @Nullable DeclReader comp_info) {
-
-    if (debug) {
-      System.out.println("Enter print_decl_class: " + cinfo);
+      System.out.println("Enter printDeclClass: " + cinfo);
     }
 
     // Print all methods and constructors
@@ -306,7 +152,9 @@ public class DeclWriter extends DaikonWriter {
     print_class_ppt(cinfo, cinfo.class_name + ":::CLASS", comp_info);
     print_object_ppt(cinfo, classObjectName(cinfo.clazz), comp_info);
 
-    if (debug) System.out.println("Exit print_decl_class");
+    if (debug) {
+      System.out.println("Exit printDeclClass");
+    }
   }
 
   /**
@@ -333,7 +181,7 @@ public class DeclWriter extends DaikonWriter {
 
     outFile.println("ppt " + escape(name));
 
-    outFile.println("ppt-type " + ppt_type.name().toLowerCase());
+    outFile.println("ppt-type " + ppt_type.name().toLowerCase(Locale.ENGLISH));
 
     // Look for and print any hierarchy relations
     List<VarRelation> relations = new ArrayList<>();
@@ -346,7 +194,9 @@ public class DeclWriter extends DaikonWriter {
 
     // Print each variable
     for (DaikonVariableInfo childOfRoot : root) {
-      if (debug) System.out.println("method var: " + childOfRoot.getName());
+      if (debug) {
+        System.out.println("method var: " + childOfRoot.getName());
+      }
       traverse_decl(
           null,
           mi.is_static(),
@@ -359,7 +209,9 @@ public class DeclWriter extends DaikonWriter {
 
     outFile.println();
 
-    if (debug) System.out.println("Exit print_method ");
+    if (debug) {
+      System.out.println("Exit print_method ");
+    }
   }
 
   /**
@@ -386,7 +238,9 @@ public class DeclWriter extends DaikonWriter {
 
       // Print out the static fields
       for (DaikonVariableInfo childOfRoot : RootInfo.getClassPpt(cinfo, Runtime.nesting_depth)) {
-        if (debug) System.out.println("class var: " + childOfRoot.getName());
+        if (debug) {
+          System.out.println("class var: " + childOfRoot.getName());
+        }
         traverse_decl(
             null,
             false,
@@ -400,7 +254,9 @@ public class DeclWriter extends DaikonWriter {
       outFile.println();
     }
 
-    if (debug) System.out.println("Exit print_class_ppt");
+    if (debug) {
+      System.out.println("Exit print_class_ppt");
+    }
   }
 
   /**
@@ -443,7 +299,9 @@ public class DeclWriter extends DaikonWriter {
 
     // Write out the variables
     for (DaikonVariableInfo childOfRoot : root) {
-      if (debug) System.out.println("object var: " + childOfRoot.getName());
+      if (debug) {
+        System.out.println("object var: " + childOfRoot.getName());
+      }
       traverse_decl(
           cinfo,
           false,
@@ -456,7 +314,9 @@ public class DeclWriter extends DaikonWriter {
 
     outFile.println();
 
-    if (debug) System.out.println("Exit print_object_ppt");
+    if (debug) {
+      System.out.println("Exit print_object_ppt");
+    }
   }
 
   /**
@@ -471,21 +331,26 @@ public class DeclWriter extends DaikonWriter {
   private static class VarRelation {
     /** Name of the program point for the parent. */
     String parent_ppt_name;
+
     /** Prefix of the variable name that is not part of the parent name. */
     String local_prefix;
+
     /** Prefix of the parent that replaces the local prefix. Normally 'this'. */
     String parent_prefix;
+
     /** Top level variable for the relation. */
     String local_variable;
+
     /** Type of the relation (parent, user, etc) */
     String type;
+
     /** Number that identifies this relation within this ppt. */
     int id;
 
     static SimpleLog debug = new SimpleLog(false);
 
     /** Create a VarRelation. */
-    public VarRelation(
+    VarRelation(
         String parent_ppt_name,
         String type,
         String local_prefix,
@@ -500,7 +365,7 @@ public class DeclWriter extends DaikonWriter {
     }
 
     /** Create a var relation with the matching names. */
-    public VarRelation(String parent_ppt_name, String type) {
+    VarRelation(String parent_ppt_name, String type) {
       this(parent_ppt_name, type, null, null, null);
     }
 
@@ -513,12 +378,12 @@ public class DeclWriter extends DaikonWriter {
     }
 
     /**
-     * Returns whether or not this relation is from a static variable in an object ppt to its
-     * matching variable at the class level.
+     * Returns true if this relation is from a static variable in an object ppt to its matching
+     * variable at the class level.
      */
     @Pure
-    public boolean is_class_relation() {
-      return (parent_ppt_name.endsWith(":::CLASS"));
+    boolean is_class_relation() {
+      return parent_ppt_name.endsWith(":::CLASS");
     }
 
     /**
@@ -526,7 +391,8 @@ public class DeclWriter extends DaikonWriter {
      * parent-ppt-name id parent-variable-name. If the variable is static, it always has the same
      * name in the parent (since fully specified names are used for static variables).
      */
-    public String relation_str(DaikonVariableInfo var) {
+    @SideEffectFree
+    String relation_str(DaikonVariableInfo var) {
       String out = parent_ppt_name + " " + id;
       if (!var.isStatic() && (local_prefix != null) && !local_prefix.equals(parent_prefix)) {
         out += " " + var.getName().replaceFirst(Pattern.quote(local_prefix), parent_prefix);
@@ -579,86 +445,7 @@ public class DeclWriter extends DaikonWriter {
       // don't do anything
     } else if (!(var instanceof StaticObjInfo)) {
 
-      // Write out the variable and its name
-      outFile.println("variable " + escape(var.getName()));
-
-      // Write out the kind of variable and its relative name
-      VarKind kind = var.get_var_kind();
-      String relative_name = var.get_relative_name();
-      outFile.print("  var-kind " + out_name(kind));
-      if (relative_name != null) {
-        outFile.print(" " + relative_name);
-      }
-      outFile.println();
-
-      // Write out the enclosing variable.
-      // If we are in an inner class, we need to special case the
-      // 'hidden' field that holds the outer class 'this' pointer.
-      // If the field name ends with ".this", it can only be this
-      // special case and we need to not output the enclosing-var.
-      if ((parent != null)
-          && !var.isStatic()
-          && !((relative_name != null) && relative_name.endsWith(".this"))) {
-        if (debug) System.out.println("traverse var parent: " + parent.getName());
-        outFile.println("  enclosing-var " + escape(parent.getName()));
-      }
-
-      // If this variable has multiple value, indicate it is an array
-      if (var.isArray()) {
-        outFile.println("  array 1");
-      }
-
-      // Write out the declared and representation types
-      outFile.println("  dec-type " + escape(var.getTypeNameOnly()));
-      outFile.println("  rep-type " + escape(var.getRepTypeNameOnly()));
-
-      // Write out the constant value (if present)
-      String const_val = var.get_const_val();
-      if (const_val != null) {
-        outFile.println("  constant " + const_val);
-      }
-
-      // Write out the arguments used to create (if present) the variable if it is a function
-      String function_args = var.get_function_args();
-      if (function_args != null) {
-        outFile.println("  function-args " + function_args);
-      }
-
-      // Write out the variable flags if any are set
-      EnumSet<VarFlags> var_flags = var.get_var_flags();
-      if (var_flags.size() > 0) {
-        outFile.print("  flags");
-        for (Enum<?> e : var_flags) {
-          outFile.print(" " + out_name(e));
-        }
-        outFile.println();
-      }
-
-      // Determine comparability and write it out
-      // Currently, the value returned by getCompareString() is always 22.
-      String comp_str = var.getCompareString();
-      if (compare_ppt != null) {
-        comp_str = "-1";
-        DeclReader.DeclVarInfo varinfo = compare_ppt.find_var(var.getName());
-        if (varinfo != null) comp_str = varinfo.get_comparability();
-      } else {
-        // Check to see if DynComp data is present.
-        if (Runtime.comp_info != null) {
-          // There is no comparability value for this variable as DynComp
-          // saw no interactions. In order to reduce the number of useless
-          // invariants, we will generate a unique, dummy comparability value.
-          comp_str = Integer.toString(unique_compare_value--);
-          if (var.isArray()) {
-            // Should output n index values to match number of dimensions.
-            // However, that value is hard to obtain at this point, so just
-            // always do one.  May cause some multi-dimension variables to
-            // be put into incorrect comparability set.  This is certainly
-            // no worse than previous algorithm. (markro)
-            comp_str = comp_str + "[" + Integer.toString(unique_compare_value--) + "]";
-          }
-        }
-      }
-      outFile.println("  comparability " + comp_str);
+      printDecl(parent, var, compare_ppt, Runtime.decl_writer);
 
       // Determine if there is a ppt for variables of this type
       // If found this should match one of the previously found relations
@@ -682,7 +469,7 @@ public class DeclWriter extends DaikonWriter {
       }
 
     } else { // this is the dummy root for class statics
-      if ((relations != null) && (relations.size() > 0)) {
+      if (relations != null && !relations.isEmpty()) {
         relation = find_relation(cinfo, true, parent, var);
         if (relation != null) {
           int index = relations.indexOf(relation);
@@ -699,19 +486,143 @@ public class DeclWriter extends DaikonWriter {
     // Go through all of the current node's children
     // and recurse
     for (DaikonVariableInfo child : var) {
-      if (debug) System.out.println("traverse var: " + child.getName());
+      if (debug) {
+        System.out.println("traverse var: " + child.getName());
+      }
       traverse_decl(cinfo, is_static_method, var, child, relation, relations, compare_ppt);
     }
 
-    if (debug) System.out.println("Exit traverse_decl");
+    if (debug) {
+      System.out.println("Exit traverse_decl");
+    }
   }
 
   /**
    * Returns the string to write to the output file for the specified enum. Currently this is just
    * the name of the enum in lower case.
+   *
+   * @param e enum to get name of
+   * @return the name of the enum
    */
   private String out_name(Enum<?> e) {
-    return e.name().toLowerCase();
+    return e.name().toLowerCase(Locale.ENGLISH);
+  }
+
+  /**
+   * Output most of the decl file information for a single variable. This includes the variable,
+   * var-kind, enclosing-var, array, dec-type, rep-type, constant, function-args, flags, and
+   * comparability records. Most notably, it does not output the parent record. The records are
+   * output via the PrinterWriter passed as an argument to the DeclWriter constructor.
+   *
+   * @param parent parent of var in the variable tree
+   * @param var variable whose values are to be output
+   * @param compare_ppt ppt with compare value if comparability-file present, null otherwise
+   * @param comparabilityProvider object on which {@link ComparabilityProvider#getComparability} is
+   *     called. It might be this DeclWriter itself.
+   */
+  public void printDecl(
+      DaikonVariableInfo parent,
+      DaikonVariableInfo var,
+      DeclReader.DeclPpt compare_ppt,
+      ComparabilityProvider comparabilityProvider) {
+
+    // Write out the variable and its name
+    outFile.println("variable " + escape(var.getName()));
+
+    // Write out the kind of variable and its relative name
+    VarKind kind = var.get_var_kind();
+    String relative_name = var.get_relative_name();
+    outFile.print("  var-kind " + out_name(kind));
+    if (relative_name != null) {
+      outFile.print(" " + relative_name);
+    }
+    outFile.println();
+
+    // Write out the enclosing variable.
+    // If we are in an inner class, we need to special case the
+    // 'hidden' field that holds the outer class 'this' pointer.
+    // If the field name ends with ".this", it can only be this
+    // special case and we need to not output the enclosing-var.
+    if ((parent != null)
+        && !var.isStatic()
+        && !((relative_name != null) && relative_name.endsWith(".this"))) {
+      if (debug) {
+        System.out.println("traverse var parent: " + parent.getName());
+      }
+      outFile.println("  enclosing-var " + escape(parent.getName()));
+    }
+
+    // If this variable has multiple value, indicate it is an array
+    if (var.isArray()) {
+      outFile.println("  array 1");
+    }
+
+    // Write out the declared and representation types
+    outFile.println("  dec-type " + escape(var.getTypeNameOnly()));
+    outFile.println("  rep-type " + escape(var.getRepTypeNameOnly()));
+
+    // Write out the constant value (if present)
+    String const_val = var.get_const_val();
+    if (const_val != null) {
+      outFile.println("  constant " + const_val);
+    }
+
+    // Write out the arguments used to create (if present) the variable if it is a function
+    String function_args = var.get_function_args();
+    if (function_args != null) {
+      outFile.println("  function-args " + function_args);
+    }
+
+    // Write out the variable flags if any are set
+    EnumSet<VarFlags> var_flags = var.get_var_flags();
+    if (!var_flags.isEmpty()) {
+      outFile.print("  flags");
+      for (Enum<?> e : var_flags) {
+        outFile.print(" " + out_name(e));
+      }
+      outFile.println();
+    }
+
+    // Determine comparability and write it out
+    String comp_str = comparabilityProvider.getComparability(var, compare_ppt);
+    outFile.println("  comparability " + comp_str);
+  }
+
+  /**
+   * Returns the caparability value for a varaible.
+   *
+   * @param var variable whose value is desired
+   * @param compare_ppt ppt with compare value if comparability-file present, null otherwise
+   * @return string containing the comparability value
+   */
+  @Override
+  public String getComparability(DaikonVariableInfo var, DeclReader.DeclPpt compare_ppt) {
+    // Currently, the value returned by getCompareString() is always 22.
+    String comp_str = var.getCompareString();
+    if (compare_ppt != null) {
+      comp_str = "-1";
+      DeclReader.DeclVarInfo varinfo = compare_ppt.find_var(var.getName());
+      if (varinfo != null) {
+        comp_str = varinfo.get_comparability();
+      }
+    } else {
+      // Check to see if DynComp data is present.
+      if (Runtime.comp_info != null) {
+        // There is no comparability value for this variable as DynComp
+        // saw no interactions. In order to reduce the number of useless
+        // invariants, we will generate a unique, dummy comparability value.
+        comp_str = Integer.toString(unique_compare_value--);
+        if (var.isArray()) {
+          // Should output n index values to match number of dimensions.
+          // However, that value is hard to obtain at this point, so just
+          // always do one.  May cause some multi-dimension variables to
+          // be put into incorrect comparability set.  This is certainly
+          // no worse than previous algorithm. (markro)
+          comp_str = comp_str + "[" + Integer.toString(unique_compare_value--) + "]";
+        }
+      }
+    }
+    return comp_str;
   }
 
   /**
@@ -804,7 +715,7 @@ public class DeclWriter extends DaikonWriter {
     // one of these should go in the list of relations.
     VarRelation relation = find_relation(ci, is_static_method, parent, var);
     if (relation != null) {
-      if ((relations.size() == 0)
+      if (relations.isEmpty()
           || (relations.get(0).is_class_relation() && relation.is_class_relation())) {
         relations.add(relation);
         relation.id = relations.size();

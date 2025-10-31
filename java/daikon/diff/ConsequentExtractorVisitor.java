@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -34,7 +33,7 @@ public class ConsequentExtractorVisitor extends DepthFirstVisitor {
   }
 
   @Override
-  public void visit(@NonNull PptNode node) {
+  public void visit(PptNode node) {
     assert node.getPpt1() != null
         : "@AssumeAssertion(nullness): method precondition: has a (non-null) consequent";
     if (node.getPpt1() instanceof PptConditional) {
@@ -77,15 +76,13 @@ public class ConsequentExtractorVisitor extends DepthFirstVisitor {
       if (inv1.justified() && (inv1 instanceof Implication)) {
         nonce++;
         Implication imp = (Implication) inv1;
-        if (!repeatFilter.contains(imp.consequent().format())) {
-          repeatFilter.add(imp.consequent().format());
+        if (repeatFilter.add(imp.consequent().format())) {
           // inv1.ppt.invs.add (imp.consequent());
           accum.add(imp.consequent());
         }
         // add both sides of a biimplication
         if (imp.iff == true) {
-          if (!repeatFilter.contains(imp.predicate().format())) {
-            repeatFilter.add(imp.predicate().format());
+          if (repeatFilter.add(imp.predicate().format())) {
             // inv1.ppt.invs.add (imp.predicate());
             accum.add(imp.predicate());
           }

@@ -9,9 +9,6 @@ import typequals.prototype.qual.Prototype;
 
 /** Abstract base class for invariants over one variable of type {@code double[]}. */
 public abstract class SingleFloatSequence extends SingleSequence {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20020813L;
 
   protected SingleFloatSequence(PptSlice ppt) {
@@ -22,7 +19,6 @@ public abstract class SingleFloatSequence extends SingleSequence {
     super();
   }
 
-  /** Returns whether or not the specified types are valid. */
   @Override
   public final boolean valid_types(VarInfo[] vis) {
     return ((vis.length == 1)
@@ -85,7 +81,7 @@ public abstract class SingleFloatSequence extends SingleSequence {
    * @param count how many identical samples were observed in a row. For example, three calls to
    *     check_modified with a count parameter of 1 is equivalent to one call to check_modified with
    *     a count parameter of 3.
-   * @return whether or not the sample is consistent with the invariant
+   * @return true if the sample is consistent with the invariant
    */
   public abstract InvariantStatus check_modified(double @Interned [] value, int count);
 

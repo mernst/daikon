@@ -19,10 +19,11 @@ import java.util.logging.Logger;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Class that defines a set of non-instantiating suppressions for a single invariant (suppressee).
+ * Each of the suppressors individually implies the suppressee.
  *
  * <p>Not immutable: see recurse_definitions().
  */
@@ -73,11 +74,8 @@ public class NISuppressionSet implements Iterable<NISuppression> {
         // Get the list of suppression sets for this suppressor.  Create it
         // if this is the first one.  Add this set to the list
         List<NISuppressionSet> suppression_set_list =
-            suppressor_map.get(suppressor.get_inv_class());
-        if (suppression_set_list == null) {
-          suppression_set_list = new ArrayList<NISuppressionSet>();
-          suppressor_map.put(suppressor.get_inv_class(), suppression_set_list);
-        }
+            suppressor_map.computeIfAbsent(
+                suppressor.get_inv_class(), __ -> new ArrayList<NISuppressionSet>());
         suppression_set_list.add(this);
       }
     }
@@ -338,16 +336,18 @@ public class NISuppressionSet implements Iterable<NISuppression> {
       if (suppression_set[i].invalidated()) {
 
         Invariant v = suppression_set[i].suppressee.instantiate(vis, ppt);
-        if (v != null) new_invs.add(v);
+        if (v != null) {
+          new_invs.add(v);
+        }
         return;
       }
     }
   }
 
   /**
-   * Determines whether or not the suppression set is valid in the specified slice. The suppression
-   * set is valid if any of its suppressions are valid. A suppression is valid if all of its
-   * suppressors are true.
+   * Returns true if the suppression set is valid in the specified slice. The suppression set is
+   * valid if any of its suppressions are valid. A suppression is valid if all of its suppressors
+   * are true.
    *
    * <p>Also updates the debug information in each suppressor.
    *
@@ -355,11 +355,11 @@ public class NISuppressionSet implements Iterable<NISuppression> {
    */
   public boolean suppressed(PptSlice slice) {
 
-    return (suppressed(slice.parent, slice.var_infos));
+    return suppressed(slice.parent, slice.var_infos);
   }
 
   /**
-   * Determines whether or not the suppression set is valid in the specified ppt and var_infos. The
+   * Returns true if the suppression set is valid in the specified ppt and var_infos. The
    * suppression set is valid if any of its suppressions are valid. A suppression is valid if all of
    * its suppressors are true.
    *
@@ -409,20 +409,20 @@ public class NISuppressionSet implements Iterable<NISuppression> {
   }
 
   /**
-   * Determines whether or not the suppression set is valid in the specified slice. The suppression
-   * set is valid if any of its suppressions are valid. A suppression is valid if all of its
-   * non-missing suppressors are true.
+   * Returns true if the suppression set is valid in the specified slice. The suppression set is
+   * valid if any of its suppressions are valid. A suppression is valid if all of its non-missing
+   * suppressors are true.
    */
   @Pure
   public boolean is_instantiate_ok(PptSlice slice) {
 
-    return (is_instantiate_ok(slice.parent, slice.var_infos));
+    return is_instantiate_ok(slice.parent, slice.var_infos);
   }
 
   /**
-   * Determines whether or not the suppressee of the suppression set should be instantiated.
-   * Instantiation is ok only if each suppression is invalid. A suppression is valid if all of its
-   * non-missing suppressors are true.
+   * Returns true if the suppressee of the suppression set should be instantiated. Instantiation is
+   * ok only if each suppression is invalid. A suppression is valid if all of its non-missing
+   * suppressors are true.
    */
   @Pure
   public boolean is_instantiate_ok(PptTopLevel ppt, VarInfo[] var_infos) {
@@ -551,6 +551,6 @@ public class NISuppressionSet implements Iterable<NISuppression> {
   @SideEffectFree
   @Override
   public String toString(@GuardSatisfied NISuppressionSet this) {
-    return "{ " + UtilPlume.join(", ", suppression_set) + " }";
+    return "{ " + StringsPlume.join(", ", suppression_set) + " }";
   }
 }

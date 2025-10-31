@@ -16,7 +16,7 @@ The correct way to build the system is to run 'make'.
   #define SEQUENCESPREDICATE SequencesPredicate
   #define SEQUENCESJOIN SequencesJoin
   #define SUBSEQUENCE SubSequence
-  #define EQUAL(a,b) ((a) == (b))
+  #define EQUAL(a,b) (a == b)
   #define VALUE_SET ValueSet.ValueSetScalarArray
 #elif (defined(TYPEDOUBLE))
   #define CLASSNAME NoDuplicatesFloat
@@ -59,9 +59,6 @@ import typequals.prototype.qual.Prototype;
  */
 
 public class CLASSNAME extends SUPERCLASS {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20040204L;
 
   // Variables starting with dkconfig_ should only be set via the
@@ -87,13 +84,11 @@ public class CLASSNAME extends SUPERCLASS {
     return proto;
   }
 
-  /** returns whether or not this invariant is enabled */
   @Override
   public boolean enabled() {
     return dkconfig_enabled;
   }
 
-  /** instantiate an invariant on the specified slice */
   @Override
   public CLASSNAME instantiate_dyn(@Prototype CLASSNAME this, PptSlice slice) {
     return new CLASSNAME(slice);
@@ -147,7 +142,6 @@ public class CLASSNAME extends SUPERCLASS {
   }
 
   @Override
-  @SuppressWarnings("UnnecessaryParentheses")  // generated code, parentheses are sometimes needed
   public InvariantStatus check_modified(PRIMITIVE @Interned [] a, int count) {
     // if (logDetail())
     //   log ("sample " + Arrays.toString (a));

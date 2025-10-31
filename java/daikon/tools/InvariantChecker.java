@@ -1,10 +1,12 @@
 package daikon.tools;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+
 import daikon.Daikon;
 import daikon.Debug;
 import daikon.FileIO;
 import daikon.Global;
-import daikon.LogHelper;
 import daikon.PptConditional;
 import daikon.PptMap;
 import daikon.PptSlice;
@@ -29,11 +31,11 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * InvariantChecker reads an invariant file and trace file. It prints errors for any invariants that
@@ -54,8 +56,9 @@ public class InvariantChecker {
   private static final String filter_SWITCH = "filter";
   private static final String verbose_SWITCH = "verbose";
 
+  /** The usage message for this program. */
   private static String usage =
-      UtilPlume.joinLines(
+      StringsPlume.joinLines(
           "Usage: java daikon.InvariantChecker [OPTION]... <inv_file> <dtrace_file>",
           "  -h, --" + Daikon.help_SWITCH,
           "      Display this usage message",
@@ -65,7 +68,8 @@ public class InvariantChecker {
           "  --" + filter_SWITCH,
           "      Checks only invariants that are not filtered by the default filters",
           "  --" + dir_SWITCH + " directory with invariant and dtrace files",
-          "      We output how many invariants failed for each invariant file. We check for failure against any sample in any dtrace file.",
+          "      We output how many invariants failed for each invariant file. We check for"
+              + " failure against any sample in any dtrace file.",
           "  --" + verbose_SWITCH + " print all failing samples",
           "  --" + Daikon.config_option_SWITCH + " config_var=val",
           "      Sets the specified configuration variable.  ",
@@ -77,7 +81,7 @@ public class InvariantChecker {
           "      Print debug info on the specified invariant class, vars, and ppt");
 
   public static List<String> dtrace_files = new ArrayList<>();
-  static PrintStream output_stream = System.out;
+  static @Owning PrintStream output_stream = System.out;
   static int error_cnt = 0;
   static int sample_cnt = 0;
 
@@ -91,7 +95,10 @@ public class InvariantChecker {
   static LinkedHashSet<String> outputComma = new LinkedHashSet<>(); // Yoav added
 
   public static void main(String[] args)
-      throws FileNotFoundException, StreamCorruptedException, OptionalDataException, IOException,
+      throws FileNotFoundException,
+          StreamCorruptedException,
+          OptionalDataException,
+          IOException,
           ClassNotFoundException {
     try {
       if (args.length == 0) {
@@ -110,9 +117,12 @@ public class InvariantChecker {
    * @param args command-line arguments, like those of {@link #main}
    */
   public static void mainHelper(final String[] args)
-      throws FileNotFoundException, StreamCorruptedException, OptionalDataException, IOException,
+      throws FileNotFoundException,
+          StreamCorruptedException,
+          OptionalDataException,
+          IOException,
           ClassNotFoundException {
-    daikon.LogHelper.setupLogs(daikon.LogHelper.INFO);
+    daikon.LogHelper.setupLogs(INFO);
 
     LongOpt[] longopts =
         new LongOpt[] {
@@ -159,9 +169,9 @@ public class InvariantChecker {
           } else if (Daikon.debugAll_SWITCH.equals(option_name)) {
             Global.debugAll = true;
           } else if (Daikon.debug_SWITCH.equals(option_name)) {
-            LogHelper.setLevel(Daikon.getOptarg(g), LogHelper.FINE);
+            daikon.LogHelper.setLevel(Daikon.getOptarg(g), FINE);
           } else if (Daikon.track_SWITCH.equals(option_name)) {
-            LogHelper.setLevel("daikon.Debug", LogHelper.FINE);
+            daikon.LogHelper.setLevel("daikon.Debug", FINE);
             String error = Debug.add_track(Daikon.getOptarg(g));
             if (error != null) {
               throw new Daikon.UserError(
@@ -379,7 +389,7 @@ public class InvariantChecker {
      * process the sample by checking it against each existing invariant and issuing an error if any
      * invariant is falsified or weakened.
      */
-    @RequiresNonNull("FileIO.data_trace_state")
+    @RequiresNonNull("daikon.FileIO.data_trace_state")
     @Override
     public void process_sample(
         PptMap all_ppts, PptTopLevel ppt, ValueTuple vt, @Nullable Integer nonce) {
@@ -429,7 +439,7 @@ public class InvariantChecker {
       add(ppt, vt, all_ppts);
     }
 
-    @RequiresNonNull("FileIO.data_trace_state")
+    @RequiresNonNull("daikon.FileIO.data_trace_state")
     private void add(PptTopLevel ppt, ValueTuple vt, PptMap all_ppts) {
       // Add the sample to any splitters
       if (ppt.has_splitters()) {
@@ -468,7 +478,7 @@ public class InvariantChecker {
       // Loop through each slice
       slice_loop:
       for (PptSlice slice : ppt.views_iterable()) {
-        if (debug_detail.isLoggable(Level.FINE)) {
+        if (debug_detail.isLoggable(FINE)) {
           debug_detail.fine(
               ": processing slice " + slice + "vars: " + Debug.toString(slice.var_infos, vt));
         }
@@ -477,13 +487,13 @@ public class InvariantChecker {
         for (int j = 0; j < slice.var_infos.length; j++) {
           VarInfo v = slice.var_infos[j];
           if (v.isMissing(vt)) {
-            if (debug_detail.isLoggable(Level.FINE)) {
+            if (debug_detail.isLoggable(FINE)) {
               debug_detail.fine(": : Skipping slice, " + v.name() + " missing");
             }
             continue slice_loop;
           }
           if (v.missingOutOfBounds()) {
-            if (debug_detail.isLoggable(Level.FINE)) {
+            if (debug_detail.isLoggable(FINE)) {
               debug.fine(": : Skipping slice, " + v.name() + " out of bounds");
             }
             continue slice_loop;
@@ -492,11 +502,11 @@ public class InvariantChecker {
 
         // Loop through each invariant
         for (Invariant inv : slice.invs) {
-          if (debug_detail.isLoggable(Level.FINE)) {
+          if (debug_detail.isLoggable(FINE)) {
             debug_detail.fine(": : Processing invariant: " + inv);
           }
           if (!inv.isActive()) {
-            if (debug_detail.isLoggable(Level.FINE)) {
+            if (debug_detail.isLoggable(FINE)) {
               debug_detail.fine(": : skipped non-active " + inv);
             }
             continue;

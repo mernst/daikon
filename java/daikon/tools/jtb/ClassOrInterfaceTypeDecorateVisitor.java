@@ -159,22 +159,18 @@ public class ClassOrInterfaceTypeDecorateVisitor extends DepthFirstVisitor {
 
       assert b.f1.unGenerifiedVersionOfThis != null;
 
-      Deque<ClassOrInterfaceType> s = shadowingMap.get(n.f0.tokenImage);
-      if (s == null) {
-        s = new ArrayDeque<ClassOrInterfaceType>();
-        shadowingMap.put(n.f0.tokenImage, s);
-      }
+      Deque<ClassOrInterfaceType> s =
+          shadowingMap.computeIfAbsent(
+              n.f0.tokenImage, __ -> new ArrayDeque<ClassOrInterfaceType>());
       s.push(b.f1.unGenerifiedVersionOfThis);
 
     } else {
 
       // No explicit bound means that bound is java.lang.Object.
 
-      Deque<ClassOrInterfaceType> s = shadowingMap.get(n.f0.tokenImage);
-      if (s == null) {
-        s = new ArrayDeque<ClassOrInterfaceType>();
-        shadowingMap.put(n.f0.tokenImage, s);
-      }
+      Deque<ClassOrInterfaceType> s =
+          shadowingMap.computeIfAbsent(
+              n.f0.tokenImage, __ -> new ArrayDeque<ClassOrInterfaceType>());
 
       ClassOrInterfaceType objectType =
           (ClassOrInterfaceType) Ast.create("ClassOrInterfaceType", "Object");
@@ -264,8 +260,13 @@ public class ClassOrInterfaceTypeDecorateVisitor extends DepthFirstVisitor {
     }
   }
 
-  // Makes a copy of the stacks and of the map. The
-  // ClassOrInterfaceType objects are not copied.
+  /**
+   * Makes a copy of the stacks and of the map. The ClassOrInterfaceType objects are not copied.
+   *
+   * @param m a map
+   * @return a copy of the map
+   */
+  @SuppressWarnings("NonApiType") // https://errorprone.info/bugpattern/NonApiType
   private static HashMap<String, Deque<ClassOrInterfaceType>> copy(
       HashMap<String, Deque<ClassOrInterfaceType>> m) {
 

@@ -4,11 +4,11 @@
 Introduction
 
   Daikon declarations define the variables at each program point.  Each
-  variable definition includes its comparability, declared type, 
+  variable definition includes its comparability, declared type,
   representation type, and other information.  There are a number of
   problems with the current format.  Daikon derives information from the
   variable and program point names in a poorly defined ad-hoc manner.
-  This proposal suggests an augmented format that more completely 
+  This proposal suggests an augmented format that more completely
   defines the information and allows for future expandability.
 
 Current problems
@@ -16,7 +16,7 @@ Current problems
   There are a number of deficiencies in the current format.  Most of these
   are simply the result of changing uses of the declaration information.
   For example, the program point hierarchy (originally not implemented in
-  Daikon) is determined from the program  point names.  Some specific 
+  Daikon) is determined from the program  point names.  Some specific
   issues are:
 
     - The variable names must be in a java-like format so that they
@@ -71,8 +71,8 @@ Proposal
       that the front end will specify where array indices (if any) are
       placed within the name.
 
-    - Information about a variable (such as the enclosing variable, 
-      whether it is a function or a field, etc) will be specified in 
+    - Information about a variable (such as the enclosing variable,
+      whether it is a function or a field, etc) will be specified in
       specific records.  The name will not be parsed to obtain this
       information.
 
@@ -80,7 +80,7 @@ Proposal
       Also, the type (object-user, enter-exit, object-method, etc) of
       the hierarchy relationship between the two variables
 
-    - Flags about the variable.  These include most of the 
+    - Flags about the variable.  These include most of the
       current VarInfoAux flags.
 
     - Language specific flags about the variables and ppts.  These can
@@ -101,8 +101,8 @@ External variable names
   a variable name, but the index will always be the same for each
   instance.  For example, consider the following Java definitions:
 
-    Class A {               Class B {   
-      B b;                    int c;      
+    Class A {               Class B {
+      B b;                    int c;
       B barr[];               int m1(int arg) {}
       List<B> blist;        }
       int d;
@@ -117,14 +117,14 @@ External variable names
      a.barr[..].c
      a.barr[..].m1(a.barr[..].c)
      a.barr[..].m1(a.d)
-     a.blist.get(..).c   
+     a.blist.get(..).c
 
   In the last case, a.blist is a list that we are treating as an array.
 
   Note that the variable name 'a.barr[..].m1(a.e[..])' should not be
   used because there is no guarantee that the same index can be used for
   'a.barr[]' and 'a.e[]'.
-  
+
 Variable name information
 
   The following information is specified for each variable:
@@ -133,20 +133,20 @@ Variable name information
 
       Specifies the kind of the variable.  The choices are 'field',
       'function', 'array', or 'variable'.   Pointers to arrays are of type
-      'field'.  The arrays themselves (a sequence of values) are of 
+      'field'.  The arrays themselves (a sequence of values) are of
       type 'array'.  If the variable is a field or function, the name
       of the field or function is specified after the kind.  For
       example:  'var-kind  field f1'.  Field/Function names can include
       any characters except spaces.
 
-    enclosing-var      
+    enclosing-var
 
       The variable that contains this variable.  Required for fields
       and arrays and optional for functions.  If specified for
       functions, the function is an instance method.  If not specified
       the function is static.  A variable is specified by its external
       name.  Note that the enclosing-var must be defined.  If a
-      variable is omitted (eg, by the omit-var switch), any variable
+      variable is omitted (e.g., by the omit-var switch), any variable
       for which it is the enclosing variable must be omitted as well.
 
     reference-type
@@ -183,7 +183,7 @@ Variable name information
       var-kind          variable
       type              PrintStream
       rep-type          hashcode
-      
+
     Type1 arg1
 
       var-kind          variable
@@ -222,7 +222,7 @@ Variable name information
       rep-type          int
       type              int
       array             1
-      
+
     Type3[] arg1.carr
 
       var-kind          field carr
@@ -272,7 +272,7 @@ Variable name information
     int a->rgb
       var-kind          field rgb
       enclosing-var     a
-      rep-type          
+      rep-type
 
     int a->rgb[1]
 
@@ -304,7 +304,7 @@ Program point names
 
   Information on the type of the program point is contained in a separate
   ppt-type record that specifies the type of the record.  The possible
-  types of program points are class, object, enter, exit, subexit and point.  
+  types of program points are class, object, enter, exit, subexit and point.
 
   The 'subexit' type is used for multiple exits from the same method.
   When 'subexit' is used, the program point name must still be made
@@ -376,7 +376,7 @@ Parent Ppt/variable
                   the same set of variables.  Other relation types cannot
                   be combined with complete.
 
-    parent      - Used for acyclic parent-child relationships.  For 
+    parent      - Used for acyclic parent-child relationships.  For
                   example, an object to its methods.  Each variable must
                   be annotated.
 
@@ -384,7 +384,7 @@ Parent Ppt/variable
                   a cycle.  For example, objects used within an
                   object ppt would be a user relation (since they
                   could form a cycle).
-  
+
 Program point flags
 
   The following flags are supported
@@ -397,30 +397,30 @@ Program point flags
     private     false     True if the program point is private to its class.
                           Only applicable to object oriented languages that
                           have this distinction.  By default, all ppts are
-                          not private (ie, public)
+                          not private (i.e., public)
 
 Variable Flags
 
-  The following flags are supported 
+  The following flags are supported
 
     Flag        Default   Description
     ----------  ------    -------------------
     is_param    false     True if variable is a parameter.  Unchanged
-    no_dups     false     True if a collection cannot have duplicates (ie,
+    no_dups     false     True if a collection cannot have duplicates (i.e.,
                           it is a set).  Used to be has_duplicates
     not_ordered false     True if a collection is not ordered.  Used to
                           be has_order
     no_size     false     True if a collection's size is not relevant.
                           Used to be has_size.  Only valid on collections
-    no_mod      false     True if a variable cannot be modified (eg, is
-                          final in java).  New.
+    no_mod      false     True if a variable cannot be modified (e.g., is
+                          final in Java).  New.
     synthetic   false     Any variable created by the front end that is not
-                          a program variable.  For example, the class name 
+                          a program variable.  For example, the class name
                           variables.  Pure method calls are marked with
                           'method' only (below) and not 'synthetic'.
     classname   false     Variable is the classname synthetic variable
-    non_null    flase     True if a variable can never be null.
-    
+    non_null    false     True if a variable can never be null.
+
 
   Most of these are the same as previously except that they are changed
   so that the default value is always false.  This somewhat simplifies
@@ -432,13 +432,13 @@ Language specific variable flags
   These flags are specific to the input language and thus can only be
   used by output formatting that is cognizant of the input language.
 
-  The java flags are all of the access flags: public, private, protected, 
+  The java flags are all of the access flags: public, private, protected,
   static, final, synchronized, volatile, transient, annotation, enum.
 
-  The C flags are TBD.  
+  The C flags are TBD.
 
   Language specific flags will be implemented to make adding a flag
-  very easy (just adding a name to a static table).  
+  very easy (just adding a name to a static table).
 
 File format
 
@@ -464,7 +464,7 @@ File format
 
     ppt <pptname>
       ppt-type <ppt-type>
-      [parent* <relation-type> <parent-ppt-name> <parent-id>] 
+      [parent* <relation-type> <parent-ppt-name> <parent-id>]
       [flags <ppt-flags>]
       variable <external-name>
         var-kind <variable-kinds>
@@ -480,8 +480,8 @@ File format
         [parent <parent-ppt-name> <parent-id> [<parent-var-name>]]
         [comparability <comparability-value>]
 
-  where    
-  
+  where
+
     <relation-type>     ::= enter_exit|complete|parent|user
     <ppt-flags>         ::= static
     <variable-kinds>    ::= field <name>|function <name>|array|variable
@@ -496,7 +496,7 @@ File format
   are:
 
     - Input language record.  Specifies the language of the target
-      program.  
+      program.
 
         input-language |C|C++|Perl|Java
 
@@ -511,16 +511,16 @@ File compatibility
   (with defaults) while still being compatible with the previous versions
   of the file.
 
-  We can also add a switch that ignores names/flags that are not known so 
+  We can also add a switch that ignores names/flags that are not known so
   that newer versions of the file  can be used with earlier versions
   of daikon.  In that cases, information which is not known would only
-  print a warning message.  
+  print a warning message.
 
 Daikon internal changes
 
   The VarInfoName class currently supports both variable names as defined
   in the decl file and names that are created for derived variables.
-  The features added to VarInfoName for derived variables are largely 
+  The features added to VarInfoName for derived variables are largely
   duplicative of the derived variables code.
 
   The details of VarInfoName are visible to the output formats and
@@ -551,16 +551,16 @@ Object-user hierarchy relation
   hierarchy relationship between classes A and B.  Note, however, that
   the variable relationships are not circular:
 
-    Child                Parent                   
-    --------             -------------            
-    B::this.a            A::this                  
-    B::this.a.f1         A::this.f1               
-    A::b                 B::this                  
-    A::b.f2              B::this.f2               
+    Child                Parent
+    --------             -------------
+    B::this.a            A::this
+    B::this.a.f1         A::this.f1
+    A::b                 B::this
+    A::b.f2              B::this.f2
 
   This, however, does not solve the problem.  Bottom up processing must
   process the leaves of the PPT hierarchy tree first and then merge
-  invariants up the tree.  Which PPT (A::Object or B::Object) should 
+  invariants up the tree.  Which PPT (A::Object or B::Object) should
   be processed first?  There doesn't seem to be a choice that will work.
 
   Currently this problem is avoided by simply turning off the object-user
@@ -568,7 +568,7 @@ Object-user hierarchy relation
   from A are not included.  Those instances will still be included whenever
   a method of B is called on them.  In an object oriented language this
   should happen relatively often and there is probably not a significant
-  difference in the results.  
+  difference in the results.
 
   This, however, can be a significant problem for object or struct invariants
   in a non-object oriented language.  In that case, there are no object
@@ -602,7 +602,7 @@ Nested arrays
 
   The internal variable format provides enough information to handle
   nested arrays without changes.  The change would be to the sample
-  information.  Since that is not being changed by the rest of the 
+  information.  Since that is not being changed by the rest of the
   proposal, there doesn't seem to be a downside to separating out these
   two issues.  A discussion of nested arrays can be found in Appendix B.
 
@@ -619,7 +619,7 @@ Open Issues
       the external name needs an unindexed value and an indexed value.
       That way the variable 'list' could refer to the entire array referred
       to by a list and 'list.get(1..5)' would refer to a sequence from
-      within the list.  
+      within the list.
 
       For now, I'm proposing we just include .get() in the external name
 
@@ -629,12 +629,12 @@ Open Issues
       documentation includes a strange restriction about appending the
       right number of "[]"s which it would be nice to get rid of. (smcc)
 
-      The only thing that I know it is used for is determining 
+      The only thing that I know it is used for is determining
       the comparability of hashcodes.  Currently only hashcodes with
-      identical declared types are considered comparable.  
+      identical declared types are considered comparable.
 
       I think some output formats need to know the declared type in
-      order to create legal code.  It might be useful to declare 
+      order to create legal code.  It might be useful to declare
       a temporary variable or the like and the declared type would
       be helpful.  But this would not require the declared type to
       be parsed.  I'd suggest that the declared type should be the
@@ -693,10 +693,10 @@ Resolved Issues:
 
       This was part of the internal name, but the same information is
       specified in the reference-type record.  We needed to pass this
-      information to Daikon in the past, so it seems reasonable to 
+      information to Daikon in the past, so it seems reasonable to
       continue to provide it.
 
-    - Similarly, should we add '.' and '->' to array references (eg,
+    - Similarly, should we add '.' and '->' to array references (e.g.,
       a->[] or a.[]) to make it clear whether or not the array is directly
       within its enclosing name or stored separately?  Currently the proposal
       calls for the field operators to be included with arrays as well.
@@ -713,10 +713,10 @@ Resolved Issues:
       that we remove this.  We can always add it if/when we find a need
       for it.
 
-      Mike thinks that thiswas used as hint when producing java output.
-      But I'm not sure how it could bd used.
+      Mike thinks that this was used as a hint when producing Java output.
+      But I'm not sure how it could be used.
 
-    - Should a ppt name be parsable or could we simply make this an 
+    - Should a ppt name be parsable or could we simply make this an
       unparsed string?  Its not clear that the static location is at
       all interesting or consistently applicable.  Instead, perhaps we
       should add a ppt-type record that specifies enter/exit and the
@@ -735,7 +735,7 @@ Resolved Issues:
       samples than do instance variables).
 
       Mike suggests eliminating the distinction and notes that front ends
-      should be able to make this choice themselves. 
+      should be able to make this choice themselves.
 
       It might be a good idea in general to support relations where the
       child only contains a subset of the variables at the parent.  This
@@ -770,9 +770,9 @@ Resolved Issues:
       enclosing variables must exist.  Daikon's implementation of omit-var
       must also remove any variables whose enclosing variable is removed.
 
-    - Do we need a program point abbreviation when specifying parent 
+    - Do we need a program point abbreviation when specifying parent
       program points?  The point of this was to ease readability for
-      long ppt names.  
+      long ppt names.
 
       I don't think this is necessary.  I think, instead, that certain
       ppt relations (exit->exitNN, enter->exit) should automatically create
@@ -793,8 +793,8 @@ Resolved Issues:
         a.b.a.f1
         a.b.a.b.f2
 
-      Should each instance of a field in B (a.b.f2 and a.b.a.b.f2) be tied 
-      back to B directly (ie, its parent is B::this.f2) or should it only
+      Should each instance of a field in B (a.b.f2 and a.b.a.b.f2) be tied
+      back to B directly (i.e., its parent is B::this.f2) or should it only
       be tied to the corresponding level in B (the parent for a.b.f2 is
       B::this.f2 and the parent for a.b.a.b.f2 is B::this.a.b.f2), or
       both?
@@ -806,8 +806,8 @@ Resolved Issues:
       information?  This could be used to determine what variables are
       possibly comparable (at least in java).  Or perhaps we should include
       two forms of comparability information -- calculated comparability
-      (ala DynComp) and type comparability (that can be determined statically
-      by the front end, eg, declared types, typedefs, etc).
+      (a la DynComp) and type comparability (that can be determined statically
+      by the front end, e.g., declared types, typedefs, etc).
 
       We should not include superclass information.  The front end could
       take this into account when creating comparability data or we can
@@ -848,9 +848,8 @@ Resolved Issues:
          rgb[1].foo[]
          rgb[2].foo[]
 
-      otherwise, rgb[].foo[] is a 2-D array which Daikon cannot curently
+      Otherwise, rgb[].foo[] is a 2-D array which Daikon cannot currently
       support.
-
       As shown in the examples, this is legal.  A number inside of
       brackets is treated as a special field name.  Front ends can
       decide if they wish to do this or not.
@@ -871,7 +870,7 @@ Resolved Issues:
 
     - Should we allow functions in the middle of variable names?
       For example 'foo(a).x' or 'a.foo().x'  This would allow pure
-      functions that return non-primitives and seems reasonable.  
+      functions that return non-primitives and seems reasonable.
 
       Both of the above examples should be legal.
 
@@ -891,17 +890,17 @@ Resolved Issues:
       The latter always works and it leaves the variable name
       completely unchanged.  But its quite unreadable.
 
-    - Can we change the rep type name for strings from "java.lang.String" 
+    - Can we change the rep type name for strings from "java.lang.String"
       to "string"? (smcc)
 
       Yes, the proposal now indicates this.
 
-    - In program point names, can <static-location> can be anything, as 
-      long as it doesn't contain "::" or ":::"?  The character set 
+    - In program point names, can <static-location> can be anything, as
+      long as it doesn't contain "::" or ":::"?  The character set
       restriction on <name> seems a bit restrictive. For
       instance, C++ has methods with names like:
         std::basic_filebuf<char, std::char_traits<char> >
-                       ::seekpos(std::fpos<__mbstate_t>, std::_Ios_Openmode) 
+                       ::seekpos(std::fpos<__mbstate_t>, std::_Ios_Openmode)
       I'd say the static location there is
          std::basic_filebuf<char, std::char_traits<char> >
       and the name is
@@ -916,7 +915,7 @@ Resolved Issues:
       the type of the program point and leave the ppt-name itself
       unparsed.
 
-    - Is the indentation in the file format meant (or just suggested) 
+    - Is the indentation in the file format meant (or just suggested)
       to be that way in the file? (smcc)
 
       It is not required to parse the file, but I think the file is more
@@ -941,7 +940,7 @@ Resolved Issues:
 
       This is no longer relevant as we do not use internal names
 
-    - In the ppt hierarchy, what is the parent for a C function?  
+    - In the ppt hierarchy, what is the parent for a C function?
       The file it is contained in? (pgbovine)
 
       A file doesn't provide a variable hierarchy since methods from the
@@ -957,7 +956,7 @@ Resolved Issues:
 
       I think that comparability is what Daikon is interested in and this
       is a Daikon file.  But I certainly don't feel strongly about it.
-      The order of the records is arbitrary.  Any order is ok.
+      The order of the records is arbitrary.  Any order is OK.
 
     - Should the relation types (object-user, exit-exitnn, etc) be built-in
       to Daikon, or just a name given by the front end?
@@ -973,7 +972,7 @@ Appendix A -- Alternative Object-User hierarchy relation solutions
   For example, we would create A.b::Object and B.a::Object program points.
   A.b has two parents: A and B.  Similarly B.a has the same two parents.
   Unfortunately, this does not seem to work.  Bottom up processing
-  presumes that a child always has a superset of the variables of the 
+  presumes that a child always has a superset of the variables of the
   parent.  It won't be possible to find invariants between A::this.f1 and
   A::this.b.f2 via the A.b::Object program point (which doesn't contain
   f1).
@@ -989,7 +988,7 @@ Appendix A -- Alternative Object-User hierarchy relation solutions
   The variable relations would be:
 
     Child                Parents
-    --------             -------------            
+    --------             -------------
     foo()::a             A::this
     foo()::a.f1          A::this.f1
     foo()::a.b           A::this.b      B::this
@@ -1003,43 +1002,43 @@ Appendix A -- Alternative Object-User hierarchy relation solutions
   a child in two lists should not present a problem.
 
   Second, is how do we handle multiple child variables for a single
-  parent variable (ie, foo()::a and foo()::a.b.a both are related to
+  parent variable (i.e., foo()::a and foo()::a.b.a both are related to
   A::this).  This is a little less clear.  I think what would need to
   happen is that when merging, an invariant can be true for 'A::this' only
   if it is true at both of the variables that are children.  I think this
   can work but it would require changes to code that is already a tad
   complex.  The trick will be finding the sets of variables that go
-  together (ie, foo()::a and foo()::a.f1 are one set of variables
+  together (i.e., foo()::a and foo()::a.f1 are one set of variables
   attached to A:: and foo()::a.b.a and foo()::a.b.a.f1 are a separate
   set)
 
   A fourth approach would be to only create object-user relations
   when an object is used as a parameter.  In our example from
   above, only the relations to A:: would be created.  The nested
-  occurence of B would not create any object-user relations to B.
+  occurrence of B would not create any object-user relations to B.
   The same would be true at the object level, there would be no relations
   between A:: and B::.  This removes the circular problem while still
-  allowing object-user relations in the most obvious case.  
+  allowing object-user relations in the most obvious case.
 
 
 Appendix B -- nested arrays
 
   Consider the following classes
 
-    class A {           class B {          class C {  
-      int f1;             int f3;            int f5;  
-      int f2;             int f4;            int f6;  
-      B[] b_arr;          C[] c_arr;       }          
-    }                   }            
+    class A {           class B {          class C {
+      int f1;             int f3;            int f5;
+      int f2;             int f4;            int f6;
+      B[] b_arr;          C[] c_arr;       }
+    }                   }
 
     A a;
 
   Currently front ends create arrays of primitives from arrays
   of objects.  For example:  a.b_arr[].f3 and a.b_arr[].f4.  This
-  requires some uinutitive and repetitive processing in the front
+  requires some unintuitive and repetitive processing in the front
   end.  It also doesn't seem to extend well to nested arrays.  If
   a.b_arr[].c_arr[].f5 were combined into one flat array, it is not
-  clear what useful invariants would be found.  We are really 
+  clear what useful invariants would be found.  We are really
   interested in invariants that are true over c_arr[] at each
   element of b_arr[] (such as c_arr[] is sorted) that wouldn't necessarily
   be true of the combined array.
@@ -1067,7 +1066,7 @@ Appendix B -- nested arrays
       sequences are never actually created.  The no-dups invariant
       could be found with an invariant with state.
 
-    - It could find the sequence-index invairants if we added the index
+    - It could find the sequence-index invariants if we added the index
       as a derived variable.  Its not clear how interesting an invariant
       this is anyway.
 
@@ -1099,7 +1098,7 @@ Appendix B -- nested arrays
       Or by adding special invariants that remember their previous
       value.
 
-  I believe that all of the other invairants could be found and with
+  I believe that all of the other invariants could be found and with
   less implementation effort (all of the elt-wise and pairwise invs
   could be eliminated as they would now be found by their scalar
   versions).  A number of other invariants that we have not currently
@@ -1149,19 +1148,19 @@ Appendix C -- Internal Variable Names
   reasonable to include the information that is available to the front
   end.
 
-  The array-op specifies that there the preceeding name is an array
+  The array-op specifies that there the preceding name is an array
   and that this variable represents its contents.  Just as with fields,
   if the '.' operator is used before the array op, the array is stored
   as part of its enclosing name and if the '->' operator is used,
   the name is a reference to a separate memory area that contains
-  the array.  
+  the array.
 
   If the field name is followed by parens it is a function (presumably
   pure) and not a field.  Arguments can optionally be specified.  Initial
   versions may not fully support arguments.  If the function is an instance
   method, then it should appear enclosed within its receiver variable.
-  Static methods appear at the top level (eg, m1(b.c))  If the reciever
-  or any the arguments to a function is an array element, other arguments must
+  Static methods appear at the top level (e.g., m1(b.c)). If the receiver
+  or any of the arguments to a function is an array element, other arguments must
   be elements of the same array or occur before the array.  It is not
   possible to use elements from two unrelated arrays as arguments.  For
   example:
@@ -1170,7 +1169,7 @@ Appendix C -- Internal Variable Names
       int f1;
       int f2;
       String m1 (int i, int j) {}
-    }  
+    }
 
     A[] a;
     int[] karr;
@@ -1184,7 +1183,7 @@ Appendix C -- Internal Variable Names
     a->[]->m1(ii,jj)
 
   An illegal function name would be
-  
+
     a->[]->m1(karr[],jj)
 
   There is a special function named '*' which dereferences its one
@@ -1237,7 +1236,7 @@ Things we need to include:
   - attributes (public, private, protected, is param, declaring
     class, synthetic, etc)
 
-  - Nesting information.  Arrays of arrays.  What variables are 
+  - Nesting information.  Arrays of arrays.  What variables are
     fields inside of other variables.
 
   - Comparability information
@@ -1250,15 +1249,15 @@ Formatting possibilities
 
   - xml
 
-  - line oriented ascii
+  - line oriented ASCII
 
   - There doesn't seem to be any need to optimize the format since decl
     files are relatively small compared to dtrace files.  Readability
     and expandability seem like important considerations.
 
-  - Do we want a format that is forwards compatible (ie, a new version
+  - Do we want a format that is forwards compatible (i.e., a new version
     of the decl file could be read by an old version of the program).
-    I tend to think not.  This is a pain and it usually means that 
+    I tend to think not.  This is a pain and it usually means that
     error messages are impossible to produce.
 
 Other:
@@ -1286,11 +1285,11 @@ Mike's notes:
     C programs?
 
   - How do we create format specific variables (like those for simplify)
-    from language-specific input? 
+    from language-specific input?
 
   - Format should remain simple and human readable.
 
-  - We need to be able to manipulate variables to create derived 
+  - We need to be able to manipulate variables to create derived
     variables.  In particular, we need to create array references and
     subsequences.
 
@@ -1298,7 +1297,7 @@ Mike's notes:
     it would be nice to add a tool that would update existing files to the
     new format.
 
-  - Something loads .class fiels for java.  What and why?
+  - Something loads .class fields for java.  What and why?
 
   - Need to know if a method is static (reason for this is unclear to
     me -- something from Carlos)
@@ -1318,14 +1317,14 @@ Questions:
     dimensional arrays?
 
   - What information do we really need about variables?  All I can
-    think of is what their enclosing variable is (eg, x is the
+    think of is what their enclosing variable is (e.g., x is the
     enclosing variable for x.y)
 
   - What future features do we want to consider?
       - adding new variables dynamically
       - Multi-dimensional arrays?
-      - new basic types (maps?)      
- 
+      - new basic types (maps?)
+
   - Do we want to support object-user relations.  Do we want to name
     various relations so Daikon can choose which ones to support?
 
@@ -1343,7 +1342,7 @@ VarInfoName issues:
     would seemingly be simple).  Similarly for java_name() and jml_name()
 
   - ioa_name returns the name in IOA format.  Do we still use this?  Does
-    it make sense if the input langauge is not IOA?
+    it make sense if the input language is not IOA?
 
   - What does '$noprint' mean?  Why do we use this?  I'm guessing there
     some advantage to having format still return something but have
@@ -1362,7 +1361,7 @@ VarInfoName issues:
     final.  That can be removed if we add final to the attributes contained
     in the decl file.
 
-  - There are at least 10 cached variables within each VarInfoName.  If 
+  - There are at least 10 cached variables within each VarInfoName.  If
     there are many instances, this could take up a fair amount of space.
 
 Other issues:
@@ -1372,7 +1371,7 @@ Other issues:
 
   - Do we need to distinguish between fields (a.b) and pure methods (a.pure())?
 
-  - If we make other classes (eg, lists) look like arrays to Daikon, how
+  - If we make other classes (e.g., lists) look like arrays to Daikon, how
     do we name those variables?  In the language specific output formats
     it seems clear that we would want to use the list syntax.  For example,
     in java:
@@ -1383,7 +1382,7 @@ Other issues:
 
        list[]
 
-  - How do we handle names that cannot be represented in the input 
+  - How do we handle names that cannot be represented in the input
     language format?  I think this is just orig, but there may be others
     as well.
 
@@ -1394,7 +1393,7 @@ Other issues:
     drop the use of 'post' in all circumstances.
 
   - As mike has suggested, I think VarInfo needs to be the base for all
-    name issues.  Arguablly, VarInfoName should be private to VarInfo.
+    name issues.  Arguably, VarInfoName should be private to VarInfo.
     This make sense because VarInfo has all of the information about a
     name (in particular, derived variable).  We don't want to have to
     add complexity to VarInfoName to handle derived variables.
@@ -1435,12 +1434,12 @@ Possible formats for variable names
   - front end derived variables should be specified specifically and not
     just embedded in the name.  Specifically getClass.  Note that array
     lengths are daikon derived variables and are thus easy to figure out
-    from the varinfo.  Similarly with orig variables.
+    from the VarInfo.  Similarly with orig variables.
 
   - internal name.  The internal name should be in a standard format and
     that does not vary by front end.  I think C would be a good choice as
     is more expressive than java.  Given (from the above example)
-       
+
        struct B b;
        struct C c;
 
@@ -1457,7 +1456,7 @@ Possible formats for variable names
         c.a->k[]
         c.a->arr
         c.a->arr[]
-               
+
 Arrays:
 
   - Example classes:
@@ -1484,12 +1483,12 @@ Arrays:
   - What invariants do we want with c_arr
 
     1) a.b_arr[].c_arr[].f5 unary invariants
-    2) a.b_arr[].c_arr[].f5 op a.b_arr[].c_arr[].f6 elementwise invairants    
+    2) a.b_arr[].c_arr[].f5 op a.b_arr[].c_arr[].f6 elementwise invariants
     3) a.b_arr[].c_arr[].f5 op a.b_arr[].f3 seq-scalar invariants
     4) a.b_arr[].c_arr[].f5 op a.f1 seq-scalar invariants
 
   - Possible invariants
-    
+
     - common subsequence (array that always contains some elements)
     - elt upper/lower bound (x[] elements > C)
     - elt non zero (x[] elements != 0)
@@ -1545,8 +1544,8 @@ Arrays:
       - It would not find the sequence invariants (no-dups, one-of,
         reverse, subset, or subsequence), over f5 and f6 because those
         sequences are never actually created.
-        
-      - It could find the sequence-index invairants if we added the index
+
+      - It could find the sequence-index invariants if we added the index
         as a derived variable.  Its not clear how interesting an invariant
         this is anyway.
 
@@ -1560,7 +1559,7 @@ Arrays:
         fields would not be compared).  Since many of the invs require
         that their arrays be of the same length, these invs may occur
         only rarely.
-        
+
       - It would not find the adjacent element comparisons (sequence is
         sorted by ...) unless we did something special to enable them.
         It seems like it should be possible to do this (and perhaps other
@@ -1577,8 +1576,8 @@ Arrays:
 
         Or be adding special invariants that remember their previous
         value.
-                 
-    I believe that all of the other invairants could be found and with
+
+    I believe that all of the other invariants could be found and with
     less implementation effort (all of the elt-wise and pairwise invs
     could be eliminated as they would now be found by their scalar
     versions).
@@ -1598,16 +1597,16 @@ Object-User Hierarchy relationships
   hierarchy relationship between classes A and B.  Note, however, that
   the variable relationships are not circular:
 
-    Child                Parent                   
-    --------             -------------            
-    B::this.a            A::this                  
-    B::this.a.f1         A::this.f1               
-    A::b                 B::this                  
-    A::b.f2              B::this.f2               
+    Child                Parent
+    --------             -------------
+    B::this.a            A::this
+    B::this.a.f1         A::this.f1
+    A::b                 B::this
+    A::b.f2              B::this.f2
 
   This, however, does not solve the problem.  Bottom up processing must
   process the leaves of the PPT hierarchy tree first and then merge
-  invariants up the tree.  Which PPT (A::Object or B::Object) should 
+  invariants up the tree.  Which PPT (A::Object or B::Object) should
   be processed first?  There doesn't seem to be a choice that will work.
 
   Perhaps this could be resolved by creating two types of relations.
@@ -1624,7 +1623,7 @@ Object-User Hierarchy relationships
   For example, we would create A.b::Object and B.a::Object program points.
   A.b has two parents: A and B.  Similarly B.a has the same two parents.
   Unfortunately, this does not seem to work either.  Bottom up processing
-  presumes that a child always has a superset of the variables of the 
+  presumes that a child always has a superset of the variables of the
   parent.  It won't be possible to find invariants between A::this.f1 and
   A::this.b.f2 via the A.b::Object program point (which doesn't contain
   f1).
@@ -1640,7 +1639,7 @@ Object-User Hierarchy relationships
   The variable relations would be:
 
     Child                Parents
-    --------             -------------            
+    --------             -------------
     foo()::a             A::this
     foo()::a.f1          A::this.f1
     foo()::a.b           A::this.b      B::this
@@ -1654,23 +1653,23 @@ Object-User Hierarchy relationships
   a child in two lists should not present a problem.
 
   Second, is how do we handle multiple child variables for a single
-  parent variable (ie, foo()::a and foo()::a.b.a both are related to
+  parent variable (i.e., foo()::a and foo()::a.b.a both are related to
   A::this).  This is a little less clear.  I think what would need to
   happen is that when merging, an invariant can be true for 'A::this' only
   if it is true at both of the variables that are children.  I think this
   can work but it would require changes to code that is already a tad
   complex.  The trick will be finding the sets of variables that go
-  together (ie, foo()::a and foo()::a.f1 are one set of variables
+  together (i.e., foo()::a and foo()::a.f1 are one set of variables
   attached to A:: and foo()::a.b.a and foo()::a.b.a.f1 are a separate
   set)
 
   A fourth approach would be to only create object-user relations
   when an object is used as a parameter.  In our example from
   above, only the relations to A:: would be created.  The nested
-  occurence of B would not create any object-user relations to B.
+  occurrence of B would not create any object-user relations to B.
   The same would be true at the object level, there would be no relations
   between A:: and B::.  This removes the circular problem while still
-  allowing object-user relations in the most obvious case.  
+  allowing object-user relations in the most obvious case.
 
   In an object-oriented language its not clear that object-user relations
   are critical at all.  After all, when an object of type A is passed

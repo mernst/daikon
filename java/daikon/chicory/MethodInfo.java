@@ -26,7 +26,7 @@ public class MethodInfo {
 
   /**
    * Reflection information on this method. Null if a class initializer, {@code <clinit>} (see
-   * {@link #is_class_init()}.
+   * {@link #is_class_initializer()}.
    */
   // The code often assumes that member != null.
   public @MonotonicNonNull Member member = null;
@@ -48,7 +48,7 @@ public class MethodInfo {
   /** Array of argument types as classes for this method. */
   public Class<?>[] arg_types;
 
-  /** exit locations for this method */
+  /** Exit locations for this method. */
   public List<Integer> exit_locations;
 
   /** Tells whether each exit point in method is instrumented, based on filters. */
@@ -75,7 +75,7 @@ public class MethodInfo {
   public int capture_cnt = 0;
 
   /**
-   * Whether or not the method is pure (has no side-effects). Will only be set to true if the {@code
+   * True if the method is pure (has no side-effects). Will only be set to true if the {@code
    * --purity-analysis} command-line option is given to Chicory, and the method returns some value.
    * Only set during initViaReflection() method.
    */
@@ -146,10 +146,10 @@ public class MethodInfo {
 
     // Look up the method
     try {
-      if (is_class_init()) {
+      if (is_class_initializer()) {
         member = null;
         // This case DOES occur at run time.  -MDE 1/22/2010
-      } else if (is_constructor()) {
+      } else if (isConstructor()) {
         member = class_info.clazz.getDeclaredConstructor(arg_types);
       } else {
         member = class_info.clazz.getDeclaredMethod(method_name, arg_types);
@@ -180,17 +180,25 @@ public class MethodInfo {
    * @return true iff this method is a constructor
    */
   @Pure
-  public boolean is_constructor() {
-    return (method_name.equals("<init>") || method_name.equals(""));
+  public boolean isConstructor() {
+    return method_name.equals("<init>") || method_name.equals("");
   }
 
-  /** Returns whether or not this method is a class initializer. */
+  /**
+   * Returns true iff this method is a class initializer.
+   *
+   * @return true iff this method is a class initializer
+   */
   @Pure
-  public boolean is_class_init() {
-    return (method_name.equals("<clinit>"));
+  public boolean is_class_initializer() {
+    return method_name.equals("<clinit>");
   }
 
-  /** Returns whether or not this method is static. */
+  /**
+   * Returns true iff this method is static.
+   *
+   * @return true iff this method is static
+   */
   @RequiresNonNull("member")
   @Pure
   public boolean is_static() {
@@ -219,10 +227,14 @@ public class MethodInfo {
   @Override
   public String toString(@GuardSatisfied MethodInfo this) {
     String out = "";
-    if (class_info != null) out = class_info.class_name + ".";
+    if (class_info != null) {
+      out = class_info.class_name + ".";
+    }
     out += method_name + "(";
     for (int ii = 0; ii < arg_names.length; ii++) {
-      if (ii > 0) out += ", ";
+      if (ii > 0) {
+        out += ", ";
+      }
       out += arg_type_strings[ii] + " " + arg_names[ii];
     }
     return (out + ")");
@@ -232,7 +244,11 @@ public class MethodInfo {
     return isPure;
   }
 
-  /** Returns the turn type of the method, or Void.TYPE for a constructor. */
+  /**
+   * Returns the return type of this method, or Void.TYPE for a constructor.
+   *
+   * @return the return type of this method
+   */
   public Class<?> return_type() {
     if (member instanceof Method) {
       Method m = (Method) member;

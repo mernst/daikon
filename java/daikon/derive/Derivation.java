@@ -19,9 +19,6 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * value. Derivations are created by DerivationFactory.
  */
 public abstract class Derivation implements Serializable, Cloneable {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20020122L;
 
   // This definition is here so that it will show up in the manual
@@ -77,8 +74,8 @@ public abstract class Derivation implements Serializable, Cloneable {
   public abstract ValueAndModified computeValueAndModified(ValueTuple full_vt);
 
   /**
-   * Get the VarInfo that this would represent. However, the VarInfo can't be used to obtain values
-   * without further modification -- use computeValueAndModified() for this.
+   * Returns the VarInfo that this would represent. However, the VarInfo can't be used to obtain
+   * values without further modification -- use computeValueAndModified() for this.
    *
    * @return the VarInfo hat this would represent
    * @see Derivation#computeValueAndModified
@@ -118,6 +115,7 @@ public abstract class Derivation implements Serializable, Cloneable {
   protected abstract boolean isParam();
 
   public boolean missing_array_bounds = false;
+
   /**
    * True if we have encountered to date any missing values in this derivation due to array indices
    * being out of bounds. This can happen with both simple subscripts and subsequences. Note that
@@ -245,7 +243,7 @@ public abstract class Derivation implements Serializable, Cloneable {
   }
 
   /**
-   * Return the complexity of this derivation. This is only for the derivation itself and not for
+   * Returns the complexity of this derivation. This is only for the derivation itself and not for
    * the variables included in the derivation. The default implementation returns 1 (which is the
    * added complexity of an derivation). Subclasses that add additional complexity (such as an
    * offset) should override.
@@ -254,10 +252,17 @@ public abstract class Derivation implements Serializable, Cloneable {
     return 1;
   }
 
-  /** Returns a string that corresponds to the the specified shift. */
+  /**
+   * Returns a string that corresponds to the specified shift.
+   *
+   * @param shift how much to shift the string
+   * @return the shifted string
+   */
   protected String shift_str(int shift) {
     String shift_str = "";
-    if (shift != 0) shift_str = String.format("%+d", shift);
+    if (shift != 0) {
+      shift_str = String.format("%+d", shift);
+    }
     return shift_str;
   }
 

@@ -2,7 +2,7 @@
 # Make will silently continue if Makefile.user does not exist.
 -include Makefile.user
 
-DAIKONDIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+DAIKONDIR := $(realpath $(dir $(lastword ${MAKEFILE_LIST})))
 
 HTMLTOOLS ?= ${DAIKONDIR}/utils/html-tools
 CHECKLINK ?= ${DAIKONDIR}/utils/checklink
@@ -13,6 +13,8 @@ ifneq "$(wildcard ${SORT_DIRECTORY_ORDER})" "${SORT_DIRECTORY_ORDER}"
   # Until "make ../plume-scripts" has been run, sort-directory-order is not available.
   SORT_DIRECTORY_ORDER = sort
 endif
+
+JAVA_RELEASE_NUMBER := $(shell java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
 
 
 ##########################################################################
@@ -25,20 +27,20 @@ endif
 # note that for right now, we are only copying the html and texinfo
 # versions of the developer manual (though the PDF version is also built)
 IMAGE_FILES := daikon-logo.gif daikon-logo.png daikon-logo.eps dfepl-flow.dot
-IMAGE_PARTIAL_PATHS := $(addprefix images/,$(IMAGE_FILES))
+IMAGE_PARTIAL_PATHS := $(addprefix images/,${IMAGE_FILES})
 DOC_FILES_NO_IMAGES := Makefile index.html daikon.texinfo \
                        config-options.texinfo invariants-doc.texinfo \
                        daikon.pdf daikon.html developer.texinfo \
-                       developer.html CHANGES VERSION daikon-favicon.png
-DOC_FILES := ${DOC_FILES_NO_IMAGES} $(IMAGE_PARTIAL_PATHS)
-DOC_PATHS := $(addprefix doc/,$(DOC_FILES))
+                       developer.html CHANGELOG.md VERSION daikon-favicon.png
+DOC_FILES := ${DOC_FILES_NO_IMAGES} ${IMAGE_PARTIAL_PATHS}
+DOC_PATHS := $(addprefix doc/,${DOC_FILES})
 
 # The texinfo files are included so we can diff to see what has changed from
 # release to release.  They are in the dist/doc directory, but not
 # visible to the user.
 DOC_FILES_USER := daikon.pdf daikon.html developer.html developer.pdf \
                   daikon.texinfo developer.texinfo config-options.texinfo \
-                  invariants-doc.texinfo CHANGES daikon-favicon.png VERSION
+                  invariants-doc.texinfo CHANGELOG.md daikon-favicon.png VERSION
 README_PATHS := README doc/README fjalar/README
 # Files that contain the (automatically updated) version number and date.
 DIST_VERSION_FILES := ${README_PATHS} doc/daikon.texinfo doc/developer.texinfo \
@@ -48,6 +50,9 @@ DIST_VERSION_FILES := ${README_PATHS} doc/daikon.texinfo doc/developer.texinfo \
 # Why not just include all of them?  (Maybe to avoid problems with
 # accidentally including things in the user's checkout that are not needed
 # by most users, but why not include everything that's in repository?)
+# Need to include the Dockerfiles as they are referenced from 'Requirements for
+# compiling Daikon' in the Daikon Developer manual; which is in turn referenced
+# from the 'Installation' section of the Daikon manual.
 SCRIPT_FILES := Makefile \
 	daikon.bashrc \
 	dfepl dtrace-perl dtype-perl \
@@ -56,13 +61,18 @@ SCRIPT_FILES := Makefile \
 	convertcsv.pl \
 	trace-untruncate trace-untruncate-fast.c trace-purge-fns.pl trace-purge-vars.pl \
 	trace-add-nonces.pl \
-	util_daikon.pm \
-	runcluster.pl decls-add-cluster.pl extract_vars.pl dtrace-add-cluster.pl
+	checkargs.pm util_daikon.pm \
+	runcluster.pl decls-add-cluster.pl extract_vars.pl dtrace-add-cluster.pl Dockerfile*
 
-SCRIPT_PATHS := $(addprefix scripts/,$(SCRIPT_FILES))
+SCRIPT_PATHS := $(addprefix scripts/,${SCRIPT_FILES})
 
 # This is so troublesome that it isn't used except as a list of dependences for make commands
 DAIKON_JAVA_FILES := $(shell find java -name '*daikon-java*' -prune -o -name '*.java' -print | ${SORT_DIRECTORY_ORDER})
+# If we're building on JDK 23 or less, remove the java24 files from the list.
+ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -lt 24; echo $$?),0)
+  DAIKON_JAVA_FILES := $(filter-out %24.java, ${DAIKON_JAVA_FILES})
+endif
+
 DAIKON_RESOURCE_FILES := daikon/config/example-settings.txt \
 	daikon/simplify/daikon-background.txt \
 	daikon/simplify/daikon-background-defined.txt \
@@ -70,7 +80,7 @@ DAIKON_RESOURCE_FILES := daikon/config/example-settings.txt \
 	daikon/test/SampleTester.commands \
 	daikon/test/SampleTester.decls \
 	daikon/test/SampleTesterGlobal.decls \
-	daikon/test/SampleTester.test \
+	daikon/test/SampleTester.commands_linear_ternary \
 	daikon/test/varInfoNameTest.testEscForall \
 	daikon/test/varInfoNameTest.testEscForall.goal \
 	daikon/test/varInfoNameTest.testJML \
@@ -91,14 +101,14 @@ DAIKON_RESOURCE_FILES := daikon/config/example-settings.txt \
 WWW_FILES := $(shell cd doc/www; find . -type f -print | egrep -v '~$$|/.\#|.bak$$|uw/|pubs/' | ${SORT_DIRECTORY_ORDER})
 
 WWW_PARENT ?= /cse/web/research/plse
-WWW_DIR := $(WWW_PARENT)/daikon
+WWW_DIR := ${WWW_PARENT}/daikon
 INV_DIR := $(shell pwd)
 
-JAR_DIR := $(INV_DIR)
-QT_PATH := ../../../daikon.jar:.
+JAR_DIR := ${INV_DIR}
+QT_PATH := ../../../daikon.jar:.:../../../java/*
 
 # Staging area for the distribution
-STAGING_DIR := $(WWW_PARENT)/staging-daikon
+STAGING_DIR := ${WWW_PARENT}/staging-daikon
 
 # Files to copy to the website, from $DAIKONDIR/doc/www/
 WWW_DAIKON_FILES := faq.html index.html mailing-lists.html StackAr.html \
@@ -114,7 +124,10 @@ GIT_OPTIONS ?=
 
 RM_TEMP_FILES := rm -rf `find . \( -name UNUSED -o -name SCCS -o -name RCS -o -name '*.o' -o -name '*~' -o -name '.*~' -o -name '*.orig' -o -name 'config.log' -o -name '*.java-*' -o -name '*to-do' -o -name 'TAGS' -o -name '.\#*' -o -name '.deps' -o -name jikes -o -name daikon-java -o -name daikon-output -o -name core -o -name '*.bak' -o -name '*.rej' -o -name '*.old' -o -name '.nfs*' -o -name '\#*\#' \) -print`
 
-TMPDIR ?= $(if $(shell if [ -d /scratch ] ; then echo true; fi),/scratch/$(USER),/tmp/$(USER))
+# cannot use ?= to set TMPDIR as the evaulation is defered and the time might change
+ifeq ($(origin TMPDIR), undefined)
+  TMPDIR := $(if $(shell if [ -d /scratch ] ; then echo true; fi),/scratch/${USER},/tmp/${USER})$(shell date +%Y%m%d%H%M%S)
+endif
 
 # For deterministic sorting
 export LC_ALL=C
@@ -123,10 +136,10 @@ export LC_ALL=C
 # PERL_MODULES := $(wildcard *.pm)
 # PERL_SCRIPTS := $(wildcard *.pl)
 # PERL_SCRIPTS += em_analyze em_reports cppp
-# PERL_MODULE_TEXI := $(patsubst %.pm,%.texi,$(PERL_MODULES))
-# PERL_MODULE_INFO := $(patsubst %.pm,%.info,$(PERL_MODULES))
-# PERL_MODULE_MAN := $(patsubst %.pm,%.man,$(PERL_MODULES))
-# PERL_MODULE_HTML := $(patsubst %.pm,%.html,$(PERL_MODULES))
+# PERL_MODULE_TEXI := $(patsubst %.pm,%.texi,${PERL_MODULES})
+# PERL_MODULE_INFO := $(patsubst %.pm,%.info,${PERL_MODULES})
+# PERL_MODULE_MAN := $(patsubst %.pm,%.man,${PERL_MODULES})
+# PERL_MODULE_HTML := $(patsubst %.pm,%.html,${PERL_MODULES})
 
 
 ###########################################################################
@@ -162,32 +175,34 @@ help:
 compile: compile-java
 
 compile-java:
-	cd java && $(MAKE) all
+	${MAKE} -C java all
 
 very-clean:
 	find . -type f -name "*~" -exec rm -f {} \;
 	${MAKE} -C ${DAIKONDIR} clean-everything
-	cd scripts && $(MAKE) clean
-	cd tests && $(MAKE) very-clean
+	${MAKE} -C scripts clean
+	${MAKE} -C tests very-clean
 	-rm -rf examples/java-examples/QueueAr/DataStructures/*.class
 	-rm -rf examples/java-examples/StackAr/DataStructures/*.class
 	-rm -rf tests/sources/DataStructures/*.class
 	-rm -rf daikon-*.tar daikon-*.zip
+	-rm -rf utils
 
 clean-java:
-	cd java && $(MAKE) clean
+	${MAKE} -C java clean
 
 javadoc:
-	cd java && $(MAKE) javadoc
+	${MAKE} -C java javadoc
 
 dyncomp-jdk:
-	cd java && $(MAKE) dyncomp-jdk
+	${MAKE} -C java dyncomp-jdk
 
 dcomp-jdk:
-	cd java && $(MAKE) dcomp-jdk
+	${MAKE} -C java dcomp-jdk
 
+format: reformat
 reformat:
-	cd java && $(MAKE) reformat
+	${MAKE} -C java reformat
 
 
 ### Kvasir (C/C++ front end)
@@ -198,7 +213,7 @@ reformat:
 fjalar/valgrind/Makefile.am:
 	# If fjalar/valgrind/Makefile.am does not exist, then this must be a fresh
 	# daikon repository and we need to create the parallel fjalar repository.
-	$(MAKE) ../fjalar
+	${MAKE} ../fjalar
 	ln -nsf ../fjalar fjalar
 	# force a build
 	touch $@
@@ -211,13 +226,13 @@ fjalar/valgrind/Makefile: fjalar/valgrind/Makefile.in
 
 .PHONY: kvasir
 kvasir:
-	$(MAKE) fjalar/valgrind/Makefile
-	$(MAKE) -C fjalar/valgrind --no-print-directory
-	$(MAKE) -C fjalar/valgrind install >/dev/null
+	${MAKE} fjalar/valgrind/Makefile
+	${MAKE} -C fjalar/valgrind --no-print-directory
+	${MAKE} -C fjalar/valgrind install >/dev/null
 
 build-kvasir:
 ifeq (Linux x86_64,$(shell uname -sm))
-	$(MAKE) kvasir
+	${MAKE} kvasir
 else
 	@echo "Not building Kvasir: it's only for Linux x86-64"
 	@echo "and this appears to be" `uname -sm`
@@ -259,39 +274,46 @@ clean-everything-but-kvasir:
 	${MAKE} -C ${DAIKONDIR}/doc very-clean
 
 clean-kvasir:
-	-${MAKE} -C ${DAIKONDIR}/fjalar/valgrind uninstall distclean
+	-${MAKE} -i -C ${DAIKONDIR}/fjalar very-clean
 
 
 ### Testing the code
 # Note that these do NOT compile the code, even if compilation is necessary.
 
 test:
-	cd tests && $(MAKE) all
+	${MAKE} -C tests all
 
 junit:
-	cd java && $(MAKE) junit
+	${MAKE} -C java junit
 
 # A quick test used to verify that Chicory and Daikon
 # are working properly.
 quick-test:
 	cd examples/java-examples/StackAr; \
-	javac -g DataStructures/*.java; \
-	java -cp $(QT_PATH) daikon.Chicory --daikon DataStructures.StackArTester
+	javac -g DataStructures/*.java
+	@echo "Running Chicory/Daikon"
+	cd examples/java-examples/StackAr; \
+	java -cp ${QT_PATH} daikon.Chicory --daikon DataStructures.StackArTester
+	@echo "Running DynComp/Chicory/Daikon"
+	cd examples/java-examples/StackAr; \
+	java -cp ${QT_PATH} daikon.DynComp DataStructures.StackArTester; \
+	java -cp ${QT_PATH} daikon.Chicory --comparability-file=StackArTester.decls-DynComp DataStructures.StackArTester; \
+	java -cp ${QT_PATH} daikon.Daikon StackArTester.dtrace.gz
 
 # Sanity check, suitable for continuous integration such as Jenkins or Travis.
 nightly-test:
-	$(MAKE) showvars compile daikon.jar
-	$(MAKE) javadoc doc-all
-	$(MAKE) dyncomp-jdk
-	$(MAKE) junit test
+	${MAKE} showvars compile daikon.jar
+	${MAKE} javadoc doc-all
+	${MAKE} dyncomp-jdk
+	${MAKE} junit test
 
 # For systems such as Ubuntu 12.04 where makeinfo does not take the --pdf
 # command-line option, don't build the PDF manual.
 nightly-test-except-doc-pdf:
-	$(MAKE) showvars compile daikon.jar
-	$(MAKE) javadoc doc-all-except-pdf
-	$(MAKE) dyncomp-jdk
-	$(MAKE) junit test
+	${MAKE} showvars compile daikon.jar
+	${MAKE} javadoc doc-all-except-pdf
+	${MAKE} dyncomp-jdk
+	${MAKE} junit test
 
 
 ### Tags
@@ -301,7 +323,7 @@ nightly-test-except-doc-pdf:
 TAGS: tags
 .PHONY: tags
 tags:
-	cd java && $(MAKE) tags
+	${MAKE} -C java tags
 	etags --include=java/TAGS
 
 
@@ -311,15 +333,15 @@ tags:
 
 # This is the target we use to verify that the software we are about
 # to distribute runs correctly in a variety of target environments.
-# Currently, we test CentOS, Fedora, Mac OS X, and Ubuntu client machines.
+# Currently, we test Rocky Linux, Mac OS X, and Ubuntu client machines.
 distribution-check:
-	$(MAKE) -C scripts
+	${MAKE} -C scripts
 ifdef DAIKONCLASS_SOURCES
-	$(MAKE) -C java
+	${MAKE} -C java
 endif
-	$(MAKE) -C java dcomp_rt.jar
-	$(MAKE) build-kvasir
-	$(MAKE) quick-test
+	${MAKE} -C java dcomp_rt.jar
+	${MAKE} build-kvasir
+	${MAKE} quick-test
 
 DISTTESTDIR := ${TMPDIR}/daikon.dist
 DISTTESTDIRJAVA := ${TMPDIR}/daikon.dist/daikon/java
@@ -333,41 +355,41 @@ DISTTESTDIRJAVA := ${TMPDIR}/daikon.dist/daikon/java
 # - verify that we can rebuild the .class files from the .java files
 # - run the junit verification tests on the class files
 # - run the quick-test
-test-staged-dist: $(STAGING_DIR)
+test-staged-dist: ${STAGING_DIR}
 	## First, get and test daikon.jar.
-	-rm -rf $(DISTTESTDIR)
-	mkdir $(DISTTESTDIR)
-	(cd $(DISTTESTDIR); tar xzf $(STAGING_DIR)/download/$(NEW_RELEASE_NAME).tar.gz)
-	(cd $(DISTTESTDIR); mv $(NEW_RELEASE_NAME) daikon)
-	(cd $(DISTTESTDIR)/daikon/java && $(MAKE) junit)
+	-rm -rf ${DISTTESTDIR}
+	mkdir -p ${DISTTESTDIR}
+	(cd ${DISTTESTDIR}; tar xzf ${STAGING_DIR}/download/${NEW_RELEASE_NAME}.tar.gz)
+	(cd ${DISTTESTDIR}; mv ${NEW_RELEASE_NAME} daikon)
+	cd  ${MAKE} -C ${DISTTESTDIR}/daikon/java && junit
 	## Make sure that all of the class files are 1.8 (version 52) or earlier.
-	(cd $(DISTTESTDIRJAVA) && find . \( -name '*.class' \) -print | xargs -n 1 ../utils/plume-scripts/classfile_check_version 52)
+	(cd ${DISTTESTDIRJAVA} && find . \( -name '*.class' \) -print0 | xargs -0 -n 1 ../utils/plume-scripts/classfile_check_version 52)
 	## Test that we can rebuild the .class files from the .java files.
-	(cd $(DISTTESTDIRJAVA)/daikon; rm `find . -name '*.class'`; $(MAKE) all_javac)
+	(cd ${DISTTESTDIRJAVA}/daikon; rm `find . -name '*.class'`; ${MAKE} all_javac)
 	## Test that these new .class files work properly.
-	(cd $(DISTTESTDIR)/daikon/java && $(MAKE) junit)
+	${MAKE} -C ${DISTTESTDIR}/daikon/java junit
 	## Test the main target of the makefile.
-	cd $(DISTTESTDIR)/daikon && make
+	cd ${DISTTESTDIR}/daikon && make
 	## Test that we can build docs.
-	cd $(DISTTESTDIR)/daikon && $(MAKE) doc-all
-	## Test the basic operation of Chicory/Daikon.
-	cd $(DISTTESTDIR)/daikon && $(MAKE) quick-test
+	${MAKE} -C ${DISTTESTDIR}/daikon doc-all
+	## Test the basic operation of Chicory/DynComp/Daikon.
+	${MAKE} -C ${DISTTESTDIR}/daikon distribution-check
 
 # I would rather define this inside the repository-test rule.  (In that case I
-# must use "$$FOO", not $(FOO), to refer to it.)
+# must use "$$FOO", not ${FOO}, to refer to it.)
 MYTESTDIR=${TMPDIR}/test
 TESTPATH=${MYTESTDIR}/daikon/java
 
 #This is broken and under repair! (markro)
 repository-test:
-	-rm -rf $(MYTESTDIR)
-	mkdir -p $(MYTESTDIR)
-	cd $(MYTESTDIR)
-	git clone $(REPOSITORY) daikon
+	-rm -rf ${MYTESTDIR}
+	mkdir -p ${MYTESTDIR}
+	cd ${MYTESTDIR}
+	git clone ${REPOSITORY} daikon
 # vars for Daikon
 	export DAIKONDIR=${MYTESTDIR}/daikon
 #	source ${DAIKONDIR}/scripts/daikon.bashrc
-	cd daikon && $(MAKE)
+	${MAKE} -C daikon
 
 
 validate:
@@ -381,13 +403,13 @@ validate:
 # Main distribution
 
 # A couple of checks to see if we can proceed with staging.
-# Verify that doc/CHANGES is newer than doc/daikon.texinfo - error out if not.
+# Verify that doc/CHANGELOG.md is newer than doc/daikon.texinfo - error out if not.
 # Report any uncommited files - users responsibility to act on results.
-check-repo: doc/CHANGES
+check-repo: doc/CHANGELOG.md
 	git status -uno
 
 # The staging target builds all of the files that will be distributed
-# to the website in the directory $(STAGING_DIR).  This includes:
+# to the website in the directory ${STAGING_DIR}.  This includes:
 # daikon.tar.gz, daikon.zip, daikon.jar, javadoc, and the documentation.
 # See the dist target for moving these files to the website.
 staging:
@@ -397,59 +419,62 @@ staging:
 # that priority and we must set the write bit.  These two chmod commands
 # will fail if you are not the owner, but the remainder of the commands
 # should work fine.
-	-chmod u+w $(WWW_PARENT)
-	-chmod -R u+w $(STAGING_DIR)
-	/bin/rm -rf $(STAGING_DIR)
-	mkdir $(STAGING_DIR)
-	cp -pR $(WWW_DIR)/history $(STAGING_DIR)
-	mkdir $(STAGING_DIR)/download
-	$(MAKE) save-current-release
-	cp -pR $(WWW_DIR)/download/inv-cvs $(STAGING_DIR)/download
+	-chmod u+w ${WWW_PARENT}
+	-chmod -R u+w ${STAGING_DIR}
+	/bin/rm -rf ${STAGING_DIR}
+	mkdir ${STAGING_DIR}
+	cp -pR ${WWW_DIR}/history ${STAGING_DIR}
+	mkdir ${STAGING_DIR}/download
+	${MAKE} save-current-release
+	cp -pR ${WWW_DIR}/download/inv-cvs ${STAGING_DIR}/download
 	# Build the main tarfile for daikon
 	@echo "]2;Building daikon.tar"
 	# make daikon.tar has side effect of making documents
-	# it also causes doc/CHANGES time stamp to be checked; which
+	# it also causes doc/CHANGELOG.md time stamp to be checked; which
 	# we do not care about at this point.
-	touch doc/CHANGES
-	$(MAKE) daikon.tar
-	gzip -c ${TMPDIR}/$(NEW_RELEASE_NAME).tar > $(STAGING_DIR)/download/$(NEW_RELEASE_NAME).tar.gz
-	cp -pf ${TMPDIR}/$(NEW_RELEASE_NAME).zip $(STAGING_DIR)/download/$(NEW_RELEASE_NAME).zip
-	cp -pf daikon.jar $(STAGING_DIR)/download
+	touch doc/CHANGELOG.md
+	# create TMPDIR
+	install -d ${TMPDIR}
+	# keep same TMPDIR value
+	${MAKE} TMPDIR=${TMPDIR} daikon.tar
+	gzip -c ${TMPDIR}/${NEW_RELEASE_NAME}.tar > ${STAGING_DIR}/download/${NEW_RELEASE_NAME}.tar.gz
+	cp -pf ${TMPDIR}/${NEW_RELEASE_NAME}.zip ${STAGING_DIR}/download/${NEW_RELEASE_NAME}.zip
+	cp -pf daikon.jar ${STAGING_DIR}/download
 	# Build javadoc
 	@echo "]2;Building Javadoc"
-	mkdir $(STAGING_DIR)/download/api
+	mkdir ${STAGING_DIR}/download/api
 	# Javadoc is skipped on Java 8.  Hard-coded JAVA_HOME path is a hack.
-	(export JAVA_HOME=/usr/lib/jvm/java-11; export PATH=${JAVA_HOME}/bin:${PATH}; cd java; $(MAKE) SKIP_JAVADOC=0 'JAVADOC_DEST=$(STAGING_DIR)/download/api' javadoc)
+	(export PATH=/usr/lib/jvm/java-11/bin:${PATH}; cd java; ${MAKE} SKIP_JAVADOC=0 'JAVADOC_DEST=${STAGING_DIR}/download/api' javadoc)
 	# Copy the documentation
 	@echo "]2;Copying documentation"
-	mkdir $(STAGING_DIR)/download/doc
-	cd doc && cp -pf $(DOC_FILES_USER) $(STAGING_DIR)/download/doc
-	cp -pR doc/images $(STAGING_DIR)/download/doc
-	cp -pR doc/daikon $(STAGING_DIR)/download/doc
-	cp -pR doc/developer $(STAGING_DIR)/download/doc
-	cd doc/www && ${RSYNC_AR} $(WWW_DAIKON_FILES) $(STAGING_DIR)
+	mkdir ${STAGING_DIR}/download/doc
+	cd doc && cp -pf ${DOC_FILES_USER} ${STAGING_DIR}/download/doc
+	cp -pR doc/images ${STAGING_DIR}/download/doc
+	cp -pR doc/daikon ${STAGING_DIR}/download/doc
+	cp -pR doc/developer ${STAGING_DIR}/download/doc
+	cd doc/www && ${RSYNC_AR} ${WWW_DAIKON_FILES} ${STAGING_DIR}
 	# Build pubs and copy the results
 	@echo "]2;Building Pubs"
-	cd doc/www && $(MAKE) pubs
-	mkdir $(STAGING_DIR)/pubs
-	cp -pR doc/www/pubs/* $(STAGING_DIR)/pubs
-	cp -p doc/daikon-favicon.png $(STAGING_DIR)
-	cp -p doc/images/daikon-logo.gif $(STAGING_DIR)
+	${MAKE} -C doc/www pubs
+	mkdir ${STAGING_DIR}/pubs
+	cp -pR doc/www/pubs/* ${STAGING_DIR}/pubs
+	cp -p doc/daikon-favicon.png ${STAGING_DIR}
+	cp -p doc/images/daikon-logo.gif ${STAGING_DIR}
 	# This command updates the dates and sizes in the various index files
-	${HTMLTOOLS}/html-update-link-dates $(STAGING_DIR)/download/index.html
+	${HTMLTOOLS}/html-update-link-dates ${STAGING_DIR}/download/index.html
 	# all distributed files should belong to the group plse_www and be group writable.
 	# set the owner and other permissions to readonly
-	chgrp -R plse_www $(STAGING_DIR)
-	chmod -R g+w $(STAGING_DIR)
-	-chmod -R u-w $(STAGING_DIR)
-	chmod -R o-w $(STAGING_DIR)
-	-chmod u-w $(WWW_PARENT)
+	chgrp -R plse_www ${STAGING_DIR}
+	chmod -R g+w ${STAGING_DIR}
+	-chmod -R u-w ${STAGING_DIR}
+	chmod -R o-w ${STAGING_DIR}
+	-chmod u-w ${WWW_PARENT}
 	# compare new list of files in tarfile to previous list
 	@echo "]2;New or removed files"
 	@echo "***** New or removed files:"
 	# need to remove the leading "daikon-<version>/" before we can compare old and new
-	tar tzf $(WWW_DIR)/download/$(CUR_RELEASE_NAME).tar.gz | perl -p -e 's/^(.*?)\///' | sort > ${TMPDIR}/old_tar.txt
-	tar tzf $(STAGING_DIR)/download/$(NEW_RELEASE_NAME).tar.gz | perl -p -e 's/^(.*?)\///' | sort > ${TMPDIR}/new_tar.txt
+	tar tzf ${WWW_DIR}/download/${CUR_RELEASE_NAME}.tar.gz | perl -p -e 's/^(.*?)\///' | sort > ${TMPDIR}/old_tar.txt
+	tar tzf ${STAGING_DIR}/download/${NEW_RELEASE_NAME}.tar.gz | perl -p -e 's/^(.*?)\///' | sort > ${TMPDIR}/new_tar.txt
 	diff -u ${TMPDIR}/old_tar.txt ${TMPDIR}/new_tar.txt || true
 	# Delete the tmp files
 	cd ${TMPDIR} && /bin/rm -rf daikon daikon.dist old_tar.txt new_tar.txt
@@ -457,61 +482,61 @@ staging:
 # Convert the staging area to the live release.
 # We do this by deleting the previous release directory and
 # renaming the staging directory to be the release directory.
-staging-to-www: $(STAGING_DIR)
-	-chmod u+w $(WWW_PARENT)
-	-chmod -R -f u+w $(WWW_DIR)
-	\rm -rf $(WWW_DIR)
-	\mv $(STAGING_DIR) $(WWW_DIR)
-	-chmod -R -f u-w $(WWW_DIR)
-	-chmod u-w $(WWW_PARENT)
+staging-to-www: ${STAGING_DIR}
+	-chmod u+w ${WWW_PARENT}
+	-chmod -R -f u+w ${WWW_DIR}
+	\rm -rf ${WWW_DIR}
+	\mv ${STAGING_DIR} ${WWW_DIR}
+	-chmod -R -f u-w ${WWW_DIR}
+	-chmod u-w ${WWW_PARENT}
 
 
 # Webpages of publications that use Daikon
 pubs:
-	$(MAKE) -C doc/www pubs
+	${MAKE} -C doc/www pubs
 
-doc/CHANGES: doc/daikon.texinfo
+doc/CHANGELOG.md: doc/daikon.texinfo
 	@echo "******************************************************************"
-	@echo "** doc/CHANGES file is not up-to-date with respect to doc files."
-	@echo "** doc/CHANGES must be modified by hand."
+	@echo "** doc/CHANGELOG.md file is not up-to-date with respect to doc files."
+	@echo "** doc/CHANGELOG.md must be modified by hand."
 	@echo "** Try:"
-	@echo "     diff -b -u -s --from-file $(WWW_DIR)/download/doc doc/*.texinfo"
-	@echo "** (or maybe  touch doc/CHANGES )."
+	@echo "     diff -b -u -s --from-file ${WWW_DIR}/download/doc doc/*.texinfo"
+	@echo "** (or maybe  touch doc/CHANGELOG.md )."
 	@echo "******************************************************************"
 	@exit 1
 
 
 doc-all:
-	cd doc && $(MAKE) all
+	${MAKE} -C doc all
 doc-all-except-pdf:
-	cd doc && $(MAKE) all-except-pdf
+	${MAKE} -C doc all-except-pdf
 
 # Get the current release version,
 # if on the CSE filesystem where an old daikon-*.zip file exists.
-ifneq ($(shell ls $(WWW_DIR)/download/daikon-*.zip 2>/dev/null),)
+ifneq ($(shell ls ${WWW_DIR}/download/daikon-*.zip 2>/dev/null),)
 # As we are now including links to the previous version, we must only look at the newest one to get the correct version number.
-    CUR_VER := $(shell ls -t -1 $(WWW_DIR)/download/daikon-*.zip |head -1 |perl -p -e 's/^.*download.daikon.//' |perl -p -e 's/.zip//')
-    CUR_RELEASE_NAME := daikon-$(CUR_VER)
+    CUR_VER := $(shell ls -t -1 ${WWW_DIR}/download/daikon-*.zip |head -1 |perl -p -e 's/^.*download.daikon.//' |perl -p -e 's/.zip//')
+    CUR_RELEASE_NAME := daikon-${CUR_VER}
 else
     CUR_RELEASE_NAME := UNKNOWN
 endif
 # Get the new release version.
 NEW_VER := $(shell cat doc/VERSION)
-NEW_RELEASE_NAME := daikon-$(NEW_VER)
+NEW_RELEASE_NAME := daikon-${NEW_VER}
 
 check-for-broken-doc-links: update-checklink
 	${CHECKLINK}/checklink -q -r `grep -v '^#' ${CHECKLINK}/checklink-args.txt` http://plse.cs.washington.edu/staging-daikon  >checklink.log 2>&1
 
-HISTORY_DIR := $(STAGING_DIR)/history
+HISTORY_DIR := ${STAGING_DIR}/history
 save-current-release:
-	@echo Saving $(CUR_VER) to history directory.
-	-chmod u+w $(HISTORY_DIR)
-	mkdir $(HISTORY_DIR)/$(CUR_RELEASE_NAME)
-	-chmod u-w $(HISTORY_DIR)
-	cd $(HISTORY_DIR)/$(CUR_RELEASE_NAME) && cp -p $(WWW_DIR)/download/$(CUR_RELEASE_NAME).* . && unzip -p $(CUR_RELEASE_NAME).zip $(CUR_RELEASE_NAME)/doc/CHANGES >CHANGES && chmod o-w CHANGES .
+	@echo Saving ${CUR_VER} to history directory.
+	-chmod u+w ${HISTORY_DIR}
+	mkdir ${HISTORY_DIR}/${CUR_RELEASE_NAME}
+	-chmod u-w ${HISTORY_DIR}
+	cd ${HISTORY_DIR}/${CUR_RELEASE_NAME} && cp -p ${WWW_DIR}/download/${CUR_RELEASE_NAME}.* . && unzip -p ${CUR_RELEASE_NAME}.zip ${CUR_RELEASE_NAME}/doc/CHANGELOG.md >CHANGELOG.md && chmod o-w CHANGELOG.md .
 # Create links to the previous version to help reduce confusion over a version number change.
-	cd $(STAGING_DIR)/download && ln $(HISTORY_DIR)/$(CUR_RELEASE_NAME)/$(CUR_RELEASE_NAME).zip
-	cd $(STAGING_DIR)/download && ln $(HISTORY_DIR)/$(CUR_RELEASE_NAME)/$(CUR_RELEASE_NAME).tar.gz
+	cd ${STAGING_DIR}/download && ln ${HISTORY_DIR}/${CUR_RELEASE_NAME}/${CUR_RELEASE_NAME}.zip
+	cd ${STAGING_DIR}/download && ln ${HISTORY_DIR}/${CUR_RELEASE_NAME}/${CUR_RELEASE_NAME}.tar.gz
 
 # Perl command compresses multiple spaces to one, for first 9 days of month.
 ifeq ($(origin TODAY), undefined)
@@ -519,13 +544,13 @@ TODAY := $(shell date "+%B %e, %Y" | perl -p -e 's/  / /')
 endif
 
 update-and-commit-version: update-doc-dist-date-and-version
-	git commit -a -m "Change version to $(NEW_VER)"
+	git commit -a -m "Change version to ${NEW_VER}"
 	git push
-	cd fjalar && git commit -a -m "Change version to $(NEW_VER)" && git push
+	cd fjalar && git commit -a -m "Change version to ${NEW_VER}" && git push
 
 update-doc-dist-date-and-version:
-	$(MAKE) update-doc-dist-date
-	$(MAKE) update-doc-dist-version
+	${MAKE} update-doc-dist-date
+	${MAKE} update-doc-dist-version
 
 # Update the documentation with a new distribution date (today).
 # This is done immediately before releasing a new distribution.
@@ -533,7 +558,7 @@ update-doc-dist-date:
 	perl -wpi -e 's/((Daikon|Fjalar) version .*, released ).*(\.|<\/CENTER>)$$/$$1${TODAY}$$3/' ${DIST_VERSION_FILES}
 	perl -wpi -e 'BEGIN { $$/="\n\n"; } s/(\@c .* Daikon version .* date\n\@center ).*(\n)/$$1${TODAY}$$2/;' doc/daikon.texinfo doc/developer.texinfo
 	perl -wpi -e 's/(public static final String release_date = ").*(";)$$/$$1${TODAY}$$2/' java/daikon/Daikon.java
-	touch doc/CHANGES
+	touch doc/CHANGELOG.md
 
 # Update the documentation according to the version number in VERSION.
 # This isn't done as part of "make dist" because then subsequent "make www"
@@ -541,18 +566,18 @@ update-doc-dist-date:
 # I removed the dependence on "update-dist-version-file" because this rule
 # is invoked at the beginning of a make.
 update-doc-dist-version:
-	perl -wpi -e 'BEGIN { $$/="\n"; } s/((Daikon|Fjalar) version |[ \/\\]daikon-)[0-9]+(\.[0-9]+)+/$$1 . "$(NEW_VER)"/e;' ${DIST_VERSION_FILES}
+	perl -wpi -e 'BEGIN { $$/="\n"; } s/((Daikon|Fjalar) version |[ \/\\]daikon-)[0-9]+(\.[0-9]+)+/$$1 . "${NEW_VER}"/e;' ${DIST_VERSION_FILES}
 	# update the version number in the release archive file names
-	perl -wpi -e 's/(\-)[0-9]+(\.[0-9]+)+/$$1 . "$(NEW_VER)"/eg;' doc/www/download/index.html
-	perl -wpi -e 's/(public static final String release_version = ")[0-9]+(\.[0-9]+)*(";)$$/$$1 . "$(NEW_VER)" . $$3/e;' java/daikon/Daikon.java
-	perl -wpi -e 's/(VG_\(details_version\)\s*\(")[0-9]+(\.[0-9]+)*("\);)$$/$$1 . "$(NEW_VER)" . $$3/e' fjalar/valgrind/fjalar/mc_main.c
-	touch doc/CHANGES
+	perl -wpi -e 's/(\-)[0-9]+(\.[0-9]+)+/$$1 . "${NEW_VER}"/eg;' doc/www/download/index.html
+	perl -wpi -e 's/(public static final String release_version = ")[0-9]+(\.[0-9]+)*(";)$$/$$1 . "${NEW_VER}" . $$3/e;' java/daikon/Daikon.java
+	perl -wpi -e 's/(VG_\(details_version\)\s*\(")[0-9]+(\.[0-9]+)*("\);)$$/$$1 . "${NEW_VER}" . $$3/e' fjalar/valgrind/fjalar/mc_main.c
+	touch doc/CHANGELOG.md
 
 # Update the version number in file doc/VERSION
 # This is done immediately after releasing a new version; thus, VERSION
 # refers to the next version to be released, not the previously-released one.
 # (Tip: If you want the next version to end with ".0", then before running
-# this target you can set the the last element of VERSION to "-1".)
+# this target you can set the last element of VERSION to "-1".)
 update-dist-version-file:
 	@perl -wpi -e 's/\.(-?[0-9]+)$$/"." . ($$1+1)/e' doc/VERSION
 	@echo -n "doc/VERSION now contains: "
@@ -564,20 +589,21 @@ update-dist-version-file:
 # Perhaps daikon.jar shouldn't include JUnit or the test files.
 .PHONY: jar
 jar: daikon.jar
-daikon.jar: $(DAIKON_JAVA_FILES) $(patsubst %,java/%,$(DAIKON_RESOURCE_FILES))
+daikon.jar: ${DAIKON_JAVA_FILES} $(patsubst %,java/%,${DAIKON_RESOURCE_FILES})
 	-rm -rf $@ ${TMPDIR}/daikon-jar
 	install -d ${TMPDIR}/daikon-jar
 	# Compile Daikon and copy the resulting class files
 	# to the ${TMPDIR}/daikon-jar directory
-	$(MAKE) -C java all_directly
+	${MAKE} -C java all_directly
 	cd java && find . \( -name "dcomp-rt*" \) -prune -o -name '*.class' -print \
 		| sort | xargs '-I{}' ${RSYNC_AR} '{}' ${TMPDIR}/daikon-jar
 
-	for filename in $(JAR_DIR)/java/lib/*.jar ; do cd ${TMPDIR}/daikon-jar; jar xf $$filename ; done
-	(cd java; ${RSYNC_AR} $(DAIKON_RESOURCE_FILES) ${TMPDIR}/daikon-jar)
+	# make hamcrest and junit4 overwrite junit5 to get our special versions
+	for filename in ${JAR_DIR}/java/lib/*.jar ${JAR_DIR}/java/lib/hamcrest*.jar ${JAR_DIR}/java/lib/junit-4*.jar; do cd ${TMPDIR}/daikon-jar; jar xf $$filename ; done
+	(cd java; ${RSYNC_AR} ${DAIKON_RESOURCE_FILES} ${TMPDIR}/daikon-jar)
 	(cd java; ${RSYNC_AR} daikon/tools/runtimechecker/Main.doc daikon/tools/runtimechecker/InstrumentHandler.doc ${TMPDIR}/daikon-jar)
 	cd ${TMPDIR}/daikon-jar && \
-	  jar cfm $@ $(JAR_DIR)/java/daikon/chicory/manifest.txt *
+	  jar cfm $@ ${JAR_DIR}/java/daikon/chicory/manifest.txt *
 	mv ${TMPDIR}/daikon-jar/$@ $@
 	#rm -rf ${TMPDIR}/daikon-jar
 
@@ -588,23 +614,24 @@ daikon.jar: $(DAIKON_JAVA_FILES) $(patsubst %,java/%,$(DAIKON_RESOURCE_FILES))
 # careful about not including extraneous files in the distribution, and one
 # could make a distribution even if there were diffs in the current
 # checkout.
-daikon.tar daikon.zip: kvasir $(README_PATHS) $(DAIKON_JAVA_FILES) java/Makefile
+daikon.tar daikon.zip: kvasir ${README_PATHS} ${DAIKON_JAVA_FILES} java/Makefile
 	make doc-all
 	# `make doc-all` just did the work, but check that the files exist.
-	make $(DOC_PATHS)
-	make daikon.jar
+	make ${DOC_PATHS}
+	# keep same TMPDIR value
+	${MAKE} TMPDIR=${TMPDIR} daikon.jar
 
 	-chmod -R +w ${TMPDIR}/daikon-* ${TMPDIR}/daikon-*.tar ${TMPDIR}/daikon-*.zip ${TMPDIR}/daikon
 	-rm -rf ${TMPDIR}/daikon-* ${TMPDIR}/daikon-*.tar ${TMPDIR}/daikon-*.zip ${TMPDIR}/daikon
-	mkdir ${TMPDIR}/daikon
+	mkdir -p ${TMPDIR}/daikon
 
 	mkdir ${TMPDIR}/daikon/doc
 	cp -p README ${TMPDIR}/daikon/README
 	cp -p README.source ${TMPDIR}/daikon/README.source
 	cp -p doc/README ${TMPDIR}/daikon/doc/README
-	(cd doc && cp -p $(DOC_FILES_NO_IMAGES) ${TMPDIR}/daikon/doc)
+	(cd doc && cp -p ${DOC_FILES_NO_IMAGES} ${TMPDIR}/daikon/doc)
 	mkdir ${TMPDIR}/daikon/doc/images
-	(cd doc && cp -p $(IMAGE_PARTIAL_PATHS) ${TMPDIR}/daikon/doc/images)
+	(cd doc && cp -p ${IMAGE_PARTIAL_PATHS} ${TMPDIR}/daikon/doc/images)
 	cp -pR doc/daikon ${TMPDIR}/daikon/doc
 	cp -pR doc/developer ${TMPDIR}/daikon/doc
 	cp -pR doc/www ${TMPDIR}/daikon/doc
@@ -615,13 +642,13 @@ daikon.tar daikon.zip: kvasir $(README_PATHS) $(DAIKON_JAVA_FILES) java/Makefile
 
 	# Auxiliary programs
 	mkdir ${TMPDIR}/daikon/scripts
-	cp -p $(SCRIPT_PATHS) ${TMPDIR}/daikon/scripts
+	cp -p ${SCRIPT_PATHS} ${TMPDIR}/daikon/scripts
 
 	# Java example files
 	mkdir ${TMPDIR}/daikon/examples
 	cp -pR examples/java-examples ${TMPDIR}/daikon/examples
 	# Keep .java files, delete everything else
-	(cd ${TMPDIR}/daikon && find examples/java-examples -name '*.java' -prune -o \( -type f -o -name daikon-output -o -name daikon-java -o -name daikon-instrumented \) -print | xargs rm -rf)
+	(cd ${TMPDIR}/daikon && find examples/java-examples -name '*.java' -prune -o \( -type f -o -name daikon-output -o -name daikon-java -o -name daikon-instrumented \) -print0 | xargs -0 rm -rf)
 
 	# Perl example files
 	mkdir ${TMPDIR}/daikon/examples/perl-examples
@@ -645,9 +672,9 @@ daikon.tar daikon.zip: kvasir $(README_PATHS) $(DAIKON_JAVA_FILES) java/Makefile
 	(cd java; tar chf ${TMPDIR}/daikon-java.tar --exclude daikon-java --exclude daikon-output --exclude Makefile.user --exclude PrototypeChecker.java --exclude VIndexChecker.java --exclude VIndexAnnotatedTypeFactory.java daikon jtb lib typequals)
 	(mkdir ${TMPDIR}/daikon/java; cd ${TMPDIR}/daikon/java; tar xf ${TMPDIR}/daikon-java.tar; rm ${TMPDIR}/daikon-java.tar)
 	cp -p java/Makefile ${TMPDIR}/daikon/java/Makefile
-	# Maybe I should do  $(MAKE) javadoc
-	# Don't do  $(MAKE) clean  which deletes .class files
-	(cd ${TMPDIR}/daikon/java; $(RM_TEMP_FILES))
+	# Maybe I should do  ${MAKE} javadoc
+	# Don't do  ${MAKE} clean  which deletes .class files
+	(cd ${TMPDIR}/daikon/java; ${RM_TEMP_FILES})
 
 	## Front ends
 	mkdir ${TMPDIR}/daikon/front-end
@@ -655,7 +682,7 @@ daikon.tar daikon.zip: kvasir $(README_PATHS) $(DAIKON_JAVA_FILES) java/Makefile
 	# Perl front end
 	# mkdir ${TMPDIR}/daikon/front-end/perl
 	cp -pR front-end/perl ${TMPDIR}/daikon/front-end
-	(cd ${TMPDIR}/daikon/front-end/perl; $(RM_TEMP_FILES) )
+	(cd ${TMPDIR}/daikon/front-end/perl; ${RM_TEMP_FILES} )
 
 	# Kvasir C front end
 # We use the --filter option twice with rsync to exclude unneeded files.
@@ -666,7 +693,7 @@ daikon.tar daikon.zip: kvasir $(README_PATHS) $(DAIKON_JAVA_FILES) java/Makefile
 	@# Internal developer documentation
 	rm -rf ${TMPDIR}/daikon/fjalar/valgrind/fjalar/notes
 	rm -rf ${TMPDIR}/daikon/fjalar/valgrind/fjalar/basic-tool
-	(cd ${TMPDIR}/daikon/fjalar; $(RM_TEMP_FILES) )
+	(cd ${TMPDIR}/daikon/fjalar; ${RM_TEMP_FILES} )
 
 	# Jar file needed for Chicory front end
 	cp -p java/ChicoryPremain.jar ${TMPDIR}/daikon/java
@@ -676,15 +703,15 @@ daikon.tar daikon.zip: kvasir $(README_PATHS) $(DAIKON_JAVA_FILES) java/Makefile
 
 	## Tools
 	cp -pR tools ${TMPDIR}/daikon
-	(cd ${TMPDIR}/daikon/tools; $(RM_TEMP_FILES); rm -f kmeans/kmeans; (cd hierarchical; rm -f clgroup cluster den difftbl) )
+	(cd ${TMPDIR}/daikon/tools; ${RM_TEMP_FILES}; rm -f kmeans/kmeans; (cd hierarchical; rm -f clgroup cluster den difftbl) )
 
 	## Make the source distribution proper
 	(cd ${TMPDIR} && chmod -R a+rX daikon)
-	(cd ${TMPDIR}; mv daikon $(NEW_RELEASE_NAME))
-	(cd ${TMPDIR}; tar cf $(NEW_RELEASE_NAME).tar $(NEW_RELEASE_NAME))
-	cp -pf ${TMPDIR}/$(NEW_RELEASE_NAME).tar .
-	(cd ${TMPDIR}; zip -r $(NEW_RELEASE_NAME).zip $(NEW_RELEASE_NAME))
-	cp -pf ${TMPDIR}/$(NEW_RELEASE_NAME).zip .
+	(cd ${TMPDIR}; mv daikon ${NEW_RELEASE_NAME})
+	(cd ${TMPDIR}; tar cf ${NEW_RELEASE_NAME}.tar ${NEW_RELEASE_NAME})
+	cp -pf ${TMPDIR}/${NEW_RELEASE_NAME}.tar .
+	(cd ${TMPDIR}; zip -r ${NEW_RELEASE_NAME}.zip ${NEW_RELEASE_NAME})
+	cp -pf ${TMPDIR}/${NEW_RELEASE_NAME}.zip .
 
 
 ### Front end binaries
@@ -697,51 +724,71 @@ daikon.tar daikon.zip: kvasir $(README_PATHS) $(DAIKON_JAVA_FILES) java/Makefile
 ###
 
 showvars:
-	@echo "DAIKONDIR =" $(DAIKONDIR)
-	@echo "DAIKON_JAVA_FILES =" $(DAIKON_JAVA_FILES)
-	@echo "WWW_FILES =" $(WWW_FILES)
-	@echo "CUR_RELEASE_NAME =" $(CUR_RELEASE_NAME)
-	@echo "NEW_RELEASE_NAME =" $(NEW_RELEASE_NAME)
+	@echo "DAIKONDIR =" ${DAIKONDIR}
+	@echo "DAIKON_JAVA_FILES =" ${DAIKON_JAVA_FILES}
+	@echo "WWW_FILES =" ${WWW_FILES}
+	@echo "CUR_RELEASE_NAME =" ${CUR_RELEASE_NAME}
+	@echo "NEW_RELEASE_NAME =" ${NEW_RELEASE_NAME}
 	${MAKE} -C java showvars
 
-# If .git does not exist, then directory was created from a daikon archive file.
-# The "git pull" command fails under Centos and Fedora 23, for mysterious reasons.
-update-libs: update-checklink update-html-tools update-plume-scripts update-run-google-java-format
-.PHONY: update-libs update-checklink update-html-tools update-plume-scripts update-run-google-java-format
+# If .git does not exist, then the directory was created from a Daikon archive file.
+update-libs: update-bibtex2web update-checklink update-git-scripts update-html-tools update-plume-scripts update-run-google-java-format
+.PHONY: update-libs update-bibtex2web update-checklink update-git-scripts update-html-tools update-plume-scripts update-run-google-java-format
+
+# Unfortunately, I don't see a way for the below not to output lots of "remote:" lines to the log.
+# But, I can avoid doing local output.
+
+update-bibtex2web:
+ifndef NONETWORK
+	if test -d utils/bibtex2web/.git ; then \
+	  (cd utils/bibtex2web && (git pull -q || (sleep 1m && (git pull || true)))) \
+	elif ! test -d utils/bibtex2web ; then \
+	  (mkdir -p utils && (git clone -q --depth=1 https://github.com/mernst/bibtex2web.git utils/bibtex2web || (sleep 1m && git clone -q --depth=1 https://github.com/mernst/bibtex2web.git utils/bibtex2web))) \
+	fi
+endif
 
 update-checklink:
 ifndef NONETWORK
 	if test -d utils/checklink/.git ; then \
-	  (cd utils/checklink && git pull -q) \
+	  (cd utils/checklink && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/checklink ; then \
-	  (mkdir -p utils && (git clone -q --depth 1 https://github.com/plume-lib/checklink.git utils/checklink || git clone -q --depth 1 https://github.com/plume-lib/checklink.git utils/checklink)) \
+	  (mkdir -p utils && (git clone -q --depth=1 https://github.com/plume-lib/checklink.git utils/checklink || (sleep 1m && git clone -q --depth=1 https://github.com/plume-lib/checklink.git utils/checklink))) \
+	fi
+endif
+
+update-git-scripts:
+ifndef NONETWORK
+	if test -d utils/git-scripts/.git ; then \
+	  (cd utils/git-scripts && (git pull -q || (sleep 1m && (git pull || true)))) \
+	elif ! test -d utils/git-scripts ; then \
+	  (mkdir -p utils && (git clone -q --depth=1 https://github.com/plume-lib/git-scripts.git utils/git-scripts || (sleep 1m && git clone -q --depth=1 https://github.com/plume-lib/git-scripts.git utils/git-scripts))) \
 	fi
 endif
 
 update-html-tools:
 ifndef NONETWORK
 	if test -d utils/html-tools/.git ; then \
-	  (cd utils/html-tools && git pull -q) \
+	  (cd utils/html-tools && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/html-tools ; then \
-	  (mkdir -p utils && (git clone -q --depth 1 https://github.com/plume-lib/html-tools.git utils/html-tools || git clone -q --depth 1 https://github.com/plume-lib/html-tools.git utils/html-tools)) \
+	  (mkdir -p utils && (git clone -q --depth=1 https://github.com/plume-lib/html-tools.git utils/html-tools || (sleep 1m && git clone -q --depth=1 https://github.com/plume-lib/html-tools.git utils/html-tools))) \
 	fi
 endif
 
 update-plume-scripts:
 ifndef NONETWORK
 	if test -d utils/plume-scripts/.git ; then \
-	  (cd utils/plume-scripts && (git pull -q || echo "git pull failed")) \
+	  (cd utils/plume-scripts && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/plume-scripts ; then \
-	  (mkdir -p utils && (git clone -q --depth 1 https://github.com/plume-lib/plume-scripts.git utils/plume-scripts || git clone -q --depth 1 https://github.com/plume-lib/plume-scripts.git utils/plume-scripts)) \
+	  mkdir -p utils && (git clone -q --depth=1 https://github.com/plume-lib/plume-scripts.git utils/plume-scripts || (sleep 1m && git clone -q --depth=1 https://github.com/plume-lib/plume-scripts.git utils/plume-scripts)) \
 	fi
 endif
 
 update-run-google-java-format:
 ifndef NONETWORK
 	if test -d utils/run-google-java-format/.git ; then \
-	  (cd utils/run-google-java-format && git pull -q) \
+	  (cd utils/run-google-java-format && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/run-google-java-format ; then \
-	  (mkdir -p utils && (git clone -q --depth 1 https://github.com/plume-lib/run-google-java-format.git utils/run-google-java-format || git clone -q --depth 1 https://github.com/plume-lib/run-google-java-format.git utils/run-google-java-format)) \
+	  (mkdir -p utils && (git clone -q --depth=1 https://github.com/plume-lib/run-google-java-format.git utils/run-google-java-format || (sleep 1m && git clone -q --depth=1 https://github.com/plume-lib/run-google-java-format.git utils/run-google-java-format))) \
 	fi
 endif
 

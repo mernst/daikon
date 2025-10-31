@@ -65,6 +65,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.ArraysPlume;
@@ -81,9 +82,6 @@ import org.plumelib.util.ArraysPlume;
   "interning"
 })
 public final @Interned class VarInfo implements Cloneable, Serializable {
-  // We are Serializable, so we specify a version to allow changes to
-  // method signatures without breaking serialization.  If you add or
-  // remove fields, you should change this number to the current date.
   static final long serialVersionUID = 20060815L;
 
   /**
@@ -125,13 +123,13 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
    */
   private @Interned String str_name; // interned
 
-  /** returns the interned name of the variable */
+  /** returns the interned name of the variable. */
   @Pure
   public @Interned String name(@GuardSatisfied VarInfo this) {
     if (FileIO.new_decl_format) {
       return str_name;
     } else {
-      return (var_info_name.name().intern()); // vin ok
+      return var_info_name.name().intern(); // vin ok
     }
   }
 
@@ -166,6 +164,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   public ProglangType rep_type; // interned (as are all ProglangType objects)
 
   /** Comparability info. */
+  @SuppressWarnings("serial")
   public VarComparability comparability;
 
   /** Auxiliary info. */
@@ -190,9 +189,10 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   public boolean is_static_constant;
 
   /** Null if not statically constant. */
+  @SuppressWarnings("serial")
   @Nullable @Interned Object static_constant_value;
 
-  /** Whether and how derived. Null if this is not derived. */
+  /** True if and how derived. Null if this is not derived. */
   public @MonotonicNonNull Derivation derived;
 
   // Various enums used for information about variables
@@ -213,6 +213,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     ANNOTATION,
     ENUM
   };
+
   // These enums are intentionally duplicated in Chicory and other
   // front-ends. These values are written into decl files, and as
   // such, should stay constant between front-ends. They should not be
@@ -248,6 +249,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   public EnumSet<LangFlags> lang_flags = EnumSet.noneOf(LangFlags.class);
 
   public VarDefinition vardef;
+
   /**
    * For documentation, see {@link #get_enclosing_var()}. Null if no variable encloses this one --
    * that is, this is not a field of another variable, nor a "method call" like tostring or class.
@@ -261,9 +263,11 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
    * The arguments that were used to create this function application. Null if this variable is not
    * a function application.
    */
+  @SuppressWarnings("serial")
   public @MonotonicNonNull List<VarInfo> function_args = null;
 
   /** Parent program points in ppt hierarchy (optional) */
+  @SuppressWarnings("serial")
   public List<VarParent> parents;
 
   /**
@@ -273,9 +277,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   public @Nullable String relative_name = null;
 
   /**
-   * Returns whether or not we have encountered to date any missing values due to array indices
-   * being out of bounds. This can happen with both subscripts and subsequences. Note that this
-   * becomes true as we are running, it cannot be set in advance without a first pass.
+   * Returns true if we have encountered to date any missing values due to array indices being out
+   * of bounds. This can happen with both subscripts and subsequences. Note that this becomes true
+   * as we are running, it cannot be set in advance without a first pass.
    *
    * <p>This is used as we are processing data to destroy any invariants that use this variable.
    *
@@ -367,7 +371,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     }
   }
 
-  /** Returns whether or not rep_type is a legal type. */
+  /** Returns true if rep_type is a legal type. */
   static boolean legalRepType(ProglangType rep_type) {
     return ((rep_type == ProglangType.INT)
         || (rep_type == ProglangType.DOUBLE)
@@ -377,7 +381,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
         || (rep_type == ProglangType.STRING_ARRAY));
   }
 
-  /** Returns whether or not constant_value is a legal constant. */
+  /** Returns true if constant_value is a legal constant. */
   @EnsuresNonNullIf(result = false, expression = "#1")
   static boolean legalConstant(@Nullable Object constant_value) {
     return ((constant_value == null)
@@ -386,8 +390,8 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   }
 
   /**
-   * Returns whether or not file_rep_type is a legal file_rep_type. The file_rep_type matches
-   * rep_type except that it also allows the more detailed scalar types (HASHCODE, BOOLEAN, etc).
+   * Returns true if file_rep_type is a legal file_rep_type. The file_rep_type matches rep_type
+   * except that it also allows the more detailed scalar types (HASHCODE, BOOLEAN, etc).
    */
   static boolean legalFileRepType(ProglangType file_rep_type) {
     return (legalRepType(file_rep_type)
@@ -837,7 +841,8 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
       // the side-effected VarDefinition will be passed to "new VarInfo".
       if (result_vardef.enclosing_var_name != null) {
         assert vi.enclosing_var != null
-            : "@AssumeAssertion(nullness): dependent: result_vardef was copied from vi and their enclosing_var fields are the same";
+            : "@AssumeAssertion(nullness): dependent: result_vardef was copied from vi and their"
+                + " enclosing_var fields are the same";
         result_vardef.enclosing_var_name = vi.enclosing_var.prestate_name();
         assert result_vardef.enclosing_var_name != null : "" + result_vardef;
       }
@@ -881,7 +886,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     VarInfo[] a_new = new VarInfo[len];
     for (int i = 0; i < len; i++) {
       a_new[i] = new VarInfo(a_old[i]);
-      if (a_old[i].derived != null) assert a_new[i].derived != null;
+      if (a_old[i].derived != null) {
+        assert a_new[i].derived != null;
+      }
       a_new[i].varinfo_index = a_old[i].varinfo_index;
       a_new[i].value_index = a_old[i].value_index;
     }
@@ -905,12 +912,22 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     return name();
   }
 
-  /** Helper function for repr(). */
-  private Object checkNull(@Nullable Object o) {
-    return (o == null) ? "null" : o;
+  /**
+   * Returns the argument or, if it is null, {@code "null"}.
+   *
+   * @param o a reference
+   * @return the argument or, if it is null, {@code "null"}
+   */
+  private @PolySigned Object checkNull(
+      @GuardSatisfied VarInfo this, @Nullable @PolySigned Object o) {
+    return (o == null) ? (@PolySigned Object) "null" : o;
   }
 
-  /** Returns a complete string description of the variable. */
+  /**
+   * Returns a complete string description of the variable.
+   *
+   * @return a complete string description of the variable
+   */
   public String repr() {
     return "<VarInfo "
         + var_info_name // vin ok
@@ -950,7 +967,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
         + ">";
   }
 
-  /** Returns whether or not this variable is a static constant. */
+  /** Returns true if this variable is a static constant. */
   @EnsuresNonNullIf(
       result = true,
       expression = {"constantValue()", "static_constant_value"})
@@ -1007,7 +1024,11 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     return (derived != null);
   }
 
-  /** returns the depth of derivation */
+  /**
+   * Returns the depth of derivation.
+   *
+   * @return the depth of derivation
+   */
   public int derivedDepth() {
     if (derived == null) {
       return 0;
@@ -1016,7 +1037,11 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     }
   }
 
-  /** Return all derived variables that build off this one. */
+  /**
+   * Returns all derived variables that build off this one.
+   *
+   * @return all derived variables that build off this one
+   */
   public List<Derivation> derivees() {
     ArrayList<Derivation> result = new ArrayList<>();
     // This method is only called from the debugging routine 'repr()'.
@@ -1086,7 +1111,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     // This should eventually turn into
     //   return name.indexOf("closure(") != -1;
     // when I rename those variables to "closure(...)".
-    return name().indexOf("~") != -1; // XXX
+    return name().indexOf('~') != -1; // XXX
   }
 
   /** Cached value for getDerivedParam(). */
@@ -1181,7 +1206,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   }
 
   /**
-   * Return a VarInfo that has two properties: this is a derivation of it, and it is a parameter
+   * Returns a VarInfo that has two properties: this is a derivation of it, and it is a parameter
    * variable. If this is a parameter, then this is returned. For example, "this" is always a
    * parameter. The return value of getDerivedParam for "this.a" (which is not a parameter) is
    * "this".
@@ -1374,7 +1399,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   }
 
   /**
-   * Get the value of this variable from a particular sample (ValueTuple).
+   * Returns the value of this variable from a particular sample (ValueTuple).
    *
    * @param vt the ValueTuple from which to extract the value
    */
@@ -1529,7 +1554,11 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     return (String[]) raw;
   }
 
-  /** Whether this VarInfo is the leader of its equality set. */
+  /**
+   * Returns true if this VarInfo is the leader of its equality set.
+   *
+   * @return true if this VarInfo is the leader of its equality set
+   */
   @Pure
   public boolean isCanonical() {
     if (equalitySet == null) {
@@ -1561,6 +1590,8 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   /**
    * Returns the VarInfo for the sequence from which this was derived, or null if this wasn't
    * derived from a sequence. Only works for scalars.
+   *
+   * @return the VarInfo for the sequence from which this was derived, or null
    */
   public @Nullable VarInfo isDerivedSequenceMember() {
     if (derived == null) {
@@ -1593,8 +1624,10 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   }
 
   /**
-   * Return the original sequence variable from which this derived sequence was derived. Only works
+   * Returns the original sequence variable from which this derived sequence was derived. Only works
    * for sequences.
+   *
+   * @return the VarInfo for the original sequence from which this sequence was derived, or null
    */
   public @Nullable VarInfo isDerivedSubSequenceOf() {
 
@@ -1736,7 +1769,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   }
 
   /**
-   * Return true if invariants about this quantity are really properties of a pointer, but derived
+   * Returns true if invariants about this quantity are really properties of a pointer, but derived
    * variables can refer to properties of the thing pointed to. This distinction is important when
    * making logical statements about the object, because in the presence of side effects, the
    * pointed-to object can change even when the pointer doesn't. For instance, we might have "obj ==
@@ -1771,9 +1804,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     return simplifyFixup(simplify_name());
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Utility functions
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Utility functions
+  //
 
   // Where do these really belong?
 
@@ -1803,7 +1836,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     // varj_shift + ", " + (test_lessequal?"<=":">=") + ")");
     if (vari == varj) {
       // same variable
-      return (test_lessequal ? (vari_shift <= varj_shift) : (vari_shift >= varj_shift));
+      return test_lessequal ? (vari_shift <= varj_shift) : (vari_shift >= varj_shift);
     }
     // different variables
     boolean samePpt = (vari.ppt == varj.ppt);
@@ -1904,7 +1937,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   }
 
   /**
-   * Return some variable in the other state (pre-state if this is post-state, or vice versa) that
+   * Returns some variable in the other state (pre-state if this is post-state, or vice versa) that
    * equals this one, or null if no equal variable exists.
    */
   // This does *not* try the obvious thing of converting "foo" to
@@ -2110,7 +2143,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   }
 
   /**
-   * Return true if this sequence variable's element type is compatible with the scalar variable.
+   * Returns true if this sequence variable's element type is compatible with the scalar variable.
    */
   public boolean eltsCompatible(VarInfo sclvar) {
     VarInfo seqvar = this;
@@ -2245,7 +2278,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
       }
     }
 
-    if (relative_name != null) relative_name = relative_name.intern();
+    if (relative_name != null) {
+      relative_name = relative_name.intern();
+    }
   }
 
   // /**
@@ -2325,14 +2360,15 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
    *
    * <p>For example, if this VarInfo is "a.b.c", then the guarding list consists of the variables
    * "a" and "a.b". If "a" is null or "a.b" is null, then "a.b.c" is missing (does not exist).
+   *
+   * @return a list of varables that must be guarded
    */
   public List<VarInfo> getGuardingList() {
 
-    /**
-     * The list returned by this visitor always includes the argument itself (if it is testable
-     * against null; for example, derived variables are not). If the caller does not want the
-     * argument to be in the list, the caller must must remove the argument.
-     */
+    // The list returned by this visitor always includes the argument itself (if it is testable
+    // against null; for example, derived variables are not). If the caller does not want the
+    // argument to be in the list, the caller must must remove the argument.
+
     // Inner class because it uses the "ppt" variable.
     // Basic structure of each visitor:
     //   If the argument should be guarded, recurse.
@@ -2350,8 +2386,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
         // System.out.printf("viname = %s, applyPreMaybe=%s, findvar=%s%n",
         //                   viname, applyPreMaybe(viname),
         //                   ppt.findVar(applyPreMaybe(viname)));
-        if (Daikon.dkconfig_guardNulls == "always") // interned
-        return true;
+        if (Daikon.dkconfig_guardNulls == "always") { // interned
+          return true;
+        }
         if (Daikon.dkconfig_guardNulls == "missing") { // interned
           VarInfo vi = ppt.find_var_by_name(applyPreMaybe(viname).name());
           // Don't guard variables that don't exist.  This happends when
@@ -2527,8 +2564,12 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
         List<VarInfo> result = new ArrayList<>();
         if (shouldBeGuarded(o)) {
           result.addAll(o.sequence.accept(this));
-          if (o.i != null) result.addAll(o.i.accept(this));
-          if (o.j != null) result.addAll(o.j.accept(this));
+          if (o.i != null) {
+            result.addAll(o.i.accept(this));
+          }
+          if (o.j != null) {
+            result.addAll(o.j.accept(this));
+          }
         }
         // No call to addVar:  derived variable
         if (Invariant.debugGuarding.isLoggable(Level.FINE)) {
@@ -2580,7 +2621,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
       // (Then what is the type of the visitor; what does everything return?)
       private List<VarInfo> addVarInfo(List<VarInfo> result, VarInfo vi) {
         assert vi != null;
-        assert (!vi.isDerived() || vi.isDerived()) : "addVar on derived variable: " + vi;
+        assert !vi.isDerived() || vi.isDerived() : "addVar on derived variable: " + vi;
         // Don't guard primitives
         if ( // TODO: ***** make changes here *****
         // vi.file_rep_type.isScalar() &&
@@ -2615,8 +2656,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     } else { // new format
       List<VarInfo> result = new ArrayList<>();
 
-      if (Daikon.dkconfig_guardNulls == "never") // interned
-      return result;
+      if (Daikon.dkconfig_guardNulls == "never") { // interned
+        return result;
+      }
 
       // If this is never missing, nothing to guard
       if ((Daikon.dkconfig_guardNulls == "missing") // interned
@@ -2710,7 +2752,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     // build the name of the object ppt based on the variable type
     String type_str = type.base().replaceFirst("\\$", ".");
     PptName objname = new PptName(type_str, null, FileIO.object_suffix);
-    return (all_ppts.get(objname));
+    return all_ppts.get(objname);
   }
 
   /**
@@ -2747,19 +2789,19 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
       }
 
       Pair o = (Pair) obj;
-      return ((o.v1 == v1) && (o.v2 == v2));
+      return (o.v1 == v1) && (o.v2 == v2);
     }
 
     @Pure
     @Override
     public int hashCode(@GuardSatisfied Pair this) {
-      return (v1.hashCode() + v2.hashCode());
+      return v1.hashCode() + v2.hashCode();
     }
 
     @SideEffectFree
     @Override
     public String toString(@GuardSatisfied Pair this) {
-      return (v1.name() + " = " + v2.name());
+      return v1.name() + " = " + v2.name();
     }
   }
 
@@ -2833,7 +2875,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     }
   }
 
-  /** Returns whether or not this variable is a parameter. */
+  /** Returns true if this variable is a parameter. */
   @Pure
   public boolean isParam() {
     if (FileIO.new_decl_format) {
@@ -2857,7 +2899,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     if (set) {
       set_is_param();
     } else {
-      if (FileIO.new_decl_format) var_flags.remove(VarFlags.IS_PARAM);
+      if (FileIO.new_decl_format) {
+        var_flags.remove(VarFlags.IS_PARAM);
+      }
       aux = aux.setValue(VarInfoAux.IS_PARAM, VarInfoAux.FALSE); // VIN
     }
   }
@@ -2989,7 +3033,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
    * Temporary to let things compile now that name is private. Eventually this should be removed.
    */
   public VarInfoName get_VarInfoName() {
-    return (var_info_name); // vin ok
+    return var_info_name; // vin ok
   }
 
   private static boolean isStatic(String variable, String enclosing) {
@@ -3158,7 +3202,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
         if (enclosing_var != null) {
 
           if (isStatic(str_name, enclosing_var.name())) {
-            String qualifiedName = str_name.substring(0, str_name.indexOf("("));
+            String qualifiedName = str_name.substring(0, str_name.indexOf('('));
             return qualifiedName + "(" + enclosing_var.csharp_name(index) + ")";
           } else if (var_flags.contains(VarFlags.IS_PROPERTY)) {
             return enclosing_var.csharp_name(index) + "." + relative_name;
@@ -3212,7 +3256,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
       return var_info_name.esc_name(); // vin ok
     }
 
-    return (esc_name(null));
+    return esc_name(null);
   }
 
   /**
@@ -3282,7 +3326,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
       return var_info_name.jml_name(this); // vin ok
     }
 
-    return (jml_name(null));
+    return jml_name(null);
   }
 
   /**
@@ -3592,8 +3636,8 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   }
 
   /**
-   * Return a string in simplify format that will seclect the (index_base + index_off)-th element of
-   * the sequence specified by this variable.
+   * Returns a string in simplify format that will seclect the (index_base + index_off)-th element
+   * of the sequence specified by this variable.
    *
    * @param simplify_index_name name of the index. If free is false, this must be a number or null
    *     (null implies an index of 0).
@@ -3626,7 +3670,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     String complete_index;
     if (!free) {
       int index = 0;
-      if (simplify_index_name != null) index = Integer.decode(simplify_index_name);
+      if (simplify_index_name != null) {
+        index = Integer.decode(simplify_index_name);
+      }
       index += index_off;
       complete_index = String.format("%d", index);
     } else {
@@ -3642,7 +3688,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   }
 
   /**
-   * Return a string in simplify format that will seclect the index_off element in a sequence that
+   * Returns a string in simplify format that will seclect the index_off element in a sequence that
    * has a lower bound.
    *
    * @param index_off offset from the index
@@ -3668,7 +3714,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     String complete_index;
     Quantify.Term lower = get_lower_bound();
     String lower_name = lower.simplify_name();
-    if (!(lower instanceof Quantify.Constant)) lower_name = String.format("|%s|", lower_name);
+    if (!(lower instanceof Quantify.Constant)) {
+      lower_name = String.format("|%s|", lower_name);
+    }
     if (index_off != 0) {
       if (lower instanceof Quantify.Constant) {
         complete_index = String.format("%d", ((Quantify.Constant) lower).get_value() + index_off);
@@ -3725,7 +3773,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     }
 
     // Get a free variable for each variable
-    if (vars.length == 1) vars = new VarInfo[] {vars[0], vars[0]};
+    if (vars.length == 1) {
+      vars = new VarInfo[] {vars[0], vars[0]};
+    }
     QuantifyReturn qret[] = Quantify.quantify(vars);
     return new String[] {qret[0].index.simplify_name(), qret[1].index.simplify_name()};
   }
@@ -3827,7 +3877,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
         }
       }
     } else {
-      if (isPrestate()) cnt++;
+      if (isPrestate()) {
+        cnt++;
+      }
       for (VarInfo vi = this; vi != null; vi = vi.enclosing_var) {
         cnt++;
       }
@@ -3856,9 +3908,8 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   }
 
   /**
-   * Returns whether or not this variable represents the type of a variable (eg,
-   * a.getClass().getName()). Note that this will miss prestate variables such as
-   * 'orig(a.getClass().getName())'.
+   * Returns true if this variable represents the type of a variable (eg, a.getClass().getName()).
+   * Note that this will miss prestate variables such as 'orig(a.getClass().getName())'.
    */
   @Pure
   public boolean is_typeof() {
@@ -3872,9 +3923,8 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   }
 
   /**
-   * Returns whether or not this variable represents the type of a variable (eg,
-   * a.getClass().getName()). This version finds prestate variables such as
-   * 'org(a.getClass().getName())'.
+   * Returns true if this variable represents the type of a variable (eg, a.getClass().getName()).
+   * This version finds prestate variables such as 'org(a.getClass().getName())'.
    */
   public boolean has_typeof() {
     if (!FileIO.new_decl_format) {
@@ -3887,15 +3937,15 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     return is_typeof();
   }
 
-  /** Returns whether or not this variable is the 'this' variable. */
+  /** Returns true if this variable is the 'this' variable. */
   @Pure
   public boolean is_this() {
     return name().equals("this");
-    // return (get_VarInfoName().equals (VarInfoName.THIS));
+    // return get_VarInfoName().equals(VarInfoName.THIS);
   }
 
   /**
-   * Returns whether or not this variable is the 'this' variable. True for both normal and prestate
+   * Returns true if this variable is the 'this' variable. True for both normal and prestate
    * versions of the variable.
    */
   @Pure
@@ -3903,7 +3953,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     return var_info_name.isThis();
   }
 
-  /** Returns whether this is a size of an array or a prestate thereof. */
+  /** Returns true if this is a size of an array or a prestate thereof. */
   @Pure
   public boolean is_size() {
     return (derived instanceof SequenceLength);
@@ -3915,7 +3965,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     return (var_info_name instanceof VarInfoName.Field);
   }
 
-  /** Returns whether or not this variable has an integer offset (eg, a+2) */
+  /** Returns true if this variable has an integer offset (eg, a+2) */
   @Pure
   public boolean is_add() {
     return (var_info_name instanceof VarInfoName.Add);
@@ -3932,8 +3982,8 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   }
 
   /**
-   * Returns whether or not this variable is an actual array as opposed to an array that is created
-   * over fields/methods of an array. For example, 'a[]' is a direct array, but 'a[].b' is not.
+   * Returns true if this variable is an actual array as opposed to an array that is created over
+   * fields/methods of an array. For example, 'a[]' is a direct array, but 'a[].b' is not.
    */
   @Pure
   public boolean is_direct_array() {
@@ -3960,9 +4010,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   }
 
   /**
-   * Returns whether or not this variable is an actual array as opposed to an array that is created
-   * over fields/methods of an array or a slice. For example, 'a[]' is a direct array, but 'a[].b'
-   * and 'a[i..]' are not.
+   * Returns true if this variable is an actual array as opposed to an array that is created over
+   * fields/methods of an array or a slice. For example, 'a[]' is a direct array, but 'a[].b' and
+   * 'a[i..]' are not.
    */
   @Pure
   public boolean is_direct_non_slice_array() {
@@ -3970,8 +4020,8 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
   }
 
   /**
-   * Returns whether or not two variables have the same enclosing variable. If either variable is
-   * not a field, returns false.
+   * Returns true if two variables have the same enclosing variable. If either variable is not a
+   * field, returns false.
    */
   public boolean has_same_parent(VarInfo other) {
     if (!is_field() || !other.is_field()) {
@@ -3981,7 +4031,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     VarInfoName.Field name1 = (VarInfoName.Field) var_info_name;
     VarInfoName.Field name2 = (VarInfoName.Field) other.var_info_name;
 
-    return (name1.term.equals(name2.term));
+    return name1.term.equals(name2.term);
   }
 
   /**
@@ -4024,8 +4074,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
       VarInfo seq, @Nullable VarInfo begin, int begin_shift, @Nullable VarInfo end, int end_shift) {
 
     String begin_str = inside_name(begin, seq.isPrestate(), begin_shift);
-    if (begin_str.equals("")) // interned if the null string, not interned otherwise
-    begin_str = "0";
+    if (begin_str.equals("")) { // interned if the null string, not interned otherwise
+      begin_str = "0";
+    }
     String end_str = inside_name(end, seq.isPrestate(), end_shift);
 
     VarInfoName begin_name;
@@ -4179,7 +4230,9 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
             subscript_parent = ((Prestate) VarInfoName.parse(subscript_parent)).term.name_impl();
           }
 
-          if (index_shift == -1) subscript_parent = subscript_parent + "-1";
+          if (index_shift == -1) {
+            subscript_parent = subscript_parent + "-1";
+          }
         }
         parent.parent_variable = apply_subscript(seq.parent_var_name(rid), subscript_parent);
       }
@@ -4209,21 +4262,22 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     return vi;
   }
 
-  /*
+  /**
    * Creates the derived variable func(seq) from seq.
    *
    * @param func_name name of the function
-   * @param type return type of the function.  If null, the return type is
-   *             the element type of the sequence.
+   * @param type return type of the function. If null, the return type is the element type of the
+   *     sequence.
    * @param seq sequence variable
-   * @param shift value to add or subtract from the function.  Legal values
-   *              are -1, 0, and 1.
+   * @param shift value to add or subtract from the function. Legal values are -1, 0, and 1.
    */
   public static VarInfo make_scalar_seq_func(
       String func_name, @Nullable ProglangType type, VarInfo seq, int shift) {
 
     VarInfoName viname = seq.var_info_name.applyFunction(func_name);
-    if (func_name.equals("size")) viname = seq.var_info_name.applySize();
+    if (func_name.equals("size")) {
+      viname = seq.var_info_name.applySize();
+    }
     String shift_name = "";
     if (shift == -1) {
       viname = viname.applyDecrement();
@@ -4302,7 +4356,7 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     return vi;
   }
 
-  /*
+  /**
    * Creates the derived variable func(str) from string.
    *
    * @param func_name name of the function
@@ -4350,12 +4404,12 @@ public final @Interned class VarInfo implements Cloneable, Serializable {
     if ((derived == null) && (vi.derived == null)) {
 
       // true if vi is the prestate version of this
-      return (!isPrestate() && vi.isPrestate() && name().equals(vi.postState.name()));
+      return !isPrestate() && vi.isPrestate() && name().equals(vi.postState.name());
 
       // else if both variables are derived
     } else if ((derived != null) && (vi.derived != null)) {
 
-      return (derived.is_prestate_version(vi.derived));
+      return derived.is_prestate_version(vi.derived);
 
       // one is derived and the other isn't
     } else {

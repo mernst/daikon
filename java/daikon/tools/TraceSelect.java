@@ -1,20 +1,27 @@
 // TraceSelect.java
 package daikon.tools;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.StringTokenizer;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
+import org.plumelib.util.FilesPlume;
 import org.plumelib.util.MultiRandSelector;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
+/**
+ * The TraceSelect tool creates several small subsets of the data by randomly selecting parts of the
+ * original trace file.
+ */
 public class TraceSelect {
 
   public static boolean CLEAN = true;
@@ -44,11 +51,18 @@ public class TraceSelect {
   // Always set to non-null by mainHelper
   private static String @MonotonicNonNull [] sampleNames;
 
+  /** The usage message for this program. */
   private static final String usage =
-      UtilPlume.joinLines(
+      StringsPlume.joinLines(
           "USAGE: TraceSelect num_reps sample_size [options] [Daikon-args]...",
-          "Example: java TraceSelect 20 10 -NOCLEAN -INCLUDE_UNRETURNED-SEED 1000 foo.dtrace foo2.dtrace foo.decls RatPoly.decls foo3.dtrace");
+          "Example: java TraceSelect 20 10 -NOCLEAN -INCLUDE_UNRETURNED-SEED 1000 foo.dtrace"
+              + " foo2.dtrace foo.decls RatPoly.decls foo3.dtrace");
 
+  /**
+   * The entry point of TraceSelect.
+   *
+   * @param args command-line arguments
+   */
   public static void main(String[] args) {
     try {
       mainHelper(args);
@@ -77,7 +91,7 @@ public class TraceSelect {
     boolean knowArgStart = false;
     for (int i = 2; i < args.length; i++) {
       // allows seed setting
-      if (args[i].toUpperCase().equals("-SEED")) {
+      if (args[i].toUpperCase(Locale.ENGLISH).equals("-SEED")) {
         if (i + 1 >= args.length) {
           throw new daikon.Daikon.UserError("-SEED options requires argument");
         }
@@ -87,7 +101,7 @@ public class TraceSelect {
 
       // NOCLEAN argument will leave the trace samples even after
       // the invariants from these samples have been generated
-      else if (args[i].toUpperCase().equals("-NOCLEAN")) {
+      else if (args[i].toUpperCase(Locale.ENGLISH).equals("-NOCLEAN")) {
         CLEAN = false;
         daikonArgStart = i + 1;
       }
@@ -95,7 +109,7 @@ public class TraceSelect {
       // INCLUDE_UNRETURNED option will allow selecting method invocations
       // that entered the method successfully but did not exit normally;
       // either from a thrown Exception or abnormal termination.
-      else if (args[i].toUpperCase().equals("-INCLUDE_UNRETURNED")) {
+      else if (args[i].toUpperCase(Locale.ENGLISH).equals("-INCLUDE_UNRETURNED")) {
         INCLUDE_UNRETURNED = true;
         daikonArgStart = i + 1;
       }
@@ -105,8 +119,8 @@ public class TraceSelect {
       // daikon.diff.Diff over each of the samples and finding
       // properties that appear in some but not all of the
       // samples.
-      else if (args[i].toUpperCase().equals("-DO_DIFFS")) {
-        DO_DIFFS = false;
+      else if (args[i].toUpperCase(Locale.ENGLISH).equals("-DO_DIFFS")) {
+        DO_DIFFS = true;
         daikonArgStart = i + 1;
       }
 
@@ -171,19 +185,21 @@ public class TraceSelect {
 
       while (num_reps > 0) {
 
-        DtracePartitioner dec = new DtracePartitioner(fileName);
-        MultiRandSelector<String> mrs = new MultiRandSelector<>(numPerSample, dec);
-
-        while (dec.hasNext()) {
-          mrs.accept(dec.next());
-        }
         List<String> al = new ArrayList<>();
+        try (DtracePartitioner dec = new DtracePartitioner(fileName)) {
+          MultiRandSelector<String> mrs = new MultiRandSelector<>(numPerSample, dec);
 
-        for (Iterator<String> i = mrs.valuesIter(); i.hasNext(); ) {
-          al.add(i.next());
+          while (dec.hasNext()) {
+            mrs.accept(dec.next());
+          }
+
+          for (Iterator<String> i = mrs.valuesIter(); i.hasNext(); ) {
+            al.add(i.next());
+          }
+
+          List<String> al_tmp = dec.patchValues(al, INCLUDE_UNRETURNED);
+          al = al_tmp;
         }
-
-        al = dec.patchValues(al, INCLUDE_UNRETURNED);
 
         String filePrefix = calcOut(fileName);
 
@@ -191,19 +207,18 @@ public class TraceSelect {
         // but now add a '-p' in the front so it's all good
         sampleNames[num_reps] = filePrefix + ".inv";
 
-        PrintWriter pwOut = new PrintWriter(UtilPlume.bufferedFileWriter(filePrefix));
-
-        for (String toPrint : al) {
-          pwOut.println(toPrint);
+        try (PrintWriter pwOut = new PrintWriter(FilesPlume.newBufferedFileWriter(filePrefix))) {
+          for (String toPrint : al) {
+            pwOut.println(toPrint);
+          }
+          pwOut.flush();
         }
-        pwOut.flush();
-        pwOut.close();
 
         invokeDaikon(filePrefix);
 
         // cleanup the mess
         if (CLEAN) {
-          Runtime.getRuntime().exec("rm " + filePrefix);
+          Runtime.getRuntime().exec(new String[] {"rm", filePrefix});
         }
 
         num_reps--;
@@ -220,7 +235,7 @@ public class TraceSelect {
       // cleanup the mess!
       for (int j = 0; j < sampleNames.length; j++) {
         if (CLEAN) {
-          Runtime.getRuntime().exec("rm " + sampleNames[j]);
+          Runtime.getRuntime().exec(new String[] {"rm", sampleNames[j]});
         }
       }
 
@@ -250,15 +265,20 @@ public class TraceSelect {
     }
 
     // create an array to store the Strings in daikonArgsList
-    String[] daikonArgs = daikonArgsList.toArray(new String[daikonArgsList.size()]);
+    String[] daikonArgs = daikonArgsList.toArray(new String[0]);
 
     // initializes daikon again or else an exception is thrown
     reinitializeDaikon();
     daikon.Daikon.main(daikonArgs);
-    Runtime.getRuntime()
-        .exec("java daikon.PrintInvariants " + dtraceName + ".inv > " + dtraceName + ".txt");
-
-    return;
+    // Run: java daikon.PrintInvariants dtraceName.inv > dtraceName.txt
+    ProcessBuilder pb = new ProcessBuilder("java", "daikon.PrintInvariants", dtraceName + ".inv");
+    pb.redirectOutput(new File(dtraceName + ".txt"));
+    Process p = pb.start();
+    try {
+      p.waitFor();
+    } catch (InterruptedException e) {
+      // do nothing
+    }
   }
 
   private static void reinitializeDaikon() {
@@ -271,7 +291,9 @@ public class TraceSelect {
     if (index >= 0) {
       product.append(strFileName.substring(0, index));
       product.append(num_reps);
-      if (index != strFileName.length()) product.append(strFileName.substring(index));
+      if (index != strFileName.length()) {
+        product.append(strFileName.substring(index));
+      }
     } else {
       product.append(strFileName).append("2");
     }

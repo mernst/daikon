@@ -4,7 +4,9 @@ import static org.junit.Assert.assertEquals;
 
 import daikon.PptName;
 import daikon.tools.jtb.*;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import jtb.*;
@@ -73,19 +75,22 @@ public final class TestAst {
   @Test
   public void test_Ast_Ppt_Match() {
 
-    // Parse the file "GenericTestClass.java" (under same dir as this class)
-    InputStream sourceIn = this.getClass().getResourceAsStream("GenericTestClass.java");
-    if (sourceIn == null) {
-      throw new Error("Couldn't find file GenericTestClass.java");
-    }
-    JavaParser parser = new JavaParser(sourceIn);
-
     CompilationUnit compilationUnit;
 
-    try {
-      compilationUnit = parser.CompilationUnit();
-    } catch (ParseException e) {
-      throw new Error(e);
+    // Parse the file "GenericTestClass.java" (under same dir as this class)
+    try (InputStream sourceIn = this.getClass().getResourceAsStream("GenericTestClass.java")) {
+      if (sourceIn == null) {
+        throw new Error("Couldn't find file GenericTestClass.java");
+      }
+      JavaParser parser = new JavaParser(sourceIn);
+
+      try {
+        compilationUnit = parser.CompilationUnit();
+      } catch (ParseException e) {
+        throw new Error(e);
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
 
     // Test class declarations
@@ -257,11 +262,13 @@ public final class TestAst {
     decl = methodDecls.get(21);
     assertEquals("foo20", decl.f2.f0.tokenImage);
     checkMatch(
-        "daikon.test.GenericTestClass.foo20(java.lang.Comparable[][][], java.lang.Object[][]):::ENTER",
+        "daikon.test.GenericTestClass.foo20"
+            + "(java.lang.Comparable[][][], java.lang.Object[][]):::ENTER",
         decl,
         matcher);
     checkMatch(
-        "daikon.test.GenericTestClass.foo20(java.lang.Comparable[][][], java.lang.Object[][]):::EXIT53",
+        "daikon.test.GenericTestClass.foo20"
+            + "(java.lang.Comparable[][][], java.lang.Object[][]):::EXIT53",
         decl,
         matcher);
 

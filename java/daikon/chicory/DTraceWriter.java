@@ -1,7 +1,7 @@
 package daikon.chicory;
 
 import daikon.Chicory;
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -28,9 +28,10 @@ public class DTraceWriter extends DaikonWriter {
   //          - checkForVarRecursion: recursive check on on argument
   //        - traceClassVars: prints fields in a class
 
-  /** instance of a nonsensical value */
+  /** instance of a nonsensical value. */
   private static NonsensicalObject nonsenseValue = NonsensicalObject.getInstance();
-  /** instance of a nonsensical list */
+
+  /** instance of a nonsensical list. */
   private static List<Object> nonsenseList = NonsensicalList.getInstance();
 
   // certain class names
@@ -38,9 +39,9 @@ public class DTraceWriter extends DaikonWriter {
   protected static final String stringClassName = "java.lang.String";
 
   /** Where to print output. */
-  private PrintStream outFile;
+  private PrintWriter outFile;
 
-  /** debug information about daikon variables */
+  /** Debug information about daikon variables. */
   private boolean debug_vars = false;
 
   /**
@@ -48,7 +49,7 @@ public class DTraceWriter extends DaikonWriter {
    *
    * @param writer stream to write to
    */
-  public DTraceWriter(PrintStream writer) {
+  public DTraceWriter(PrintWriter writer) {
     super();
     outFile = writer;
   }
@@ -224,7 +225,9 @@ public class DTraceWriter extends DaikonWriter {
 
       if (debug_vars) {
         String out = curInfo.getDTraceValueString(val);
-        if (out.length() > 20) out = out.substring(0, 20);
+        if (out.length() > 20) {
+          out = out.substring(0, 20);
+        }
         System.out.printf(
             "  --variable %s [%d]= %s%n", curInfo.getName(), curInfo.children.size(), out);
       }
@@ -265,7 +268,7 @@ public class DTraceWriter extends DaikonWriter {
   }
 
   /**
-   * Get the value of a certain field in theObj.
+   * Returns the value of a certain field in theObj.
    *
    * @param classField which field we are interested in
    * @param theObj the object whose field we are examining. TheoObj must be null, Nonsensical, or of
@@ -361,7 +364,7 @@ public class DTraceWriter extends DaikonWriter {
   }
 
   /**
-   * Return a List derived from an aray.
+   * Returns a List derived from an aray.
    *
    * @param arrayVal must be an array type
    * @return a List (with correct primitive wrappers) corresponding to the array
@@ -456,7 +459,7 @@ public class DTraceWriter extends DaikonWriter {
   }
 
   /**
-   * Get the type of val, removing any PrimitiveWrapper if it exists For example, if we execute
+   * Returns the type of val, removing any PrimitiveWrapper if it exists For example, if we execute
    * removeWRappers(val, boolean.class, true) where (val instanceof Runtime.PrimitiveWrapper), then
    * the method returns boolean.class
    *

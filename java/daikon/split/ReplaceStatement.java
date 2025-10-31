@@ -5,9 +5,12 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import jtb.*;
-import jtb.syntaxtree.*;
-import jtb.visitor.*;
+import jtb.JavaParser;
+import jtb.ParseException;
+import jtb.syntaxtree.FormalParameter;
+import jtb.syntaxtree.MethodDeclaration;
+import jtb.syntaxtree.Node;
+import jtb.visitor.DepthFirstVisitor;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
@@ -43,6 +46,7 @@ class ReplaceStatement {
    *     return statement for this field.
    * @throws IllegalArgumentException if methodDeclaration is not a valid java method declaration
    *     (with the exception of package-name-like prefixes)
+   * @throws ParseException if there is a problem parsing
    */
   public ReplaceStatement(String methodDeclaration, String returnStatement) throws ParseException {
     methodName = "";
@@ -60,7 +64,6 @@ class ReplaceStatement {
     JavaParser parser = new JavaParser(input);
     Node root = parser.CompilationUnit();
     MethodDeclarationParser visitor = new MethodDeclarationParser();
-    // parameters = null;          // to quiet FindBugs
     // Sets methodName and parameters.
     // But also seems to depend on methodName being set already...
     root.accept(visitor);

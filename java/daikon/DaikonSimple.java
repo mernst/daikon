@@ -1,6 +1,7 @@
 package daikon;
 
 import static daikon.Global.lineSep;
+import static java.util.logging.Level.INFO;
 
 import daikon.inv.Invariant;
 import daikon.inv.InvariantStatus;
@@ -86,7 +87,7 @@ public class DaikonSimple {
   public static void mainHelper(final String[] args) throws IOException, FileNotFoundException {
 
     // set up logging information
-    daikon.LogHelper.setupLogs(daikon.LogHelper.INFO);
+    daikon.LogHelper.setupLogs(INFO);
 
     // No optimizations used in the simple incremental algorithm so
     // optimizations are turned off.
@@ -310,8 +311,8 @@ public class DaikonSimple {
   }
 
   /**
-   * Returns whether or not the specified binary slice should be created. The slice should not be
-   * created if the vars are not compatible.
+   * Returns true if the specified binary slice should be created. The slice should not be created
+   * if the vars are not compatible.
    *
    * <p>Since we are trying to create all of the invariants, the variables does not have to be a
    * leader and can be a constant. Note that the always missing check is only applicable when the
@@ -326,8 +327,8 @@ public class DaikonSimple {
   }
 
   /**
-   * Returns whether or not the specified ternary slice should be created. The slice should not be
-   * created if any of the following are true
+   * Returns true if the specified ternary slice should be created. The slice should not be created
+   * if any of the following are true
    *
    * <ul>
    *   <li>Any var is an array
@@ -346,7 +347,7 @@ public class DaikonSimple {
   public static boolean is_slice_ok(VarInfo v1, VarInfo v2, VarInfo v3) {
 
     // Vars must be compatible
-    return (v1.compatible(v2) && v1.compatible(v3) && v2.compatible(v3));
+    return v1.compatible(v2) && v1.compatible(v3) && v2.compatible(v3);
   }
 
   /**
@@ -539,9 +540,13 @@ public class DaikonSimple {
         wait = false;
       }
 
-      if (object_ppt != null) add(object_ppt, object_vt, nonce); // apply object vt
+      if (object_ppt != null) {
+        add(object_ppt, object_vt, nonce);
+      }
 
-      if (class_ppt != null) add(class_ppt, class_vt, nonce);
+      if (class_ppt != null) {
+        add(class_ppt, class_vt, nonce);
+      }
     }
 
     /**
@@ -640,7 +645,9 @@ public class DaikonSimple {
             for (VarInfo vi : inv.ppt.var_infos) {
               assert vt.getValue(vi) != null : vi;
             }
-            if (inv.ppt instanceof PptSlice2) assert inv.ppt.var_infos.length == 2;
+            if (inv.ppt instanceof PptSlice2) {
+              assert inv.ppt.var_infos.length == 2;
+            }
             InvariantStatus status = inv.add_sample(vt, 1);
             if (status == InvariantStatus.FALSIFIED) {
               k.remove();

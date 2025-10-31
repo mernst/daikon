@@ -64,6 +64,7 @@ public class StreamRedirectThread extends Thread {
   private boolean debug = false;
 
   private static final int BUFFER_SIZE = 2048;
+
   // for debugging: private static final int BUFFER_SIZE = 1;
 
   public StreamRedirectThread(String name, InputStream in, OutputStream out) {
@@ -80,8 +81,8 @@ public class StreamRedirectThread extends Thread {
    * @param name name of the thread
    * @param in stream to copy from
    * @param out stream to copy to
-   * @param line_by_line whether to copy one line at a time
-   * @param debug whether to enable debugging
+   * @param line_by_line if true, copy one line at a time
+   * @param debug if true, enable debugging
    */
   @SuppressWarnings("ThreadPriorityCheck")
   public StreamRedirectThread(
@@ -98,7 +99,7 @@ public class StreamRedirectThread extends Thread {
               + ", "
               + line_by_line
               + ", "
-              + debug
+              + "true" // value of the `debug` variable
               + ")");
     }
     if (in == null || out == null) {

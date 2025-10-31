@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
@@ -20,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -28,10 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import org.apache.bcel.*;
+import org.apache.bcel.Const;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
-import org.apache.bcel.generic.*;
+import org.apache.bcel.generic.ClassGen;
+import org.apache.bcel.generic.MethodGen;
+import org.apache.bcel.generic.Type;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.signature.qual.BinaryName;
 
@@ -44,7 +48,14 @@ import org.checkerframework.checker.signature.qual.BinaryName;
  * Based on its invocation arguments, DynComp will decide whether to call the instrumented or
  * uninstrumented version of a method.
  */
+@SuppressWarnings({
+  "mustcall:type.argument",
+  "mustcall:type.arguments.not.inferred"
+}) // assignments into owning collection
 public class BuildJDK {
+
+  /** Creates a new BuildJDK. */
+  private BuildJDK() {}
 
   /**
    * The "java.home" system property. Note that there is also a JAVA_HOME variable that contains
@@ -52,7 +63,7 @@ public class BuildJDK {
    */
   public static final String java_home = System.getProperty("java.home");
 
-  /** Whether to print information about the classes being instrumented. */
+  /** If true, print information about the classes being instrumented. */
   private static boolean verbose = false;
 
   /** Number of class files processed; used for progress display. */
@@ -90,6 +101,7 @@ public class BuildJDK {
    * @throws IOException if unable to read or write file {@code dcomp_jdk_static_field_id} or if
    *     unable to write {@code jdk_classes.txt}
    */
+  @SuppressWarnings("builder:required.method.not.called") // assignment into collection of @Owning
   public static void main(String[] args) throws IOException {
 
     System.out.println("BuildJDK starting at " + LocalDateTime.now(ZoneId.systemDefault()));
@@ -103,7 +115,7 @@ public class BuildJDK {
             DCInstrument.class);
     String[] cl_args = options.parse(true, args);
     if (cl_args.length < 1) {
-      System.out.println("must specify destination dir");
+      System.err.println("must specify destination dir");
       options.printUsage();
       System.exit(1);
     }
@@ -111,21 +123,19 @@ public class BuildJDK {
 
     File dest_dir = new File(cl_args[0]);
 
-    /**
-     * Key is a class file name, value is a stream that opens that file name.
-     *
-     * <p>We want to share code to read and instrument the Java class file members of a jar file
-     * (JDK 8) or a module file (JDK 9+). However, jar files and module files are located in two
-     * completely different file systems. So we open an InputStream for each class file we wish to
-     * instrument and save it in the class_stream_map with the file name as the key. From that point
-     * the code to instrument a class file can be shared.
-     */
+    // Key is a class file name, value is a stream that opens that file name.
+    //
+    // <p>We want to share code to read and instrument the Java class file members of a jar file
+    // (JDK 8) or a module file (JDK 9+). However, jar files and module files are located in two
+    // completely different file systems. So we open an InputStream for each class file we wish to
+    // instrument and save it in the class_stream_map with the file name as the key. From that point
+    // the code to instrument a class file can be shared.
     Map<String, InputStream> class_stream_map;
 
     if (cl_args.length > 1) {
 
       // Arguments are <destdir> [<classfiles>...]
-      @SuppressWarnings("nullness:assignment.type.incompatible") // https://tinyurl.com/cfissue/3224
+      @SuppressWarnings("nullness:assignment") // https://tinyurl.com/cfissue/3224
       @NonNull String[] class_files = Arrays.copyOfRange(cl_args, 1, cl_args.length);
 
       // Instrumenting a specific list of class files is usually used for testing.
@@ -174,7 +184,6 @@ public class BuildJDK {
       System.out.printf("Writing a list of class names to %s%n", jdk_classes_file);
       // Class names are written in internal form.
       try (PrintWriter pw = new PrintWriter(jdk_classes_file, UTF_8.name())) {
-        pw.println("no_primitives: " + DynComp.no_primitives);
         for (String classFileName : class_stream_map.keySet()) {
           pw.println(classFileName.replace(".class", ""));
         }
@@ -203,22 +212,22 @@ public class BuildJDK {
 
     File jrt = new File(JAVA_HOME);
     if (!jrt.exists()) {
-      System.out.printf("Java home directory %s does not exist.%n", jrt);
+      System.err.printf("Java home directory %s does not exist.%n", jrt);
       System.exit(1);
     }
 
     try {
       jrt = jrt.getCanonicalFile();
     } catch (Exception e) {
-      System.out.printf("Error geting canonical file for %s: %s", jrt, e.getMessage());
+      System.err.printf("Error geting canonical file for %s: %s", jrt, e.getMessage());
       System.exit(1);
     }
 
     JAVA_HOME = jrt.getAbsolutePath();
     if (!java_home.startsWith(JAVA_HOME)) {
-      System.out.printf(
+      System.err.printf(
           "JAVA_HOME (%s) does not agree with java.home (%s).%n", JAVA_HOME, java_home);
-      System.out.printf("Please correct your Java environment.%n");
+      System.err.printf("Please correct your Java environment.%n");
       System.exit(1);
     }
   }
@@ -229,7 +238,10 @@ public class BuildJDK {
    *
    * @return a map from class file name to the associated InputStream
    */
-  @SuppressWarnings("JdkObsolete") // JarEntry.entries() returns Enumeration
+  @SuppressWarnings({
+    "JdkObsolete", // JarEntry.entries() returns Enumeration
+    "builder:required.method.not.called" // assignment into collection of @Owning
+  })
   Map<String, InputStream> gather_runtime_from_jar() {
 
     Map<String, InputStream> class_stream_map = new HashMap<>();
@@ -279,7 +291,7 @@ public class BuildJDK {
             moduleDir, moduleDir.toString().length(), class_stream_map);
       }
     } catch (IOException e) {
-      throw new Error(e);
+      throw new UncheckedIOException(e);
     }
     return class_stream_map;
   }
@@ -294,6 +306,7 @@ public class BuildJDK {
    *     path
    * @param class_stream_map a map from class file name to InputStream that collects the results
    */
+  @SuppressWarnings("builder:required.method.not.called") // assignment into collection of @Owning
   void gather_runtime_from_modules_directory(
       Path path, int modulePrefixLength, Map<String, InputStream> class_stream_map) {
 
@@ -303,7 +316,7 @@ public class BuildJDK {
           gather_runtime_from_modules_directory(subpath, modulePrefixLength, class_stream_map);
         }
       } catch (IOException e) {
-        throw new Error(e);
+        throw new UncheckedIOException(e);
       }
     } else {
       String entryName = path.toString().substring(modulePrefixLength + 1);
@@ -344,7 +357,9 @@ public class BuildJDK {
         // For JDK 9+ we do not copy as these items will be loaded from the original module file.
         if (!classFileName.endsWith(".class") || classFileName.equals("java/lang/Object.class")) {
           if (BcelUtil.javaVersion > 8) {
-            if (verbose) System.out.printf("Skipping file %s%n", classFileName);
+            if (verbose) {
+              System.out.printf("Skipping file %s%n", classFileName);
+            }
             continue;
           }
           // This File constructor ignores dest_dir if classFileName is absolute.
@@ -353,7 +368,9 @@ public class BuildJDK {
             throw new Error("This can't happen: " + classFile);
           }
           classFile.getParentFile().mkdirs();
-          if (verbose) System.out.println("Copying Object.class or non-classfile: " + classFile);
+          if (verbose) {
+            System.out.println("Copying Object.class or non-classfile: " + classFile);
+          }
           try (InputStream in = class_stream_map.get(classFileName)) {
             Files.copy(in, classFile.toPath());
           }
@@ -361,9 +378,8 @@ public class BuildJDK {
         }
 
         // Get the binary for this class
-        InputStream is = class_stream_map.get(classFileName);
         JavaClass jc;
-        try {
+        try (InputStream is = class_stream_map.get(classFileName)) {
           ClassParser parser = new ClassParser(is, classFileName);
           jc = parser.parse();
         } catch (Throwable e) {
@@ -404,7 +420,7 @@ public class BuildJDK {
    *
    * @param destDir where to store the new class
    * @param className name of class
-   * @param dcompInstrumented c$if true, add equals_dcomp_instrumented method to class
+   * @param dcompInstrumented if true, add equals_dcomp_instrumented method to class
    */
   private void createDCompClass(
       String destDir, @BinaryName String className, boolean dcompInstrumented) {
@@ -415,15 +431,14 @@ public class BuildJDK {
               "java.lang.Object",
               "daikon.dcomp.BuildJDK tool",
               Const.ACC_INTERFACE | Const.ACC_PUBLIC | Const.ACC_ABSTRACT,
-              new String[0]);
+              new @BinaryName String[0]);
       dcomp_class.setMinor(0);
       // Convert from JDK version number to ClassFile major_version.
       // A bit of a hack, but seems OK.
       dcomp_class.setMajor(BcelUtil.javaVersion + 44);
 
       if (dcompInstrumented) {
-        @SuppressWarnings(
-            "nullness:argument.type.incompatible") // null instruction list is ok for abstract
+        @SuppressWarnings("nullness:argument") // null instruction list is ok for abstract
         MethodGen mg =
             new MethodGen(
                 Const.ACC_PUBLIC | Const.ACC_ABSTRACT,
@@ -440,13 +455,15 @@ public class BuildJDK {
       dcomp_class
           .getJavaClass()
           .dump(
-              new File(
-                  destDir,
-                  "java" + File.separator + "lang" + File.separator + className + ".class"));
+              // Path.of exists in Java 11 and later.
+              new File(new File(new File(destDir, "java"), "lang"), className + ".class"));
     } catch (Exception e) {
       throw new Error(e);
     }
   }
+
+  /** Formats just the time part of a DateTime. */
+  private DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
   /**
    * Instruments the JavaClass {@code jc} (whose name is {@code classFileName}). Writes the
@@ -458,17 +475,16 @@ public class BuildJDK {
    * @param classTotal total number of classes to be processed; used for progress display
    * @throws IOException if unable to write out instrumented class
    */
+  @SuppressWarnings("SystemConsoleNull") // https://errorprone.info/bugpattern/SystemConsoleNull
   private void instrumentClassFile(
       JavaClass jc, File outputDir, String classFileName, int classTotal)
       throws java.io.IOException {
-    if (verbose) System.out.printf("processing target %s%n", classFileName);
+    if (verbose) {
+      System.out.printf("processing target %s%n", classFileName);
+    }
     DCInstrument dci = new DCInstrument(jc, true, null);
     JavaClass inst_jc;
-    if (DynComp.no_primitives) {
-      inst_jc = dci.instrument_jdk_refs_only();
-    } else {
-      inst_jc = dci.instrument_jdk();
-    }
+    inst_jc = dci.instrument_jdk();
     skipped_methods.addAll(dci.get_skipped_methods());
     File classfile = new File(classFileName);
     File dir;
@@ -479,13 +495,17 @@ public class BuildJDK {
     }
     dir.mkdirs();
     File classpath = new File(dir, classfile.getName());
-    if (verbose) System.out.printf("writing to file %s%n", classpath);
+    if (verbose) {
+      System.out.printf("writing to file %s%n", classpath);
+    }
     inst_jc.dump(classpath);
     _numFilesProcessed++;
     if (((_numFilesProcessed % 100) == 0) && (System.console() != null)) {
       System.out.printf(
           "Processed %d/%d classes at %s%n",
-          _numFilesProcessed, classTotal, LocalDateTime.now(ZoneId.systemDefault()));
+          _numFilesProcessed,
+          classTotal,
+          LocalDateTime.now(ZoneId.systemDefault()).format(timeFormatter));
     }
   }
 
@@ -500,10 +520,10 @@ public class BuildJDK {
       return;
     }
 
-    System.out.println(
+    System.err.println(
         "Warning: The following JDK methods could not be instrumented. DynComp will");
-    System.out.println("still work as long as these methods are not called by your application.");
-    System.out.println("If your application calls one, it will throw a NoSuchMethodException.");
+    System.err.println("still work as long as these methods are not called by your application.");
+    System.err.println("If your application calls one, it will throw a NoSuchMethodException.");
 
     List<String> unknown = new ArrayList<>(skipped_methods);
     unknown.removeAll(known_uninstrumentable_methods);
@@ -511,17 +531,17 @@ public class BuildJDK {
     known.retainAll(known_uninstrumentable_methods);
 
     if (!unknown.isEmpty()) {
-      System.out.println("Please report the following problems to the Daikon maintainers.");
-      System.out.println(
+      System.err.println("Please report the following problems to the Daikon maintainers.");
+      System.err.println(
           "Please give sufficient details; see \"Reporting problems\" in the Daikon manual.");
       for (String method : unknown) {
-        System.out.printf("  %s%n", method);
+        System.err.printf("  %s%n", method);
       }
     }
     if (!known.isEmpty()) {
-      System.out.printf("The following are known problems; you do not need to report them.");
+      System.err.printf("The following are known problems; you do not need to report them.");
       for (String method : known) {
-        System.out.printf("  %s%n", method);
+        System.err.printf("  %s%n", method);
       }
     }
   }

@@ -22,6 +22,7 @@ class DcompTest {
   static A sa1 = new A("sa1");
   static A sa2 = new A("sa2");
   static boolean verbose = false;
+
   // A[] at_arr;
   // double[] d_arr;
 
@@ -252,7 +253,8 @@ class DcompTest {
       }
     }
 
-    // Should NOT change comparability
+    /** Tests that hashCode() does NOT change comparability. */
+    @SuppressWarnings("ReturnValueIgnored") // called for side effect
     public void compare3() {
       obj1.hashCode();
       obj2.hashCode();
@@ -270,11 +272,18 @@ class DcompTest {
         //        return super.clone();
         throw new CloneNotSupportedException();
       }
-    };
+    }
 
+    /** An object. */
     Obj obj1;
+
+    /** Another object. */
     Obj obj2;
+
+    /** An uncloneable object. */
     Uncloneable u1;
+
+    /** Another uncloneable object. */
     Uncloneable u2;
 
     G() {
@@ -447,7 +456,15 @@ class DcompTest {
     list.contains(a11);
   }
 
-  @SuppressWarnings("NarrowingCompoundAssignment")
+  /**
+   * Test code. (Dummy Javadoc comment to satisfy require-javadoc.)
+   *
+   * @param d1 a double
+   * @param wrapper an Integer
+   * @param i1 an int
+   * @return a double
+   */
+  @SuppressWarnings({"NarrowingCompoundAssignment", "lossy-conversions"})
   public static double double_check(double d1, Integer wrapper, int i1) {
 
     double loc1 = 22.4;
@@ -495,6 +512,6 @@ class DcompTest {
   }
 
   public static int java_check(int i1, int i2) {
-    return (Math.max(i1, i2));
+    return Math.max(i1, i2);
   }
 }

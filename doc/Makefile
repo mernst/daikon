@@ -26,10 +26,10 @@ config-options.texinfo:
 invariants-doc.texinfo:
 else
 config-options.texinfo:
-	cd ../java && $(MAKE) ../doc/config-options.texinfo
+	${MAKE} -C ../java ../doc/config-options.texinfo
 
 invariants-doc.texinfo:
-	cd ../java && $(MAKE) ../doc/invariants-doc.texinfo
+	${MAKE} -C ../java ../doc/invariants-doc.texinfo
 
 # Always remake config-options.texinfo
 # (We delegate to ../java/Makefile, which is more discerning)
@@ -55,12 +55,12 @@ images/%.pdf: images/%.eps
 html: daikon.html developer.html
 
 daikon.html: daikon.texinfo config-options.texinfo invariants-doc.texinfo images/dfepl-flow.jpg
-	$(MAKE) daikon-html
+	${MAKE} daikon-html
 
 # Just builds .html from .texinfo.
 # Much faster than rebuilding the .texinfo files from Javadoc.
 daikon-fast: daikon.texinfo
-	$(MAKE) daikon-html
+	${MAKE} daikon-html
 
 ## These two rules create the directories if absent but don't update them.
 ../utils/html-tools:
@@ -92,11 +92,11 @@ daikon/index.html: daikon.texinfo config-options.texinfo invariants-doc.texinfo 
 	${TEXI2HTML} --split=chapter -o daikon $<
 	# Fixup 'bad' href(s) inserted by makeinfo.
 	perl -pi -e 's|../dir/index.html|../index.html|;' daikon/index.html
-	perl -pi -e 's|href="CHANGES"|href="../CHANGES"|;' daikon/*.html
+	perl -pi -e 's|href="CHANGELOG.md"|href="../CHANGELOG.md"|;' daikon/*.html
 	mkdir daikon/images
 	cp images/*.png daikon/images
 	cp images/*.jpg daikon/images
-	${HTMLTOOLS}/html-add-favicon daikon ../daikon-favicon.png
+	cd daikon && ../${HTMLTOOLS}/html-add-favicon . ../daikon-favicon.png
 
 developer/index.html: developer.texinfo ../utils/html-tools
 	rm -rf developer/*
@@ -106,7 +106,7 @@ developer/index.html: developer.texinfo ../utils/html-tools
 	mkdir developer/images
 	cp images/*.png developer/images
 	cp images/*.jpg developer/images
-	${HTMLTOOLS}/html-add-favicon developer ../daikon-favicon.png
+	cd developer && ../${HTMLTOOLS}/html-add-favicon . ../daikon-favicon.png
 
 pdf: daikon.pdf images/dfepl-flow.eps developer.pdf
 
@@ -120,18 +120,16 @@ developer.pdf: developer.texinfo
 # config-options.texinfo.
 
 clean: texi-clean
+	rm -rf daikon/*
 	rm -f daikon.tmp \
 		daikon.info daikon.info-[0-9] \
 		daikon.log daikon.dvi daikon.pdf daikon.html
-	rm -f *.bak
-	rm -rf daikon/*
+	rm -rf developer/*
 	rm -f developer.tmp \
 		developer.info developer.info-[0-9] \
 		developer.log developer.dvi developer.pdf developer.html
-	rm -rf developer/*
 	rm -f images/dfepl-flow.{eps,pdf,jpg}
-# Obsolete files
-	rm -f daikon.ps developer.ps
+	rm -f *.bak
 
 texi-clean:
 	rm -rf daikon.aux daikon.cp daikon.cps daikon.fn daikon.fns \
@@ -145,12 +143,12 @@ very-clean: clean
 
 # Remakes entire distribution; use with caution.
 dist:
-	cd .. && $(MAKE) dist
+	${MAKE} -C .. dist
 
 # "www" target wouldn't work from here, because "www" is an (existing)
 # directory; but go to the parent directory and run the rule from there.
 # www:
-# 	cd .. && $(MAKE) www
+# 	${MAKE} -C .. www
 
 .PHONY: find-changes spell-check
 find-changes:
@@ -161,7 +159,7 @@ find-changes:
 spell-check:
 	perl prepare-texinfo-for-spellcheck.pl < daikon.texinfo | hunspell -u -p daikon.dict
 	perl prepare-texinfo-for-spellcheck.pl < developer.texinfo | hunspell -u -p daikon.dict
-# For CHANGES file, only recent lines (top 100), and not text starting with
+# For CHANGELOG.md file, only recent lines (top 100), and not text starting with
 # 4+ spaces (assumed to be literal code or commands.  Permit some failures.
 	@echo "The following command is allowed to have some failures not in daikon.dict"
-	head -100 CHANGES | sed 's/^    .*/ /' | hunspell -u -p daikon.dict
+	head -100 CHANGELOG.md | sed 's/^    .*/ /' | hunspell -u -p daikon.dict
