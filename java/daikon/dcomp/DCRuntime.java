@@ -33,9 +33,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -2263,7 +2261,7 @@ public final class DCRuntime implements ComparabilityProvider {
       Collections.sort(this);
     }
 
-    public String toStringWithIdentityHashCode() {
+    String toStringWithIdentityHashCode() {
       StringJoiner result = new StringJoiner(", ", "[", "]");
       for (DaikonVariableInfo dvi : this) {
         result.add(String.format("%s [%s]", dvi, System.identityHashCode(dvi)));
