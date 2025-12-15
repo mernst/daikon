@@ -12,6 +12,7 @@ LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>
 RUN dnf -q -y upgrade && dnf -q -y install \
   epel-release
 
+# curl is installed by default on Rocky Linux.
 RUN dnf -q -y upgrade && dnf -q -y install \
   autoconf \
   automake \
@@ -29,6 +30,7 @@ RUN dnf -q -y upgrade && dnf -q -y install \
   rsync \
   tar \
   unzip \
+  wget \
   which
 
 ## Install the JDK.
@@ -44,4 +46,5 @@ ENV JAVA25_HOME=/jdk-25
 RUN chmod og+rx /root \
 && chmod og+r /root/*
 
+# Clean up.
 RUN dnf -q clean all

@@ -239,7 +239,7 @@ public final class DCRuntime implements ComparabilityProvider {
       Class<Object> tmp = (Class<Object>) Class.forName("java.lang.Object");
       java_lang_Object_class = tmp;
     } catch (Exception e) {
-      throw new RuntimeException("Unexpected error initializing DCRuntime:", e);
+      throw new RuntimeException("Error initializing DCRuntime", e);
     }
 
     // Initialize the array of static tags
@@ -290,7 +290,7 @@ public final class DCRuntime implements ComparabilityProvider {
     } catch (NoSuchMethodException e) {
       m = null;
     } catch (Exception e) {
-      throw new RuntimeException("unexpected error locating equal_dcomp_instrumented", e);
+      throw new RuntimeException("Error locating equals_dcomp_instrumented", e);
     }
 
     if (m != null) {
@@ -299,7 +299,7 @@ public final class DCRuntime implements ComparabilityProvider {
         m.setAccessible(true);
         return (Boolean) m.invoke(o1, o2);
       } catch (Exception e) {
-        throw new RuntimeException("unexpected error invoking equal_dcomp_instrumented", e);
+        throw new RuntimeException("Error invoking equals_dcomp_instrumented", e);
       }
     }
 
@@ -406,7 +406,7 @@ public final class DCRuntime implements ComparabilityProvider {
       e.printStackTrace();
       throw new RuntimeException(e);
     } catch (Exception e) {
-      throw new RuntimeException("unexpected error locating equals method", e);
+      throw new RuntimeException("Error locating equals method", e);
     }
 
     // We are now done with the call, so remove the entry for this
@@ -573,7 +573,7 @@ public final class DCRuntime implements ComparabilityProvider {
     } catch (NoSuchMethodException e) {
       m = null;
     } catch (Exception e) {
-      throw new RuntimeException("unexpected error locating clone(DCompMarker)", e);
+      throw new RuntimeException("Error locating clone(DCompMarker)", e);
     }
 
     if (m != null) {
@@ -593,9 +593,7 @@ public final class DCRuntime implements ComparabilityProvider {
         throw e.getCause();
       } catch (Exception e) {
         throw new RuntimeException(
-            "unexpected error invoking clone(DCompMarker) on object of class "
-                + orig_obj.getClass(),
-            e);
+            "Error invoking clone(DCompMarker) on object of class " + orig_obj.getClass(), e);
       }
     }
 
@@ -605,7 +603,7 @@ public final class DCRuntime implements ComparabilityProvider {
     } catch (NoSuchMethodException e) {
       throw new RuntimeException("unable to locate clone()", e);
     } catch (Exception e) {
-      throw new RuntimeException("unexpected error locating clone()", e);
+      throw new RuntimeException("Error locating clone()", e);
     }
     try {
       if (debug) {
@@ -621,7 +619,7 @@ public final class DCRuntime implements ComparabilityProvider {
       throw e.getCause();
     } catch (Exception e) {
       throw new RuntimeException(
-          "unexpected error invoking clone() on object of class " + orig_obj.getClass(), e);
+          "Error invoking clone() on object of class " + orig_obj.getClass(), e);
     }
   }
 
@@ -2248,9 +2246,9 @@ public final class DCRuntime implements ComparabilityProvider {
     @Pure
     @Override
     public int compareTo(@GuardSatisfied DVSet this, DVSet s1) {
-      if (s1.size() == 0) {
+      if (s1.isEmpty()) {
         return 1;
-      } else if (size() == 0) {
+      } else if (isEmpty()) {
         return -1;
       } else {
         return this.get(0).compareTo(s1.get(0));
@@ -2963,7 +2961,7 @@ public final class DCRuntime implements ComparabilityProvider {
     return initialized_eclassses.contains(clazz.getName());
   }
 
-  /** Returns the name of the method that called the caller of caller_name(). */
+  /** Returns the fully-qualified name of the method that called the caller of caller_name(). */
   private static String caller_name() {
 
     Throwable stack = new Throwable("caller");

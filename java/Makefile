@@ -86,7 +86,6 @@ INSTALL ?= /usr/bin/install
 # By default, if environment variable CHECKERFRAMEWORK is set, that Checker Framework is used.
 # To force use of the Checker Framework in java/lib/, run like this:
 #   make NO_LOCAL_CHECKERFRAMEWORK=true typecheck-nullness
-# Note that CI uses the Checker Framework built from the repository.
 ifndef NO_LOCAL_CHECKERFRAMEWORK
   ifdef CHECKERFRAMEWORK
     ifneq ("$(wildcard ${CHECKERFRAMEWORK})","")
@@ -103,7 +102,7 @@ CHECKERFRAMEWORK_JAVAC ?= ${CHECKERFRAMEWORK_JAR_DIR}/javac.jar
 
 # Not := because DAIKON_CLASSPATH is set later in this file.
 JAVADOC_COMMAND = ${JAVADOC} -cp ${DAIKON_CLASSPATH}
-JAVAC_COMMAND = ${JAVAC} -cp ${DAIKON_CLASSPATH} -Xlint -J-Xmx3600m ${JAVAC_ARGS}
+JAVAC_COMMAND = ${JAVAC} -cp ${DAIKON_CLASSPATH} -Xlint -J-Xmx7g ${JAVAC_ARGS}
 JAVA_COMMAND = ${JAVA} -cp ${DAIKON_CLASSPATH}
 
 
@@ -118,6 +117,9 @@ ifeq "$(wildcard ${DAIKONDIR}/java/lib/daikon-plumelib.jar)" "${DAIKONDIR}/java/
   # Add jar files that only exist for the development version, not the
   # distributed version, of Daikon.  The if clause avoids a (harmless but
   # annoying) javac error message that they don't exist.
+  # This classpath is a problem, because CHECKERFRAMEWORK_JAR may have
+  # a different version of a plume-lib library than java/lib/* does.
+  # One (unclean) approach is to update them simultaneously.  Does that even work?
   DAIKON_CLASSPATH := ${CHECKERFRAMEWORK_JAR}:${DAIKONDIR}/java/lib/*:${DAIKONDIR}/java
 else
   DAIKON_CLASSPATH := ${DAIKONDIR}/java
@@ -183,8 +185,8 @@ ifeq (${JAVA24}, 0)
 endif
 
 # Don't exclude the whole ./daikon/test directory.
-TAG_FILES =        $(shell find . -type f -follow \( -name '*daikon-java*' -o -name '*Test.java' -o -name '*Tester.java' -o -name 'Test*.java' -o -name 'GenericTestClass.java' -o -name 'TestQuant.java' -o -name 'DiffDummyInvariant.java' -o -name 'AllTestsSuite.java' \) -prune -o \( -name '*.java' -o -name '*.java.jpp' \) -print | grep -v '/\.\#' | ${SORT_DIRECTORY_ORDER})
-TAG_FILES_NO_JTB = $(shell find . -type f -follow \( -name '*daikon-java*' -o -name '*Test.java' -o -name '*Tester.java' -o -name 'Test*.java' -o -name 'GenericTestClass.java' -o -name 'TestQuant.java' -o -name 'DiffDummyInvariant.java' -o -name 'AllTestsSuite.java' \) -prune -o \( -path './jtb' \) -prune -o \( -name '*.java' -o -name '*.java.jpp' \) -print | grep -v '/\.\#' | ${SORT_DIRECTORY_ORDER})
+TAG_FILES :=        $(shell find . -type f -follow \( -name '*daikon-java*' -o -name '*Test.java' -o -name '*Tester.java' -o -name 'Test*.java' -o -name 'GenericTestClass.java' -o -name 'TestQuant.java' -o -name 'DiffDummyInvariant.java' -o -name 'AllTestsSuite.java' \) -prune -o \( -name '*.java' -o -name '*.java.jpp' \) -print | grep -v '/\.\#' | ${SORT_DIRECTORY_ORDER})
+TAG_FILES_NO_JTB := $(shell find . -type f -follow \( -name '*daikon-java*' -o -name '*Test.java' -o -name '*Tester.java' -o -name 'Test*.java' -o -name 'GenericTestClass.java' -o -name 'TestQuant.java' -o -name 'DiffDummyInvariant.java' -o -name 'AllTestsSuite.java' \) -prune -o \( -path './jtb' \) -prune -o \( -name '*.java' -o -name '*.java.jpp' \) -print | grep -v '/\.\#' | ${SORT_DIRECTORY_ORDER})
 
 # When removing files from this list, add them to OLD_AUTO_GENERATED_FILES.
 AUTO_GENERATED_FILES = \
@@ -632,7 +634,7 @@ dyncomp-jdk dcomp-jdk   : dcomp_rt.jar
 ${DCOMP_RT} dcomp_rt.jar : dcomp_premain.jar
 	/bin/rm -rf ${DCOMP_RT}
 	${INSTALL} -d ${DCOMP_RT}
-	${JAVA_COMMAND} -Xmx3600m daikon.dcomp.BuildJDK ${DCOMP_RT}
+	${JAVA_COMMAND} -Xmx7g daikon.dcomp.BuildJDK ${DCOMP_RT}
 # "then" clause is Java 8, "else" clause is Java 9+.
 # For Java 9+, there appears to be a bug in the Java reflection invoke code that it
 # does not check that the arg list matches.  Hence, it tries to invoke
@@ -758,12 +760,12 @@ very_clean: very-clean
 very-clean: clean clean-generated-files
 	-rm -f TAGS
 	-rm -rf dcomp_premain.jar dcomp_rt.jar ${DCOMP_RT}
-	-rm -rf api
-	-rm -rf daikon/chicory/debug
+	-rm -rf api/
 	-rm -rf daikon/chicory/ChicoryTest.inv.out
-	-rm -rf daikon/dcomp/debug
-	-rm -rf daikon/dcomp/std_dcomp_out.diff daikon/dcomp/std_dcomp_out.txt
+	-rm -rf daikon/chicory/debug/
 	-rm -rf daikon/dcomp/DcompTest.decls-DynComp daikon/dcomp/DcompTest.log
+	-rm -rf daikon/dcomp/debug/
+	-rm -rf daikon/dcomp/std_dcomp_out.diff daikon/dcomp/std_dcomp_out.txt
 
 run:	all
 	${JAVA_COMMAND} daikon.Daikon
@@ -971,7 +973,7 @@ INDEX_JAVA_FILES = ${DAIKON_JAVA_FILES}
 INTERNING_JAVA_FILES_SKIP_COUNTS = Intern.java\|VarInfoName.java\|daikon/dcomp
 ## Which files to check.
 INTERNING_JAVA_FILES = ${DAIKON_JAVA_FILES}
-INTERNING_JAVA_FILES_COUNTS = $(shell find . -type f -name '*.java' | egrep -v ${INTERNING_JAVA_FILES_SKIP_COUNTS} | xargs grep -l -i '@Interned' | ${SORT_DIRECTORY_ORDER})
+INTERNING_JAVA_FILES_COUNTS := $(shell find . -type f -name '*.java' | egrep -v ${INTERNING_JAVA_FILES_SKIP_COUNTS} | xargs grep -l -i '@Interned' | ${SORT_DIRECTORY_ORDER})
 NULLNESS_JAVA_FILES = ${DAIKON_JAVA_FILES}
 
 #  $(shell find daikon -name '*.java' -a -exec grep -L "^@SuppressWarnings.*nullness" {} \; | sort)
@@ -984,18 +986,33 @@ show_nullness_java_files:
 	@echo ${DAIKON_JAVA_FILES}
 
 ## TODO: Reinstate these dependencies later:  typecheck-prototype typecheck-vindex
-# Check is in two parts because Travis won't run jobs longer than 50 minutes.
+# Check is in multiple parts because Travis won't run jobs longer than 50 minutes
+# and because CI memory can get exhausted on multiple CI platforms (why?).
 # Index Checker takes much longer than any other checker.
+# Typechecking times (in minutes, as of 2025-11-03):
+# formatter 1.25
+# index 9
+# interning 1.25
+# nullness 3
+# lock 1.75
+# regex 1.25
+# resourceleak 3.5
+# signature 1.25
+# signedness 3
+# total: 25.5
 # It is essential that "compile" completes before any typechecking commences.
 typecheck-part1: ${ALL_GENERATED_FILES} compile compile-typequals
 	${MAKE} typecheck-part1-nocompile
-typecheck-part1-nocompile: typecheck-formatter-nocompile typecheck-index-nocompile typecheck-interning-nocompile typecheck-nullness
+typecheck-part1-nocompile: typecheck-formatter-nocompile typecheck-interning-nocompile typecheck-nullness-nocompile typecheck-lock-nocompile typecheck-regex-nocompile
 typecheck-part2: ${ALL_GENERATED_FILES} compile
 	${MAKE} typecheck-part2-nocompile
-typecheck-part2-nocompile: typecheck-lock-nocompile typecheck-regex-nocompile typecheck-resourceleak-nocompile typecheck-signature-nocompile typecheck-signedness-nocompile
+typecheck-part2-nocompile: typecheck-index-nocompile
+typecheck-part3: ${ALL_GENERATED_FILES} compile
+	${MAKE} typecheck-part3-nocompile
+typecheck-part3-nocompile: typecheck-resourceleak-nocompile typecheck-signature-nocompile typecheck-signedness-nocompile
 typecheck-all: ${ALL_GENERATED_FILES} compile
 	${MAKE} typecheck-all-nocompile
-typecheck-all-nocompile: typecheck-part1 typecheck-part2
+typecheck-all-nocompile: typecheck-part1 typecheck-part2 typecheck-part3
 typecheck: typecheck-all
 
 typecheck-formatter: ${ALL_GENERATED_FILES} compile
@@ -1104,7 +1121,7 @@ typecheck-signature-nocompile:
 # Typical command:
 # SIGNATURE_ONEFILE="daikon/derive/binary/SequenceStringIntersection.java daikon/derive/binary/SequenceStringUnion.java daikon/inv/unary/stringsequence/CommonStringSequence.java daikon/Quant.java" make typecheck-signature-onefile
 # SIGNATURE_ONEFILE ?= daikon/chicory/Instrument.java daikon/dcomp/DCInstrument.java
-SIGNATURE_ONEFILE ?= daikon/dcomp/TypeStack.java
+SIGNATURE_ONEFILE ?= daikon/dcomp/DCInstrument.java
 typecheck-signature-onefile: ${ALL_GENERATED_FILES} compile
 	${JAVAC_COMMAND} ${JAVAC_SIGNATURE_ARGS} ${CHECKER_ARGS} ${SIGNATURE_ONEFILE}
 
@@ -1291,7 +1308,7 @@ ifeq (${SKIP_JAVADOC},1)
 else
 	mkdir -p ${JAVADOC_DEST}
 	@make javadoc-files.txt
-	${JAVADOC_COMMAND} -J-Xmx3600m -J-ea ${JAVADOC_FLAGS} -Xdoclint:all ${DOCLET_FLAGS} \
+	${JAVADOC_COMMAND} -J-Xmx7g -J-ea ${JAVADOC_FLAGS} -Xdoclint:all ${DOCLET_FLAGS} \
 		@javadoc-files.txt
 	@rm -f javadoc-files.txt
 	cd ${JAVADOC_DEST} && ${PLUMESCRIPTS}/preplace '^ *&#64;cindex.*' ''
@@ -1310,7 +1327,7 @@ ifeq (${SKIP_JAVADOC},1)
 else
 	mkdir -p ${JAVADOC_DEST}
 	@make javadoc-files.txt
-	while read filename ; do echo "filename: $$filename" ; ${JAVADOC_COMMAND} -J-Xmx3600m -J-ea ${JAVADOC_FLAGS} ${DOCLET_FLAGS} $$filename > $$filename-javadoc-output.txt 2>&1 ; done < javadoc-files.txt
+	while read filename ; do echo "filename: $$filename" ; ${JAVADOC_COMMAND} -J-Xmx7g -J-ea ${JAVADOC_FLAGS} ${DOCLET_FLAGS} $$filename > $$filename-javadoc-output.txt 2>&1 ; done < javadoc-files.txt
 	@rm -f javadoc-files.txt
 endif
 
@@ -1321,7 +1338,7 @@ ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -eq 8; echo $$?),0)
 	@echo "Skipping api-private target under Java 8"
 else
 	mkdir -p ${JAVADOC_DEST}
-	${JAVADOC_COMMAND} ${extra-javadoc-args} -J-Xmx3600m -J-ea ${JAVADOC_FLAGS} -private -Xdoclint:all ${DOCLET_FLAGS} \
+	${JAVADOC_COMMAND} ${extra-javadoc-args} -J-Xmx7g -J-ea ${JAVADOC_FLAGS} -private -Xdoclint:all ${DOCLET_FLAGS} \
 	  daikon -subpackages ${DAIKON_PACKAGES}
 	cd api && ../../utils/plume-scripts/preplace '^ *&#64;cindex.*' ''
 endif
@@ -1348,7 +1365,7 @@ requireJavadoc: ${JAVA_FILES}
 
 ../doc/invariants-doc.texinfo: ../utils/plume-scripts daikon/config/InvariantDoclet.class daikon/config/HtmlToTexinfo.class
 	@make javadoc-files.txt
-	${JAVADOC_COMMAND} ${extra-javadoc-args} -J-Xmx3600m -J-ea -docletpath "${DOCLETPATH}" -classpath "${DAIKON_CLASSPATH}" -doclet daikon.config.InvariantDoclet ${DOCLET_FLAGS} \
+	${JAVADOC_COMMAND} ${extra-javadoc-args} -J-Xmx7g -J-ea -docletpath "${DOCLETPATH}" -classpath "${DAIKON_CLASSPATH}" -doclet daikon.config.InvariantDoclet ${DOCLET_FLAGS} \
 		--texinfo tmpfile \
 		@javadoc-files.txt
 	mv -f tmpfile $@
@@ -1359,7 +1376,7 @@ requireJavadoc: ${JAVA_FILES}
 
 ../doc/config-options.texinfo: ../utils/plume-scripts daikon/config/ParameterDoclet.class daikon/config/HtmlToTexinfo.class
 	@make javadoc-files.txt
-	${JAVADOC_COMMAND} ${extra-javadoc-args} -J-Xmx3600m -J-ea -docletpath "${DOCLETPATH}" -classpath "${DAIKON_CLASSPATH}" -doclet daikon.config.ParameterDoclet ${DOCLET_FLAGS} \
+	${JAVADOC_COMMAND} ${extra-javadoc-args} -J-Xmx7g -J-ea -docletpath "${DOCLETPATH}" -classpath "${DAIKON_CLASSPATH}" -doclet daikon.config.ParameterDoclet ${DOCLET_FLAGS} \
 		--texinfo tmpfile \
 		@javadoc-files.txt
 	perl -pi -e 's/&#64;cindex/\@cindex/g' tmpfile

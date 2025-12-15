@@ -15,6 +15,7 @@ LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>
 RUN dnf -q -y upgrade && dnf -q -y install \
   epel-release
 
+# curl is installed by default on Rocky Linux.
 RUN dnf -q -y upgrade && dnf -q -y install \
   autoconf \
   automake \
@@ -32,34 +33,8 @@ RUN dnf -q -y upgrade && dnf -q -y install \
   rsync \
   tar \
   unzip \
+  wget \
   which
-
-RUN dnf -q -y install \
-  ctags \
-  devscripts-checkbashisms \
-  gcc-c++ \
-  graphviz \
-  netpbm \
-  netpbm-progs \
-  python3 \
-  python3-distutils-extra \
-  ShellCheck \
-  texlive \
-  wget
-
-# Alternately, run: dnf --enablerepo=crb install PACKAGENAME
-RUN dnf config-manager --set-enabled crb \
-&& dnf -y install dnf-plugins-core \
-&& dnf -y install texinfo texinfo-tex
-
-# `pipx ensurepath` only adds to the path in newly-started shells.
-# BUT, setting the path for the current user is not enough.
-# Azure creates a new user and runs jobs as it.
-# So, install into /usr/local/bin which is already on every user's path.
-RUN dnf -q -y install \
-  pipx \
-&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install mypy \
-&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ruff
 
 ## Install the JDK.
 # RUN dnf -q -y upgrade && dnf -q -y install \
@@ -74,4 +49,49 @@ ENV JAVA25_HOME=/jdk-25
 RUN chmod og+rx /root \
 && chmod og+r /root/*
 
+RUN dnf -q -y upgrade && dnf -q -y install \
+  ctags \
+  devscripts-checkbashisms \
+  gcc-c++ \
+  graphviz \
+  netpbm \
+  netpbm-progs \
+  python3 \
+  python3-distutils-extra \
+  ShellCheck \
+  texlive \
+  yamllint
+
+# Alternately, run: dnf --enablerepo=crb install PACKAGENAME
+RUN dnf config-manager --set-enabled crb \
+&& dnf -y install \
+  dnf-plugins-core \
+  texinfo \
+  texinfo-tex
+
+# Install shfmt.
+RUN dnf -q -y upgrade && dnf -q -y install \
+  golang \
+&& go install mvdan.cc/sh/v3/cmd/shfmt@latest
+ENV PATH=/root/go/bin:$PATH
+
+# Install Python dependencies (obsolete, to be removed).
+# `pipx ensurepath` only adds to the path in newly-started shells.
+# BUT, setting the path for the current user is not enough.
+# Azure creates a new user and runs jobs as it.
+# So, install into /usr/local/bin which is already on every user's path.
+RUN dnf -q -y install \
+  pipx \
+&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install mypy \
+&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ruff
+
+# Install uv (manages Python dependencies).
+RUN echo "installing uv" \
+&& wget -qO- https://astral.sh/uv/install.sh | sh \
+&& find /root -exec chmod +r {} \; \
+&& find /root -type d -exec chmod +x {} \; \
+&& find /root/.local/bin -type f -exec chmod +x {} \;
+ENV PATH=/root/.local/bin:$PATH
+
+# Clean up.
 RUN dnf -q clean all
