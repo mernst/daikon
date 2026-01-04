@@ -1143,6 +1143,26 @@ public final class Runtime {
     }
   }
 
+  /**
+   * Given a class name in internal form, return it as a binary name.
+   *
+   * @param internalForm a class name in internal form
+   * @return the class name as a binary name
+   */
+  public static @BinaryName String internalFormToBinaryName(@InternalForm String internalForm) {
+    return internalForm.replace('/', '.');
+  }
+
+  /**
+   * Given a class name in binary name form, return it in internal form.
+   *
+   * @param internalForm a class name in binary name form
+   * @return the class name in internal form
+   */
+  public static @InternalForm String binaryNameToInternalForm(@BinaryName String binaryName) {
+    return binaryName.replace('.', '/');
+  }
+
   // ///////////////////////////////////////////////////////////////////////////
   // end of copied code
   //
