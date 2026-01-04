@@ -49,7 +49,7 @@ public class ClassGen24 {
   /** The name of the class's superclass, in binary name format. */
   private final @BinaryName String superclassName;
 
-  /** The class's name. */
+  /** The name of the class, in binary name format. */
   private final @BinaryName String className;
 
   //
@@ -87,7 +87,8 @@ public class ClassGen24 {
 
     superclassName = getSuperclassName(classModel);
 
-    // The original interface list is immutable, so we need to make a copy.
+    // The original interface list is immutable, so we need to make a copy, to accommodate method
+    // `addInterface()`.
     interfaceList = new ArrayList<ClassEntry>(classModel.interfaces());
   }
 

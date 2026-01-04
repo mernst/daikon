@@ -411,7 +411,8 @@ public final class BuildJDK24 {
         }
 
         @SuppressWarnings("signature:assignment") // string manipulation
-        @BinaryName String classname = classFileName.replace(".class", "").replace('/', '.');
+        @InternalForm String classnameIF = StringsPlume.replaceSuffix(classFileName, ".class", "");
+        String classname = Signatures.internalFormToBinaryName(classnameIF);
         if (DynComp.dump) {
           inst24.writeDebugClassFiles(buffer, inst24.debug_uninstrumented_dir, classname);
         }
@@ -533,7 +534,8 @@ public final class BuildJDK24 {
 
     // remove '.class' first
     @SuppressWarnings("signature:assignment") // type conversion
-    @BinaryName String classname = classFileName.replace(".class", "").replace('/', '.');
+    @InternalForm String classnameIF = StringsPlume.replaceSuffix(classFileName, ".class", "");
+    String classname = Signatures.internalFormToBinaryName(classnameIF);
     ClassInfo classInfo = new ClassInfo(classname, loader);
     DCInstrument24 dci = new DCInstrument24(classFile, classModel, true);
     byte[] classBytes = dci.instrument_jdk_class(classInfo);
