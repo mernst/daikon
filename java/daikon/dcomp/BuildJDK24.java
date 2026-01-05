@@ -45,7 +45,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.InternalForm;
-import org.plumelib.util.StringsPlume;
 
 /**
  * Add comparability instrumentation to Java class files, then stores the modified files into a
@@ -197,7 +196,7 @@ public final class BuildJDK24 {
       // Class names are written in internal form.
       try (PrintWriter pw = new PrintWriter(jdk_classes_file, UTF_8.name())) {
         for (String classFileName : class_stream_map.keySet()) {
-          pw.println(StringsPlume.replaceSuffix(classFileName, ".class", ""));
+          pw.println(removeSuffix(classFileName, ".class"));
         }
       }
     }
@@ -414,7 +413,7 @@ public final class BuildJDK24 {
         }
 
         @SuppressWarnings("signature:assignment") // string manipulation
-        @InternalForm String classnameIF = StringsPlume.replaceSuffix(classFileName, ".class", "");
+        @InternalForm String classnameIF = removeSuffix(classFileName, ".class");
         String classname = Signatures.internalFormToBinaryName(classnameIF);
         if (DynComp.dump) {
           inst24.writeDebugClassFiles(buffer, inst24.debug_uninstrumented_dir, classname);
@@ -478,7 +477,7 @@ public final class BuildJDK24 {
                   ClassDesc.of(Signatures.addPackage("java.lang", className)),
                   classBuilder -> finishCreateDCompClass(classBuilder, dcompInstrumented));
       // Write the byte array to a .class file.
-      Path outputPath = Path.of(destDir, "java", "lang", className + ".class");
+      Path outputPath = Path.of(destDir.toString(), "java", "lang", className + ".class");
       Files.write(outputPath, classBytes);
     } catch (Exception e) {
       throw new Error(e);
@@ -537,7 +536,7 @@ public final class BuildJDK24 {
 
     // remove '.class' first
     @SuppressWarnings("signature:assignment") // type conversion
-    @InternalForm String classnameIF = StringsPlume.replaceSuffix(classFileName, ".class", "");
+    @InternalForm String classnameIF = removeSuffix(classFileName, ".class");
     String classname = Signatures.internalFormToBinaryName(classnameIF);
     ClassInfo classInfo = new ClassInfo(classname, loader);
     DCInstrument24 dci = new DCInstrument24(classFile, classModel, true);
@@ -606,6 +605,21 @@ public final class BuildJDK24 {
       for (String method : known) {
         System.err.printf("  %s%n", method);
       }
+    }
+  }
+
+  /**
+   * Return the given string, with the suffix removed if it was present.
+   *
+   * @param s a string
+   * @param suffix a suffix
+   * @return {@code s}, with the suffix removed if it was present.
+   */
+  private static String removeSuffix(String s, String suffix) {
+    if (s.endsWith(suffix)) {
+      return s.substring(0, s.length() - suffix.length());
+    } else {
+      return s;
     }
   }
 }

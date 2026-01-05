@@ -1,5 +1,6 @@
 package daikon.dcomp;
 
+import daikon.chicory.Runtime;
 import daikon.plumelib.reflection.Signatures;
 import java.lang.classfile.AccessFlags;
 import java.lang.classfile.ClassBuilder;
