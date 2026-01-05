@@ -911,7 +911,7 @@ public class DCInstrument extends InstructionListUtils {
       }
     }
 
-    if (BcelUtil.javaVersion > 8) {
+    if (Runtime.isJava9orLater()) {
       // Don't instrument problem classes.
       // See Premain.java for a list and explanations.
       if (Premain.problem_classes.contains(classname)) {

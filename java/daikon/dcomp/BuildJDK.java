@@ -161,7 +161,7 @@ public final class BuildJDK {
 
       check_java_home();
 
-      if (BcelUtil.javaVersion > 8) {
+      if (Runtime.isJava9orLater()) {
         class_stream_map = build.gather_runtime_from_modules();
       } else {
         class_stream_map = build.gather_runtime_from_jar();
@@ -184,7 +184,7 @@ public final class BuildJDK {
       // Class names are written in internal form.
       try (PrintWriter pw = new PrintWriter(jdk_classes_file, UTF_8.name())) {
         for (String classFileName : class_stream_map.keySet()) {
-          pw.println(classFileName.replace(".class", ""));
+          pw.println(StringsPlume.replaceSuffix(classFileName, ".class", ""));
         }
       }
     }
@@ -357,7 +357,7 @@ public final class BuildJDK {
         // Handle non-.class files and Object.class.  In JDK 8, copy them unchanged.
         // For JDK 9+ we do not copy as these items will be loaded from the original module file.
         if (!classFileName.endsWith(".class") || classFileName.equals("java/lang/Object.class")) {
-          if (BcelUtil.javaVersion > 8) {
+          if (Runtime.isJava9orLater()) {
             if (verbose) {
               System.out.printf("Skipping file %s%n", classFileName);
             }
@@ -409,7 +409,7 @@ public final class BuildJDK {
     createDCompClass(destDir, "DCompMarker", false);
 
     // The remainder of the generated classes are needed for JDK 9+ only.
-    if (BcelUtil.javaVersion > 8) {
+    if (Runtime.isJava9orLater()) {
       createDCompClass(destDir, "DCompInstrumented", true);
       createDCompClass(destDir, "DCompClone", false);
       createDCompClass(destDir, "DCompToString", false);

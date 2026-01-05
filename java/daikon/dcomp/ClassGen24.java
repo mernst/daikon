@@ -110,13 +110,14 @@ public class ClassGen24 {
   }
 
   /**
-   * Determine if this class contains the indicatated method.
+   * Return the indicatated method, or null if this class does not contain it.
    *
    * @param name the method's name
    * @param descriptor the method's type descriptor
    * @return the MethodModel if found, null otherwise
    */
-  public @Nullable MethodModel containsMethod(String name, @MethodDescriptor String descriptor) {
+  public @Nullable MethodModel containsMethod(
+      @Identifier String name, @MethodDescriptor String descriptor) {
     for (MethodModel mm : classModel.methods()) {
       if (mm.methodName().stringValue().equals(name)
           && mm.methodType().stringValue().equals(descriptor)) {
@@ -127,7 +128,7 @@ public class ClassGen24 {
   }
 
   /**
-   * Returns the class's access flags.
+   * Returns this class's access flags.
    *
    * @return the access flags
    */
@@ -136,45 +137,45 @@ public class ClassGen24 {
   }
 
   /**
-   * Returns true if the class is an interface.
+   * Returns true if this class is an interface.
    *
-   * @return true if the class is an interface
+   * @return true if this class is an interface
    */
   public final boolean isInterface() {
     return isInterface;
   }
 
   /**
-   * Returns true if the class is static.
+   * Returns true if this class is static.
    *
-   * @return true if the class is static
+   * @return true if this class is static
    */
   public final boolean isStatic() {
     return isStatic;
   }
 
   /**
-   * Returns the class's name.
+   * Returns this class's name, in binary format.
    *
-   * @return the class's name
+   * @return this class's name, in binary format
    */
   public @BinaryName String getClassName() {
     return className;
   }
 
   /**
-   * Returns a {@code ClassModel}'s class name.
+   * Returns a {@code ClassModel}'s class name, in binary format.
    *
-   * @return the class's name
+   * @return the class's name, in binary format
    */
   public static @BinaryName String getClassName(ClassModel classModel) {
     return Signatures.internalFormToBinaryName(classModel.thisClass().asInternalName());
   }
 
   /**
-   * Returns the name of the superclass of this class. In the case that this class is {@link
-   * Object}, it will return itself ({@link Object}). This is probably incorrect but is consistent
-   * with the BCEL version of getSuperclassName.
+   * Returns the name of the superclass of this class. If this class is {@link Object}, it will
+   * return itself ({@link Object}). This is probably incorrect but is consistent with the BCEL
+   * version of getSuperclassName.
    *
    * @return the binary name of this class's superclass
    */
@@ -183,9 +184,9 @@ public class ClassGen24 {
   }
 
   /**
-   * Returns the name of the superclass of the argument. In the case that the argument class is
-   * {@link Object}, it will return itself ({@link Object}). This is probably incorrect but is
-   * consistent with the BCEL version of getSuperclassName.
+   * Returns the name of the superclass of the argument. If the argument class is {@link Object}, it
+   * will return itself ({@link Object}). This is probably incorrect but is consistent with the BCEL
+   * version of getSuperclassName.
    *
    * @param classModel the class to check
    * @return the binary name of the superclass of classModel or "java.lang.Object" if it has no

@@ -83,7 +83,7 @@ public final class BuildJDK24 {
 
   /**
    * Collects names of all methods that DCInstrument24 could not process. Should be empty. Format is
-   * &lt;fully-qualified class name&gt;.&lt;method name&gt;
+   * {@code <fully-qualified class name>.<method name>}.
    */
   private static List<String> skipped_methods = new ArrayList<>();
 
@@ -171,7 +171,7 @@ public final class BuildJDK24 {
 
       check_java_home();
 
-      if (BcelUtil.javaVersion > 8) {
+      if (Runtime.isJava9orLater()) {
         class_stream_map = build.gather_runtime_from_modules();
       } else {
         class_stream_map = build.gather_runtime_from_jar();
@@ -194,7 +194,7 @@ public final class BuildJDK24 {
       // Class names are written in internal form.
       try (PrintWriter pw = new PrintWriter(jdk_classes_file, UTF_8.name())) {
         for (String classFileName : class_stream_map.keySet()) {
-          pw.println(classFileName.replace(".class", ""));
+          pw.println(StringsPlume.replaceSuffix(classFileName, ".class", ""));
         }
       }
     }
@@ -283,8 +283,8 @@ public final class BuildJDK24 {
   /**
    * For Java 9+ the Java runtime is located in a series of modules. At this time, we are only
    * pre-instrumenting the java.base module. This method initializes the DirectoryStream used to
-   * explore java.base. It calls gather_runtime_from_modules_directory to process the directory
-   * structure.
+   * explore java.base. It calls {@link #gather_runtime_from_modules_directory} to process the
+   * directory structure.
    *
    * @return a map from class file name to the associated InputStream
    */
@@ -419,7 +419,7 @@ public final class BuildJDK24 {
 
         // As {@code instrumentation_interface} is a static field, we initialize it here rather than
         // in the DCInstrument24 constructor.
-        if (Premain.jdk_instrumented && BcelUtil.javaVersion > 8) {
+        if (Premain.jdk_instrumented && Runtime.isJava9orLater()) {
           dcompPrefix = "java.lang";
         } else {
           dcompPrefix = "daikon.dcomp";
@@ -450,7 +450,7 @@ public final class BuildJDK24 {
     createDCompClass(destDir, "DCompMarker", false);
 
     // The remainder of the generated classes are needed for JDK 9+ only.
-    if (BcelUtil.javaVersion > 8) {
+    if (Runtime.isJava9orLater()) {
       createDCompClass(destDir, "DCompInstrumented", true);
       createDCompClass(destDir, "DCompClone", false);
       createDCompClass(destDir, "DCompToString", false);
