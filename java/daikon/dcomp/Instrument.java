@@ -162,7 +162,7 @@ public class Instrument implements ClassFileTransformer {
         }
       }
 
-      if ((BcelUtil.javaVersion > 8) && Premain.problem_classes.contains(binaryClassName)) {
+      if (Runtime.isJava9orLater() && Premain.problem_classes.contains(binaryClassName)) {
         debug_transform.log("Skipping problem class %s%n", binaryClassName);
         return null;
       }
