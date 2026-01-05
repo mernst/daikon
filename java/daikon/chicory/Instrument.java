@@ -95,21 +95,22 @@ public class Instrument extends InstructionListUtils implements ClassFileTransfo
   /** "java.lang.Object". */
   private static final ObjectType CD_Object = Type.OBJECT;
 
-  private static final ObjectType CD_Class = Type.CLASS;
+  // private static final ObjectType CD_Class = Type.CLASS;
   private static final ObjectType CD_String = Type.STRING;
 
   /** ObjectType for "java.lang.Throwable". */
   // protected static ObjectType CD_Throwable = new ObjectType("java.lang.Throwable");
-  private static final ObjectType CD_Throwable = Type.THROWABLE;
+  // private static final ObjectType CD_Throwable = Type.THROWABLE;
 
-  private static final BasicType CD_boolean = Type.BOOLEAN;
-  private static final BasicType CD_byte = Type.BYTE;
-  private static final BasicType CD_char = Type.CHAR;
-  private static final BasicType CD_double = Type.DOUBLE;
-  private static final BasicType CD_float = Type.FLOAT;
+  // private static final BasicType CD_boolean = Type.BOOLEAN;
+  // private static final BasicType CD_byte = Type.BYTE;
+  // private static final BasicType CD_char = Type.CHAR;
+  // private static final BasicType CD_double = Type.DOUBLE;
+  // private static final BasicType CD_float = Type.FLOAT;
   private static final BasicType CD_int = Type.INT;
-  private static final BasicType CD_long = Type.LONG;
-  private static final BasicType CD_short = Type.SHORT;
+
+  // private static final BasicType CD_long = Type.LONG;
+  // private static final BasicType CD_short = Type.SHORT;
   private static final BasicType CD_void = Type.VOID;
 
   /** "java.lang.Object[]". */

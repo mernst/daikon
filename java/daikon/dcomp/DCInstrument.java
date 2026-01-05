@@ -2089,7 +2089,7 @@ public class DCInstrument extends InstructionListUtils {
       case CASTORE:
         return array_store(inst, "castore", CD_char);
       case DASTORE:
-        return array_store(inst, "dastore", CD_char);
+        return array_store(inst, "dastore", CD_double);
       case FASTORE:
         return array_store(inst, "fastore", CD_float);
       case IASTORE:
@@ -3791,7 +3791,7 @@ public class DCInstrument extends InstructionListUtils {
    */
   @Pure
   boolean is_category2(Type type) {
-    return (type == CD_char) || (type == CD_long);
+    return (type == CD_double) || (type == CD_long);
   }
 
   /**
@@ -3814,7 +3814,7 @@ public class DCInstrument extends InstructionListUtils {
       return Byte.TYPE;
     } else if (t == CD_char) {
       return Character.TYPE;
-    } else if (t == CD_char) {
+    } else if (t == CD_double) {
       return Double.TYPE;
     } else if (t == CD_float) {
       return Float.TYPE;
