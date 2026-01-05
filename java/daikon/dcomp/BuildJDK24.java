@@ -417,7 +417,7 @@ public final class BuildJDK24 {
           inst24.writeDebugClassFiles(buffer, inst24.debug_uninstrumented_dir, classname);
         }
 
-        // As {@code instrumentation_interface} is a static field, we initialize it here rather than
+        // As `instrumentation_interface` is a static field, we initialize it here rather than
         // in the DCInstrument24 constructor.
         if (Premain.jdk_instrumented && Runtime.isJava9orLater()) {
           dcompPrefix = "java.lang";
@@ -475,8 +475,8 @@ public final class BuildJDK24 {
                   ClassDesc.of(Signatures.addPackage("java.lang", className)),
                   classBuilder -> finishCreateDCompClass(classBuilder, dcompInstrumented));
       // Write the byte array to a .class file.
-      File outputFile = new File(new File(new File(destDir, "java"), "lang"), className + ".class");
-      Files.write(outputFile.toPath(), classBytes);
+      Path outputPath = Path.of(destDir, "java", "lang", className + ".class");
+      Files.write(outputPath, classBytes);
     } catch (Exception e) {
       throw new Error(e);
     }
@@ -504,7 +504,7 @@ public final class BuildJDK24 {
     }
   }
 
-  /** Formats just the time part of a DateTime. */
+  /** Formats just the time part of a DateTime, for progress diagnostics. */
   private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
   /**
