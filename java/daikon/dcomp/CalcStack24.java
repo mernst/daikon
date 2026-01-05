@@ -49,6 +49,7 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.List;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.FieldDescriptor;
 
 /**
  * This class calculates the state of the operand stack via simulation.

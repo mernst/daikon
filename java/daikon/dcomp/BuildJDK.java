@@ -39,6 +39,7 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Add comparability instrumentation to Java class files, then stores the modified files into a

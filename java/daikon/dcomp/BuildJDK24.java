@@ -6,6 +6,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import daikon.DynComp;
 import daikon.chicory.ClassInfo;
+import daikon.chicory.Runtime;
 import daikon.plumelib.bcelutil.BcelUtil;
 import daikon.plumelib.options.Options;
 import daikon.plumelib.reflection.Signatures;
@@ -43,6 +44,8 @@ import java.util.jar.JarFile;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
+import org.checkerframework.checker.signature.qual.InternalForm;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Add comparability instrumentation to Java class files, then stores the modified files into a
