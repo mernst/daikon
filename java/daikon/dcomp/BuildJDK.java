@@ -74,7 +74,7 @@ public final class BuildJDK {
 
   /**
    * Collects names of all methods that DCInstrument could not process. Should be empty. Format is
-   * &lt;fully-qualified class name&gt;.&lt;method name&gt;
+   * {@code <fully-qualified class name>.<method name>}.
    */
   private static List<String> skipped_methods = new ArrayList<>();
 
@@ -128,8 +128,8 @@ public final class BuildJDK {
     // <p>We want to share code to read and instrument the Java class file members of a jar file
     // (JDK 8) or a module file (JDK 9+). However, jar files and module files are located in two
     // completely different file systems. So we open an InputStream for each class file we wish to
-    // instrument and save it in the class_stream_map with the file name as the key. From that point
-    // the code to instrument a class file can be shared.
+    // instrument and save it in the class_stream_map with the file name as the key. From that
+    // point the code to instrument a class file can be shared.
     Map<String, InputStream> class_stream_map;
 
     if (cl_args.length > 1) {
@@ -273,8 +273,8 @@ public final class BuildJDK {
   /**
    * For Java 9+ the Java runtime is located in a series of modules. At this time, we are only
    * pre-instrumenting the java.base module. This method initializes the DirectoryStream used to
-   * explore java.base. It calls gather_runtime_from_modules_directory to process the directory
-   * structure.
+   * explore java.base. It calls {@link #gather_runtime_from_modules_directory} to process the
+   * directory structure.
    *
    * @return a map from class file name to the associated InputStream
    */
@@ -332,7 +332,7 @@ public final class BuildJDK {
   }
 
   /**
-   * Instrument each of the classes indentified by the class_stream_map argument.
+   * Instrument each of the classes identified by the class_stream_map argument.
    *
    * @param dest_dir where to store the instrumented classes
    * @param class_stream_map maps from class file name to an input stream on that file

@@ -44,7 +44,7 @@ public final class DCRuntime {
     return false;
   }
 
-  public static Object[] create_tag_frame(String params) {
+  public static Object[] createTagFrame(String params) {
     return null;
   }
 

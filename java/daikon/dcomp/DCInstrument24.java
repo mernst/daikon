@@ -330,8 +330,8 @@ public class DCInstrument24 {
   protected @DotSeparatedIdentifiers String dcompMarkerPrefix;
 
   /**
-   * If we're using an instrumented JDK and the JDK version is > 8, then "java.lang"; otherwise,
-   * "daikon.dcomp".
+   * If we're using an instrumented JDK and the JDK version is 9 or higher, then "java.lang";
+   * otherwise, "daikon.dcomp".
    */
   protected @DotSeparatedIdentifiers String dcompRuntimePrefix;
 
@@ -1884,11 +1884,8 @@ public class DCInstrument24 {
 
     ClassDesc paramTypes[] = mgen.getParameterTypes();
 
-    // Determine the offset of the first argument in the frame
-    int offset = 1;
-    if (mgen.isStatic()) {
-      offset = 0;
-    }
+    // Determine the offset of the first argument in the frame.
+    int offset = mgen.isStatic() ? 0 : 1;
 
     // allocate an extra slot to save the tag frame depth for debugging
     int frame_size = mgen.getMaxLocals() + 2;
@@ -1896,7 +1893,13 @@ public class DCInstrument24 {
     // unsigned byte max = 255.  minus the character '0' (decimal 48)
     // Largest frame size noted so far is 123.
     if (frame_size > 206) {
-      throw new DynCompError("method too large to instrument: " + mgen.getName());
+      throw new DynCompError(
+          "method too large ("
+              + frame_size
+              + ") to instrument: "
+              + mgen.getClassName()
+              + "."
+              + mgen.getName());
     }
     String params = Character.toString((char) (frame_size + '0'));
     // Character.forDigit (frame_size, Character.MAX_RADIX);
@@ -1918,7 +1921,7 @@ public class DCInstrument24 {
 
     MethodRefEntry mre =
         poolBuilder.methodRefEntry(
-            runtimeCD, "create_tag_frame", MethodTypeDesc.of(objectArrayCD, CD_String));
+            runtimeCD, "createTagFrame", MethodTypeDesc.of(objectArrayCD, CD_String));
     instructions.add(buildLDCInstruction(poolBuilder.stringEntry(params)));
     instructions.add(InvokeInstruction.of(Opcode.INVOKESTATIC, mre));
     instructions.add(StoreInstruction.of(TypeKind.REFERENCE, tagFrameLocal.slot()));
@@ -4707,9 +4710,7 @@ public class DCInstrument24 {
       classGen.addInterface(Signatures.addPackage(dcompRuntimePrefix, "DCompClone"));
     }
 
-    @SuppressWarnings("signature:assignment")
-    @MethodDescriptor String noArgsReturnString = "()Ljava/lang/String;";
-    MethodModel ts = classGen.containsMethod("toString", noArgsReturnString);
+    MethodModel ts = classGen.containsMethod("toString", "()Ljava/lang/String;");
     if (ts != null) {
       classGen.addInterface(Signatures.addPackage(dcompRuntimePrefix, "DCompToString"));
     }
@@ -4841,16 +4842,16 @@ public class DCInstrument24 {
   /**
    * Return the fully-qualified fieldname of the specified field.
    *
-   * @param cm class containing the field
-   * @param fm the field
+   * @param c class containing the field
+   * @param f the field
    * @return string containing the fully-qualified name
    */
-  protected static String full_name(ClassModel cm, FieldModel fm) {
-    return ClassGen24.getClassName(cm) + "." + fm.fieldName().stringValue();
+  protected static String full_name(ClassModel c, FieldModel f) {
+    return ClassGen24.getClassName(c) + "." + f.fieldName().stringValue();
   }
 
   /**
-   * Return simplified name of a method. Both exceptions and annotations are removed.
+   * Returns simplified name of a method. Both exceptions and annotations are removed.
    *
    * @param mgen the method
    * @return string containing the simplified method name
