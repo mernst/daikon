@@ -112,7 +112,7 @@ public class ClassGen24 {
   }
 
   /**
-   * Return the indicatated method, or null if this class does not contain it.
+   * Returns the indicatated method, or null if this class does not contain it.
    *
    * @param name the method's name
    * @param descriptor the method's type descriptor

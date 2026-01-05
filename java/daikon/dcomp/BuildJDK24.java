@@ -609,7 +609,7 @@ public final class BuildJDK24 {
   }
 
   /**
-   * Return the given string, with the suffix removed if it was present.
+   * Returns the given string, with the suffix removed if it was present.
    *
    * @param s a string
    * @param suffix a suffix
