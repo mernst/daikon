@@ -1298,14 +1298,14 @@ public class DCInstrument extends InstructionListUtils {
     Type[] param_types = mgen.getArgumentTypes();
 
     int arg_index = (mgen.isStatic() ? 0 : 1);
-    StackMapType[] arg_map_types = new StackMapType[param_types.length + arg_index];
+    StackMapType[] param_map_types = new StackMapType[param_types.length + arg_index];
     if (!mgen.isStatic()) {
-      arg_map_types[0] =
+      param_map_types[0] =
           new StackMapType(
               Const.ITEM_Object, pool.addClass(mgen.getClassName()), pool.getConstantPool());
     }
     for (int ii = 0; ii < param_types.length; ii++) {
-      arg_map_types[arg_index++] = generateStackMapTypeFromType(param_types[ii]);
+      param_map_types[arg_index++] = generateStackMapTypeFromType(param_types[ii]);
     }
 
     StackMapEntry map_entry;
@@ -1315,7 +1315,7 @@ public class DCInstrument extends InstructionListUtils {
     StackMapType[] stack_map_types = {stack_map_type};
     map_entry =
         new StackMapEntry(
-            Const.FULL_FRAME, map_offset, arg_map_types, stack_map_types, pool.getConstantPool());
+            Const.FULL_FRAME, map_offset, param_map_types, stack_map_types, pool.getConstantPool());
 
     int orig_size = stackMapTable.length;
     StackMapEntry[] new_stack_map_table = new StackMapEntry[orig_size + 1];
@@ -4323,7 +4323,7 @@ public class DCInstrument extends InstructionListUtils {
   }
 
   /**
-   * Return the fully-qualified fieldname of the specified field.
+   * Returns the fully-qualified fieldname of the specified field.
    *
    * @param c class containing the field
    * @param f the field
