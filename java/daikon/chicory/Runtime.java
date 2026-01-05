@@ -1061,6 +1061,9 @@ public final class Runtime {
             postEsc = i + 1;
             break;
           } else {
+            if (postEsc < i) {
+              sb.append(orig.substring(postEsc, i));
+            }
             sb.append("\\u");
             sb.append(String.format("%04x", (int) c));
             postEsc = i + 1;
@@ -1142,7 +1145,7 @@ public final class Runtime {
   @SuppressWarnings("signature") // conversion routine
   public static @BinaryName String classGetNameToBinaryName(@ClassGetName String typename) {
     if (typename.equals("")) {
-      throw new Error("Empty string passed to fieldDescriptorToBinaryName");
+      throw new Error("Empty string passed to classGetNameToBinaryName");
     }
     Matcher m = fdArrayBracketsPattern.matcher(typename);
     String classname = m.replaceFirst("");
