@@ -95,26 +95,38 @@ public class Instrument extends InstructionListUtils implements ClassFileTransfo
   /** "java.lang.Object". */
   private static final ObjectType CD_Object = Type.OBJECT;
 
+  // /** Type for "java.lang.Class". */
   // private static final ObjectType CD_Class = Type.CLASS;
+
+  /** Type for "java.lang.String". */
   private static final ObjectType CD_String = Type.STRING;
 
-  /** ObjectType for "java.lang.Throwable". */
+  // /** Type for "java.lang.Throwable". */
   // protected static ObjectType CD_Throwable = new ObjectType("java.lang.Throwable");
   // private static final ObjectType CD_Throwable = Type.THROWABLE;
 
+  // /** Type for "boolean". */
   // private static final BasicType CD_boolean = Type.BOOLEAN;
+  // /** Type for "byte". */
   // private static final BasicType CD_byte = Type.BYTE;
+  // /** Type for "char". */
   // private static final BasicType CD_char = Type.CHAR;
+  // /** Type for "double". */
   // private static final BasicType CD_double = Type.DOUBLE;
+  // /** Type for "float". */
   // private static final BasicType CD_float = Type.FLOAT;
+  /** Type for "int". */
   private static final BasicType CD_int = Type.INT;
 
+  // /** Type for "long". */
   // private static final BasicType CD_long = Type.LONG;
+  // /** Type for "short". */
   // private static final BasicType CD_short = Type.SHORT;
+  /** Type for "void". */
   private static final BasicType CD_void = Type.VOID;
 
   /** "java.lang.Object[]". */
-  protected static Type object_arr = new ArrayType(CD_Object, 1);
+  protected static Type objectArrayCD = new ArrayType(CD_Object, 1);
 
   // protected static ObjectType CD_Throwable = new ObjectType("java.lang.Throwable");
 
@@ -1035,12 +1047,12 @@ public class Instrument extends InstructionListUtils implements ClassFileTransfo
     newCode.append(instFactory.createConstant(paramTypes.length));
     newCode.append(instFactory.createNewArray(CD_Object, (short) 1));
 
-    Type object_arr_typ = new ArrayType("java.lang.Object", 1);
+    Type objectArrayCD_typ = new ArrayType("java.lang.Object", 1);
 
     // Put each parameter into the array.
     int param_index = param_offset;
     for (int ii = 0; ii < paramTypes.length; ii++) {
-      newCode.append(InstructionFactory.createDup(object_arr_typ.getSize()));
+      newCode.append(InstructionFactory.createDup(objectArrayCD_typ.getSize()));
       newCode.append(instFactory.createConstant(ii));
       Type at = paramTypes[ii];
       if (at instanceof BasicType) {
@@ -1076,9 +1088,9 @@ public class Instrument extends InstructionListUtils implements ClassFileTransfo
     // Call the specified method.
     Type[] methodArgs;
     if (methodToCall.equals("exit")) {
-      methodArgs = new Type[] {CD_Object, CD_int, CD_int, object_arr_typ, CD_Object, CD_int};
+      methodArgs = new Type[] {CD_Object, CD_int, CD_int, objectArrayCD_typ, CD_Object, CD_int};
     } else {
-      methodArgs = new Type[] {CD_Object, CD_int, CD_int, object_arr_typ};
+      methodArgs = new Type[] {CD_Object, CD_int, CD_int, objectArrayCD_typ};
     }
     newCode.append(
         instFactory.createInvoke(

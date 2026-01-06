@@ -363,30 +363,47 @@ public class DCInstrument extends InstructionListUtils {
   /** "java.lang.Object". */
   private static final ObjectType CD_Object = Type.OBJECT;
 
-  // static private  final ObjectType CD_Class;
+  /** Type for "java.lang.Class". */
+  protected static ObjectType CD_Class = new ObjectType("java.lang.Class");
+
+  /** Type for "java.lang.String". */
   private static final ObjectType CD_String = Type.STRING;
 
-  /** ObjectType for "java.lang.Throwable". */
+  /** Type for "java.lang.Throwable". */
   // protected static ObjectType CD_Throwable = new ObjectType("java.lang.Throwable");
   private static final ObjectType CD_Throwable = Type.THROWABLE;
 
+  /** Type for "boolean". */
   private static final BasicType CD_boolean = Type.BOOLEAN;
+
+  /** Type for "byte". */
   private static final BasicType CD_byte = Type.BYTE;
+
+  /** Type for "char". */
   private static final BasicType CD_char = Type.CHAR;
+
+  /** Type for "double". */
   private static final BasicType CD_double = Type.DOUBLE;
+
+  /** Type for "float". */
   private static final BasicType CD_float = Type.FLOAT;
+
+  /** Type for "int". */
   private static final BasicType CD_int = Type.INT;
+
+  /** Type for "long". */
   private static final BasicType CD_long = Type.LONG;
+
+  /** Type for "short". */
   private static final BasicType CD_short = Type.SHORT;
+
+  /** Type for "void". */
   private static final BasicType CD_void = Type.VOID;
 
   /** "java.lang.Object[]". */
   protected static Type objectArrayCD = new ArrayType(CD_Object, 1);
 
   // protected static ObjectType CD_Throwable = new ObjectType("java.lang.Throwable");
-
-  /** ObjectType for "java.lang.Class". */
-  protected static Type javalangClass = new ObjectType("java.lang.Class");
 
   /** The special DCompMarker type. */
   protected final ObjectType dcomp_marker;
@@ -2857,14 +2874,14 @@ public class DCInstrument extends InstructionListUtils {
 
       // Runtime will discover if the object's superclass has an instrumented clone method.
       // If so, call it; otherwise call the uninstrumented version.
-      il.append(dcr_call("dcomp_super_clone", returnType, new Type[] {CD_Object, javalangClass}));
+      il.append(dcr_call("dcomp_super_clone", returnType, new Type[] {CD_Object, CD_Class}));
 
     } else {
       // This is a regular (non-super) clone() call.
 
       // Runtime will discover if the object has an instrumented clone method.
       // If so, call it; otherwise call the uninstrumented version.
-      il.append(dcr_call("dcomp_clone", returnType, new Type[] {CD_Object, javalangClass}));
+      il.append(dcr_call("dcomp_clone", returnType, new Type[] {CD_Object, CD_Class}));
     }
 
     return il;
