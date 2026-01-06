@@ -381,7 +381,7 @@ public class DCInstrument extends InstructionListUtils {
   private static final BasicType CD_void = Type.VOID;
 
   /** "java.lang.Object[]". */
-  protected static Type objectArrayCD = new ArrayType(Type.OBJECT, 1);
+  protected static Type objectArrayCD = new ArrayType(CD_Object, 1);
 
   // protected static ObjectType CD_Throwable = new ObjectType("java.lang.Throwable");
 
@@ -418,7 +418,7 @@ public class DCInstrument extends InstructionListUtils {
   protected static Type[] longIntSig = {CD_long, CD_int};
 
   /** Type array with an object and an int. */
-  protected static Type[] objectIntSig = {Type.OBJECT, CD_int};
+  protected static Type[] objectIntSig = {CD_Object, CD_int};
 
   /** Type array with two objects. */
   protected static Type[] objectObjectSig = {CD_Object, CD_Object};
