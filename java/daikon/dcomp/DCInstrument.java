@@ -92,6 +92,7 @@ import org.apache.bcel.generic.SWAP;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 import org.apache.bcel.verifier.structurals.OperandStack;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
@@ -167,31 +168,31 @@ public class DCInstrument extends InstructionListUtils {
   protected final ObjectType dcomp_marker;
 
   /** Type for "boolean". */
-  private static final BasicType CD_boolean = Type.BOOLEAN;
+  private static final @InternedDistinct BasicType CD_boolean = Type.BOOLEAN;
 
   /** Type for "byte". */
-  private static final BasicType CD_byte = Type.BYTE;
+  private static final @InternedDistinct BasicType CD_byte = Type.BYTE;
 
   /** Type for "char". */
-  private static final BasicType CD_char = Type.CHAR;
+  private static final @InternedDistinct BasicType CD_char = Type.CHAR;
 
   /** Type for "double". */
-  private static final BasicType CD_double = Type.DOUBLE;
+  private static final @InternedDistinct BasicType CD_double = Type.DOUBLE;
 
   /** Type for "float". */
-  private static final BasicType CD_float = Type.FLOAT;
+  private static final @InternedDistinct BasicType CD_float = Type.FLOAT;
 
   /** Type for "int". */
-  private static final BasicType CD_int = Type.INT;
+  private static final @InternedDistinct BasicType CD_int = Type.INT;
 
   /** Type for "long". */
-  private static final BasicType CD_long = Type.LONG;
+  private static final @InternedDistinct BasicType CD_long = Type.LONG;
 
   /** Type for "short". */
-  private static final BasicType CD_short = Type.SHORT;
+  private static final @InternedDistinct BasicType CD_short = Type.SHORT;
 
   /** Type for "void". */
-  private static final BasicType CD_void = Type.VOID;
+  private static final @InternedDistinct BasicType CD_void = Type.VOID;
 
   // Type descriptors: arrays
 
