@@ -1,5 +1,219 @@
 package daikon.dcomp;
 
+import static org.apache.bcel.Const.AALOAD;
+import static org.apache.bcel.Const.AASTORE;
+import static org.apache.bcel.Const.ACC_ABSTRACT;
+import static org.apache.bcel.Const.ACC_ANNOTATION;
+import static org.apache.bcel.Const.ACC_BRIDGE;
+import static org.apache.bcel.Const.ACC_FINAL;
+import static org.apache.bcel.Const.ACC_NATIVE;
+import static org.apache.bcel.Const.ACC_PUBLIC;
+import static org.apache.bcel.Const.ACC_STATIC;
+import static org.apache.bcel.Const.ACONST_NULL;
+import static org.apache.bcel.Const.ALOAD;
+import static org.apache.bcel.Const.ALOAD_0;
+import static org.apache.bcel.Const.ALOAD_1;
+import static org.apache.bcel.Const.ALOAD_2;
+import static org.apache.bcel.Const.ALOAD_3;
+import static org.apache.bcel.Const.ANEWARRAY;
+import static org.apache.bcel.Const.APPEND_FRAME;
+import static org.apache.bcel.Const.ARETURN;
+import static org.apache.bcel.Const.ARRAYLENGTH;
+import static org.apache.bcel.Const.ASTORE;
+import static org.apache.bcel.Const.ASTORE_0;
+import static org.apache.bcel.Const.ASTORE_1;
+import static org.apache.bcel.Const.ASTORE_2;
+import static org.apache.bcel.Const.ASTORE_3;
+import static org.apache.bcel.Const.ATHROW;
+import static org.apache.bcel.Const.BALOAD;
+import static org.apache.bcel.Const.BASTORE;
+import static org.apache.bcel.Const.BIPUSH;
+import static org.apache.bcel.Const.CALOAD;
+import static org.apache.bcel.Const.CASTORE;
+import static org.apache.bcel.Const.CHECKCAST;
+import static org.apache.bcel.Const.D2F;
+import static org.apache.bcel.Const.D2I;
+import static org.apache.bcel.Const.D2L;
+import static org.apache.bcel.Const.DADD;
+import static org.apache.bcel.Const.DALOAD;
+import static org.apache.bcel.Const.DASTORE;
+import static org.apache.bcel.Const.DCMPG;
+import static org.apache.bcel.Const.DCMPL;
+import static org.apache.bcel.Const.DCONST_0;
+import static org.apache.bcel.Const.DCONST_1;
+import static org.apache.bcel.Const.DDIV;
+import static org.apache.bcel.Const.DLOAD;
+import static org.apache.bcel.Const.DLOAD_0;
+import static org.apache.bcel.Const.DLOAD_1;
+import static org.apache.bcel.Const.DLOAD_2;
+import static org.apache.bcel.Const.DLOAD_3;
+import static org.apache.bcel.Const.DMUL;
+import static org.apache.bcel.Const.DNEG;
+import static org.apache.bcel.Const.DREM;
+import static org.apache.bcel.Const.DRETURN;
+import static org.apache.bcel.Const.DSTORE;
+import static org.apache.bcel.Const.DSTORE_0;
+import static org.apache.bcel.Const.DSTORE_1;
+import static org.apache.bcel.Const.DSTORE_2;
+import static org.apache.bcel.Const.DSTORE_3;
+import static org.apache.bcel.Const.DSUB;
+import static org.apache.bcel.Const.DUP;
+import static org.apache.bcel.Const.DUP2;
+import static org.apache.bcel.Const.DUP2_X1;
+import static org.apache.bcel.Const.DUP2_X2;
+import static org.apache.bcel.Const.DUP_X1;
+import static org.apache.bcel.Const.DUP_X2;
+import static org.apache.bcel.Const.F2D;
+import static org.apache.bcel.Const.F2I;
+import static org.apache.bcel.Const.F2L;
+import static org.apache.bcel.Const.FADD;
+import static org.apache.bcel.Const.FALOAD;
+import static org.apache.bcel.Const.FASTORE;
+import static org.apache.bcel.Const.FCMPG;
+import static org.apache.bcel.Const.FCMPL;
+import static org.apache.bcel.Const.FCONST_0;
+import static org.apache.bcel.Const.FCONST_1;
+import static org.apache.bcel.Const.FCONST_2;
+import static org.apache.bcel.Const.FDIV;
+import static org.apache.bcel.Const.FLOAD;
+import static org.apache.bcel.Const.FLOAD_0;
+import static org.apache.bcel.Const.FLOAD_1;
+import static org.apache.bcel.Const.FLOAD_2;
+import static org.apache.bcel.Const.FLOAD_3;
+import static org.apache.bcel.Const.FMUL;
+import static org.apache.bcel.Const.FNEG;
+import static org.apache.bcel.Const.FREM;
+import static org.apache.bcel.Const.FRETURN;
+import static org.apache.bcel.Const.FSTORE;
+import static org.apache.bcel.Const.FSTORE_0;
+import static org.apache.bcel.Const.FSTORE_1;
+import static org.apache.bcel.Const.FSTORE_2;
+import static org.apache.bcel.Const.FSTORE_3;
+import static org.apache.bcel.Const.FSUB;
+import static org.apache.bcel.Const.FULL_FRAME;
+import static org.apache.bcel.Const.GETFIELD;
+import static org.apache.bcel.Const.GETSTATIC;
+import static org.apache.bcel.Const.GOTO;
+import static org.apache.bcel.Const.GOTO_W;
+import static org.apache.bcel.Const.I2B;
+import static org.apache.bcel.Const.I2C;
+import static org.apache.bcel.Const.I2D;
+import static org.apache.bcel.Const.I2F;
+import static org.apache.bcel.Const.I2L;
+import static org.apache.bcel.Const.I2S;
+import static org.apache.bcel.Const.IADD;
+import static org.apache.bcel.Const.IALOAD;
+import static org.apache.bcel.Const.IAND;
+import static org.apache.bcel.Const.IASTORE;
+import static org.apache.bcel.Const.ICONST_0;
+import static org.apache.bcel.Const.ICONST_1;
+import static org.apache.bcel.Const.ICONST_2;
+import static org.apache.bcel.Const.ICONST_3;
+import static org.apache.bcel.Const.ICONST_4;
+import static org.apache.bcel.Const.ICONST_5;
+import static org.apache.bcel.Const.ICONST_M1;
+import static org.apache.bcel.Const.IDIV;
+import static org.apache.bcel.Const.IFEQ;
+import static org.apache.bcel.Const.IFGE;
+import static org.apache.bcel.Const.IFGT;
+import static org.apache.bcel.Const.IFLE;
+import static org.apache.bcel.Const.IFLT;
+import static org.apache.bcel.Const.IFNE;
+import static org.apache.bcel.Const.IFNONNULL;
+import static org.apache.bcel.Const.IFNULL;
+import static org.apache.bcel.Const.IF_ACMPEQ;
+import static org.apache.bcel.Const.IF_ACMPNE;
+import static org.apache.bcel.Const.IF_ICMPEQ;
+import static org.apache.bcel.Const.IF_ICMPGE;
+import static org.apache.bcel.Const.IF_ICMPGT;
+import static org.apache.bcel.Const.IF_ICMPLE;
+import static org.apache.bcel.Const.IF_ICMPLT;
+import static org.apache.bcel.Const.IF_ICMPNE;
+import static org.apache.bcel.Const.IINC;
+import static org.apache.bcel.Const.ILOAD;
+import static org.apache.bcel.Const.ILOAD_0;
+import static org.apache.bcel.Const.ILOAD_1;
+import static org.apache.bcel.Const.ILOAD_2;
+import static org.apache.bcel.Const.ILOAD_3;
+import static org.apache.bcel.Const.IMUL;
+import static org.apache.bcel.Const.INEG;
+import static org.apache.bcel.Const.INSTANCEOF;
+import static org.apache.bcel.Const.INVOKEDYNAMIC;
+import static org.apache.bcel.Const.INVOKEINTERFACE;
+import static org.apache.bcel.Const.INVOKESPECIAL;
+import static org.apache.bcel.Const.INVOKESTATIC;
+import static org.apache.bcel.Const.INVOKEVIRTUAL;
+import static org.apache.bcel.Const.IOR;
+import static org.apache.bcel.Const.IREM;
+import static org.apache.bcel.Const.IRETURN;
+import static org.apache.bcel.Const.ISHL;
+import static org.apache.bcel.Const.ISHR;
+import static org.apache.bcel.Const.ISTORE;
+import static org.apache.bcel.Const.ISTORE_0;
+import static org.apache.bcel.Const.ISTORE_1;
+import static org.apache.bcel.Const.ISTORE_2;
+import static org.apache.bcel.Const.ISTORE_3;
+import static org.apache.bcel.Const.ISUB;
+import static org.apache.bcel.Const.ITEM_Object;
+import static org.apache.bcel.Const.IUSHR;
+import static org.apache.bcel.Const.IXOR;
+import static org.apache.bcel.Const.JSR;
+import static org.apache.bcel.Const.JSR_W;
+import static org.apache.bcel.Const.L2D;
+import static org.apache.bcel.Const.L2F;
+import static org.apache.bcel.Const.L2I;
+import static org.apache.bcel.Const.LADD;
+import static org.apache.bcel.Const.LALOAD;
+import static org.apache.bcel.Const.LAND;
+import static org.apache.bcel.Const.LASTORE;
+import static org.apache.bcel.Const.LCMP;
+import static org.apache.bcel.Const.LCONST_0;
+import static org.apache.bcel.Const.LCONST_1;
+import static org.apache.bcel.Const.LDC;
+import static org.apache.bcel.Const.LDC2_W;
+import static org.apache.bcel.Const.LDC_W;
+import static org.apache.bcel.Const.LDIV;
+import static org.apache.bcel.Const.LLOAD;
+import static org.apache.bcel.Const.LLOAD_0;
+import static org.apache.bcel.Const.LLOAD_1;
+import static org.apache.bcel.Const.LLOAD_2;
+import static org.apache.bcel.Const.LLOAD_3;
+import static org.apache.bcel.Const.LMUL;
+import static org.apache.bcel.Const.LNEG;
+import static org.apache.bcel.Const.LOOKUPSWITCH;
+import static org.apache.bcel.Const.LOR;
+import static org.apache.bcel.Const.LREM;
+import static org.apache.bcel.Const.LRETURN;
+import static org.apache.bcel.Const.LSHL;
+import static org.apache.bcel.Const.LSHR;
+import static org.apache.bcel.Const.LSTORE;
+import static org.apache.bcel.Const.LSTORE_0;
+import static org.apache.bcel.Const.LSTORE_1;
+import static org.apache.bcel.Const.LSTORE_2;
+import static org.apache.bcel.Const.LSTORE_3;
+import static org.apache.bcel.Const.LSUB;
+import static org.apache.bcel.Const.LUSHR;
+import static org.apache.bcel.Const.LXOR;
+import static org.apache.bcel.Const.MAJOR_1_8;
+import static org.apache.bcel.Const.MAX_CODE_SIZE;
+import static org.apache.bcel.Const.MONITORENTER;
+import static org.apache.bcel.Const.MONITOREXIT;
+import static org.apache.bcel.Const.MULTIANEWARRAY;
+import static org.apache.bcel.Const.NEW;
+import static org.apache.bcel.Const.NEWARRAY;
+import static org.apache.bcel.Const.NOP;
+import static org.apache.bcel.Const.POP;
+import static org.apache.bcel.Const.POP2;
+import static org.apache.bcel.Const.PUTFIELD;
+import static org.apache.bcel.Const.PUTSTATIC;
+import static org.apache.bcel.Const.RET;
+import static org.apache.bcel.Const.RETURN;
+import static org.apache.bcel.Const.SALOAD;
+import static org.apache.bcel.Const.SASTORE;
+import static org.apache.bcel.Const.SIPUSH;
+import static org.apache.bcel.Const.SWAP;
+import static org.apache.bcel.Const.TABLESWITCH;
+
 import daikon.DynComp;
 import daikon.chicory.ClassInfo;
 import daikon.chicory.DaikonWriter;
@@ -32,7 +246,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
-import org.apache.bcel.Const;
 import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.Annotations;
 import org.apache.bcel.classfile.Attribute;
@@ -92,6 +305,7 @@ import org.apache.bcel.generic.SWAP;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 import org.apache.bcel.verifier.structurals.OperandStack;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
@@ -145,54 +359,88 @@ public class DCInstrument extends InstructionListUtils {
   /** Local that stores the tag frame for the current method. */
   protected @Nullable LocalVariableGen tagFrameLocal;
 
-  // Type descriptors
+  // Type descriptors: non-arrays
+
+  /** Type for "java.lang.Class". */
+  protected static ObjectType CD_Class = new ObjectType("java.lang.Class");
 
   /** "java.lang.Object". */
-  protected static ObjectType javalangObject = new ObjectType("java.lang.Object");
+  private static final ObjectType CD_Object = Type.OBJECT;
 
-  /** "java.lang.Object[]". */
-  protected static Type object_arr = new ArrayType(Type.OBJECT, 1);
+  // private static final ObjectType CD_Object = new ObjectType("java.lang.Object");
 
-  /** ObjectType for "java.lang.Throwable". */
-  protected static ObjectType throwable = new ObjectType("java.lang.Throwable");
+  /** Type for "java.lang.String". */
+  private static final ObjectType CD_String = Type.STRING;
 
-  /** ObjectType for "java.lang.Class". */
-  protected static Type javalangClass = new ObjectType("java.lang.Class");
+  /** Type for "java.lang.Throwable". */
+  private static final ObjectType CD_Throwable = Type.THROWABLE;
+
+  // private static final ObjectType CD_Throwable = new ObjectType("java.lang.Throwable");
 
   /** The special DCompMarker type. */
-  protected ObjectType dcomp_marker;
+  protected final ObjectType dcomp_marker;
 
-  // Signature descriptors
+  /** Type for "boolean". */
+  private static final @InternedDistinct BasicType CD_boolean = Type.BOOLEAN;
 
-  // No parameters
+  /** Type for "byte". */
+  private static final @InternedDistinct BasicType CD_byte = Type.BYTE;
+
+  /** Type for "char". */
+  private static final @InternedDistinct BasicType CD_char = Type.CHAR;
+
+  /** Type for "double". */
+  private static final @InternedDistinct BasicType CD_double = Type.DOUBLE;
+
+  /** Type for "float". */
+  private static final @InternedDistinct BasicType CD_float = Type.FLOAT;
+
+  /** Type for "int". */
+  private static final @InternedDistinct BasicType CD_int = Type.INT;
+
+  /** Type for "long". */
+  private static final @InternedDistinct BasicType CD_long = Type.LONG;
+
+  /** Type for "short". */
+  private static final @InternedDistinct BasicType CD_short = Type.SHORT;
+
+  /** Type for "void". */
+  private static final @InternedDistinct BasicType CD_void = Type.VOID;
+
+  // Type descriptors: arrays
+
+  /** "java.lang.Object[]". */
+  protected static Type CD_Object_array = new ArrayType(CD_Object, 1);
+
+  // Signature descriptors: no parameters
 
   /** Type array with no parameters. */
   protected static final Type[] noArgsSig = new Type[0];
 
-  // One parameter
+  // Signature descriptors: one parameter
 
   /** Type array with an int. */
-  protected static Type[] intSig = new Type[] {Type.INT};
+  protected static Type[] intSig = {CD_int};
 
   /** Type array with a long. */
-  protected static Type[] longSig = new Type[] {Type.LONG};
+  protected static Type[] longSig = {CD_long};
 
   /** Type array with a string. */
-  protected static Type[] string_arg = new Type[] {Type.STRING};
+  protected static Type[] string_arg = {CD_String};
 
   /** Type array with an object. */
-  protected static Type[] object_arg = new Type[] {Type.OBJECT};
+  protected static Type[] object_arg = {CD_Object};
 
-  // Two parameters
+  // Signature descriptors: two parameters
 
   /** Type array with a long and an int. */
-  protected static Type[] longIntSig = new Type[] {Type.LONG, Type.INT};
+  protected static Type[] longIntSig = {CD_long, CD_int};
 
   /** Type array with an object and an int. */
-  protected static Type[] objectIntSig = new Type[] {Type.OBJECT, Type.INT};
+  protected static Type[] objectIntSig = {CD_Object, CD_int};
 
   /** Type array with two objects. */
-  protected static Type[] objectObjectSig = new Type[] {Type.OBJECT, Type.OBJECT};
+  protected static Type[] objectObjectSig = {CD_Object, CD_Object};
 
   // Debug loggers
 
@@ -268,7 +516,7 @@ public class DCInstrument extends InstructionListUtils {
   static Map<String, Integer> accessFlags = new HashMap<>();
 
   /** Integer constant of access_flag value of ACC_ANNOTATION. */
-  static Integer Integer_ACC_ANNOTATION = Integer.valueOf(Const.ACC_ANNOTATION);
+  static Integer Integer_ACC_ANNOTATION = Integer.valueOf(ACC_ANNOTATION);
 
   /**
    * Array of classes whose fields are not initialized from Java (i.e., these classes are
@@ -412,7 +660,7 @@ public class DCInstrument extends InstructionListUtils {
     // adding dcomp marker causes problems.
     // Don't instrument annotations.  They aren't executed and adding
     // the marker argument causes subtle errors
-    if ((classGen.getModifiers() & Const.ACC_ANNOTATION) != 0) {
+    if ((classGen.getModifiers() & ACC_ANNOTATION) != 0) {
       debug_transform.log("Not instrumenting annotation %s%n", classname);
       // WHY NOT RETURN NULL?
       return classGen.getJavaClass().copy();
@@ -630,7 +878,7 @@ public class DCInstrument extends InstructionListUtils {
 
         // We do not want to track bridge methods the compiler has synthesized as
         // they are overloaded on return type which normal Java does not support.
-        if ((m.getAccessFlags() & Const.ACC_BRIDGE) != 0) {
+        if ((m.getAccessFlags() & ACC_BRIDGE) != 0) {
           track = false;
         }
 
@@ -750,9 +998,9 @@ public class DCInstrument extends InstructionListUtils {
             il = mgen.getInstructionList();
             InstructionHandle end = il.getEnd();
             int length = end.getPosition() + end.getInstruction().getLength();
-            if (length >= Const.MAX_CODE_SIZE) {
+            if (length >= MAX_CODE_SIZE) {
               throw new ClassGenException(
-                  "Code array too big: must be smaller than " + Const.MAX_CODE_SIZE + " bytes.");
+                  "Code array too big: must be smaller than " + MAX_CODE_SIZE + " bytes.");
             }
           }
           if (replacingMethod) {
@@ -895,7 +1143,7 @@ public class DCInstrument extends InstructionListUtils {
     // adding dcomp marker causes problems.
     // Don't instrument annotations.  They aren't executed and adding
     // the marker argument causes subtle errors
-    if ((classGen.getModifiers() & Const.ACC_ANNOTATION) != 0) {
+    if ((classGen.getModifiers() & ACC_ANNOTATION) != 0) {
       debug_transform.log("Not instrumenting annotation %s%n", classname);
       // Return classfile unmodified.
       // MUST NOT RETURN NULL
@@ -1035,9 +1283,9 @@ public class DCInstrument extends InstructionListUtils {
             il = mgen.getInstructionList();
             InstructionHandle end = il.getEnd();
             int length = end.getPosition() + end.getInstruction().getLength();
-            if (length >= Const.MAX_CODE_SIZE) {
+            if (length >= MAX_CODE_SIZE) {
               throw new ClassGenException(
-                  "Code array too big: must be smaller than " + Const.MAX_CODE_SIZE + " bytes.");
+                  "Code array too big: must be smaller than " + MAX_CODE_SIZE + " bytes.");
             }
           }
           classGen.addMethod(mgen.getMethod());
@@ -1186,7 +1434,7 @@ public class DCInstrument extends InstructionListUtils {
       // If the modified method is now too large, we quit instrumenting the method
       // and will rediscover the problem in the main instrumentation loop above
       // and deal with it there.
-      if (ih.getPosition() >= Const.MAX_CODE_SIZE) {
+      if (ih.getPosition() >= MAX_CODE_SIZE) {
         break;
       }
 
@@ -1228,7 +1476,7 @@ public class DCInstrument extends InstructionListUtils {
     il.append(new DUP());
     il.append(
         ifact.createInvoke(
-            dcompRuntimeClassName, "exception_exit", Type.VOID, object_arg, Const.INVOKESTATIC));
+            dcompRuntimeClassName, "exception_exit", CD_void, object_arg, INVOKESTATIC));
     il.append(new ATHROW());
 
     add_exception_handler(mgen, il);
@@ -1259,7 +1507,7 @@ public class DCInstrument extends InstructionListUtils {
     global_catch_il = catch_il;
     @SuppressWarnings("nullness:argument") // looks like a genuine defect here in the call
     CodeExceptionGen global_exception_handler_tmp =
-        new CodeExceptionGen(start, end, null, throwable);
+        new CodeExceptionGen(start, end, null, CD_Throwable);
     global_exception_handler = global_exception_handler_tmp;
   }
 
@@ -1279,7 +1527,7 @@ public class DCInstrument extends InstructionListUtils {
     InstructionHandle end = global_exception_handler.getEndPC();
     InstructionHandle exc = cur_il.append(global_catch_il);
     cur_il.setPositions();
-    mgen.addExceptionHandler(start, end, exc, throwable);
+    mgen.addExceptionHandler(start, end, exc, CD_Throwable);
     // discard temporary handler
     global_catch_il = null;
     global_exception_handler = null;
@@ -1305,8 +1553,7 @@ public class DCInstrument extends InstructionListUtils {
     StackMapType[] param_map_types = new StackMapType[param_types.length + arg_index];
     if (!mgen.isStatic()) {
       param_map_types[0] =
-          new StackMapType(
-              Const.ITEM_Object, pool.addClass(mgen.getClassName()), pool.getConstantPool());
+          new StackMapType(ITEM_Object, pool.addClass(mgen.getClassName()), pool.getConstantPool());
     }
     for (int ii = 0; ii < param_types.length; ii++) {
       param_map_types[arg_index++] = generateStackMapTypeFromType(param_types[ii]);
@@ -1315,11 +1562,11 @@ public class DCInstrument extends InstructionListUtils {
     StackMapEntry map_entry;
     StackMapType stack_map_type =
         new StackMapType(
-            Const.ITEM_Object, pool.addClass(throwable.getClassName()), pool.getConstantPool());
+            ITEM_Object, pool.addClass(CD_Throwable.getClassName()), pool.getConstantPool());
     StackMapType[] stack_map_types = {stack_map_type};
     map_entry =
         new StackMapEntry(
-            Const.FULL_FRAME, map_offset, param_map_types, stack_map_types, pool.getConstantPool());
+            FULL_FRAME, map_offset, param_map_types, stack_map_types, pool.getConstantPool());
 
     int orig_size = stackMapTable.length;
     StackMapEntry[] new_stack_map_table = new StackMapEntry[orig_size + 1];
@@ -1389,11 +1636,10 @@ public class DCInstrument extends InstructionListUtils {
 
     // Insert a new StackMapEntry at the beginning of the table
     // that adds the tag_frame variable.
-    StackMapType tag_frame_type = generateStackMapTypeFromType(object_arr);
+    StackMapType tag_frame_type = generateStackMapTypeFromType(CD_Object_array);
     StackMapType[] stack_map_type_arr = {tag_frame_type};
     new_stack_map_table[0] =
-        new StackMapEntry(
-            Const.APPEND_FRAME, len_code, stack_map_type_arr, null, pool.getConstantPool());
+        new StackMapEntry(APPEND_FRAME, len_code, stack_map_type_arr, null, pool.getConstantPool());
 
     // We can just copy the rest of the stack frames over as the FULL_FRAME
     // ones were already updated when the tag_frame variable was allocated.
@@ -1425,7 +1671,7 @@ public class DCInstrument extends InstructionListUtils {
    * @return LocalVariableGen for the tag_frame local
    */
   LocalVariableGen create_tagFrameLocal(MethodGen mgen) {
-    return create_method_scope_local(mgen, "dcomp_tag_frame$5a", object_arr);
+    return create_method_scope_local(mgen, "dcomp_tag_frame$5a", CD_Object_array);
   }
 
   /**
@@ -1471,8 +1717,8 @@ public class DCInstrument extends InstructionListUtils {
     il.append(ifact.createConstant(params));
     il.append(
         ifact.createInvoke(
-            dcompRuntimeClassName, "create_tag_frame", object_arr, string_arg, Const.INVOKESTATIC));
-    il.append(InstructionFactory.createStore(object_arr, tagFrameLocal.getIndex()));
+            dcompRuntimeClassName, "create_tag_frame", CD_Object_array, string_arg, INVOKESTATIC));
+    il.append(InstructionFactory.createStore(CD_Object_array, tagFrameLocal.getIndex()));
     debugInstrument.log("Store Tag frame local at index %d%n", tagFrameLocal.getIndex());
 
     return il;
@@ -1498,13 +1744,13 @@ public class DCInstrument extends InstructionListUtils {
     Type[] paramTypes = mgen.getArgumentTypes();
 
     // Push the tag frame
-    il.append(InstructionFactory.createLoad(object_arr, tagFrameLocal.getIndex()));
+    il.append(InstructionFactory.createLoad(CD_Object_array, tagFrameLocal.getIndex()));
 
     // Push the object.  Null if this is a static method or a constructor
     if (mgen.isStatic() || (enterOrExit.equals("enter") && BcelUtil.isConstructor(mgen))) {
       il.append(new ACONST_NULL());
     } else { // must be an instance method
-      il.append(InstructionFactory.createLoad(Type.OBJECT, 0));
+      il.append(InstructionFactory.createLoad(CD_Object, 0));
     }
 
     // Determine the offset of the first parameter
@@ -1518,21 +1764,21 @@ public class DCInstrument extends InstructionListUtils {
 
     // Create an array of objects with elements for each parameter
     il.append(ifact.createConstant(paramTypes.length));
-    il.append(ifact.createNewArray(Type.OBJECT, (short) 1));
+    il.append(ifact.createNewArray(CD_Object, (short) 1));
 
     // Put each argument into the array
     int param_index = param_offset;
     for (int ii = 0; ii < paramTypes.length; ii++) {
-      il.append(InstructionFactory.createDup(object_arr.getSize()));
+      il.append(InstructionFactory.createDup(CD_Object_array.getSize()));
       il.append(ifact.createConstant(ii));
       Type at = paramTypes[ii];
       if (at instanceof BasicType) {
         il.append(new ACONST_NULL());
         // il.append (createPrimitiveWrapper (c, at, param_index));
       } else { // must be reference of some sort
-        il.append(InstructionFactory.createLoad(Type.OBJECT, param_index));
+        il.append(InstructionFactory.createLoad(CD_Object, param_index));
       }
-      il.append(InstructionFactory.createArrayStore(Type.OBJECT));
+      il.append(InstructionFactory.createArrayStore(CD_Object));
       param_index += at.getSize();
     }
 
@@ -1541,7 +1787,7 @@ public class DCInstrument extends InstructionListUtils {
     // If the return value is a primitive, wrap it in the appropriate run-time wrapper.
     if (enterOrExit.equals("exit")) {
       Type returnType = mgen.getReturnType();
-      if (returnType == Type.VOID) {
+      if (returnType == CD_void) {
         il.append(new ACONST_NULL());
       } else {
         LocalVariableGen return_local = get_return_local(mgen, returnType);
@@ -1549,7 +1795,7 @@ public class DCInstrument extends InstructionListUtils {
           il.append(new ACONST_NULL());
           // il.append (createPrimitiveWrapper (c, returnType, return_local.getIndex()));
         } else {
-          il.append(InstructionFactory.createLoad(Type.OBJECT, return_local.getIndex()));
+          il.append(InstructionFactory.createLoad(CD_Object, return_local.getIndex()));
         }
       }
 
@@ -1561,13 +1807,13 @@ public class DCInstrument extends InstructionListUtils {
     Type[] method_params;
     if (enterOrExit.equals("exit")) {
       method_params =
-          new Type[] {object_arr, Type.OBJECT, Type.INT, object_arr, Type.OBJECT, Type.INT};
+          new Type[] {CD_Object_array, CD_Object, CD_int, CD_Object_array, CD_Object, CD_int};
     } else {
-      method_params = new Type[] {object_arr, Type.OBJECT, Type.INT, object_arr};
+      method_params = new Type[] {CD_Object_array, CD_Object, CD_int, CD_Object_array};
     }
     il.append(
         ifact.createInvoke(
-            dcompRuntimeClassName, enterOrExit, Type.VOID, method_params, Const.INVOKESTATIC));
+            dcompRuntimeClassName, enterOrExit, CD_void, method_params, INVOKESTATIC));
 
     return il;
   }
@@ -1590,20 +1836,20 @@ public class DCInstrument extends InstructionListUtils {
       // Replace the object comparison instructions with a call to
       // DCRuntime.object_eq or DCRuntime.object_ne.  Those methods
       // return a boolean which is used in a ifeq/ifne instruction.
-      case Const.IF_ACMPEQ:
-        return object_comparison((BranchInstruction) inst, "object_eq", Const.IFNE);
-      case Const.IF_ACMPNE:
-        return object_comparison((BranchInstruction) inst, "object_ne", Const.IFNE);
+      case IF_ACMPEQ:
+        return object_comparison((BranchInstruction) inst, "object_eq", IFNE);
+      case IF_ACMPNE:
+        return object_comparison((BranchInstruction) inst, "object_ne", IFNE);
 
       // These instructions compare the integer on the top of the stack
       // to zero.  Nothing is made comparable by this, so we need only
       // discard the tag on the top of the stack.
-      case Const.IFEQ:
-      case Const.IFNE:
-      case Const.IFLT:
-      case Const.IFGE:
-      case Const.IFGT:
-      case Const.IFLE:
+      case IFEQ:
+      case IFNE:
+      case IFLT:
+      case IFGE:
+      case IFGT:
+      case IFLE:
         {
           return discard_tag_code(inst, 1);
         }
@@ -1611,13 +1857,13 @@ public class DCInstrument extends InstructionListUtils {
       // Instanceof pushes either 0 or 1 on the stack depending on whether
       // the object on top of stack is of the specified type.  We push a
       // tag for a constant, since nothing is made comparable by this.
-      case Const.INSTANCEOF:
-        return build_il(dcr_call("push_const", Type.VOID, Type.NO_ARGS), inst);
+      case INSTANCEOF:
+        return build_il(dcr_call("push_const", CD_void, Type.NO_ARGS), inst);
 
       // Duplicates the item on the top of stack.  If the value on the
       // top of the stack is a primitive, we need to do the same on the
       // tag stack.  Otherwise, we need do nothing.
-      case Const.DUP:
+      case DUP:
         return dup_tag(inst, stack);
 
       // Duplicates the item on the top of the stack and inserts it 2
@@ -1625,118 +1871,118 @@ public class DCInstrument extends InstructionListUtils {
       // is not a primitive, there is nothing to do.  If the second
       // value is not a primitive, then we need only to insert the duped
       // value down 1 on the tag stack (which contains only primitives).
-      case Const.DUP_X1:
+      case DUP_X1:
         return dup_x1_tag(inst, stack);
 
       // Duplicates either the top 2 category 1 values or a single
       // category 2 value and inserts it 2 or 3 values down on the
       // stack.
-      case Const.DUP2_X1:
+      case DUP2_X1:
         return dup2_x1_tag(inst, stack);
 
       // Duplicate either one category 2 value or two category 1 values.
-      case Const.DUP2:
+      case DUP2:
         return dup2_tag(inst, stack);
 
       // Dup the category 1 value on the top of the stack and insert it either
       // two or three values down on the stack.
-      case Const.DUP_X2:
+      case DUP_X2:
         return dup_x2(inst, stack);
 
-      case Const.DUP2_X2:
+      case DUP2_X2:
         return dup2_x2(inst, stack);
 
       // Pop instructions discard the top of the stack.  We want to discard
       // the top of the tag stack iff the item on the top of the stack is a
       // primitive.
-      case Const.POP:
+      case POP:
         return pop_tag(inst, stack);
 
       // Pops either the top 2 category 1 values or a single category 2 value
       // from the top of the stack.  We must do the same to the tag stack
       // if the values are primitives.
-      case Const.POP2:
+      case POP2:
         return pop2_tag(inst, stack);
 
       // Swaps the two category 1 types on the top of the stack.  We need
       // to swap the top of the tag stack if the two top elements on the
       // real stack are primitives.
-      case Const.SWAP:
+      case SWAP:
         return swap_tag(inst, stack);
 
-      case Const.IF_ICMPEQ:
-      case Const.IF_ICMPGE:
-      case Const.IF_ICMPGT:
-      case Const.IF_ICMPLE:
-      case Const.IF_ICMPLT:
-      case Const.IF_ICMPNE:
+      case IF_ICMPEQ:
+      case IF_ICMPGE:
+      case IF_ICMPGT:
+      case IF_ICMPLE:
+      case IF_ICMPLT:
+      case IF_ICMPNE:
         {
-          return build_il(dcr_call("cmp_op", Type.VOID, Type.NO_ARGS), inst);
+          return build_il(dcr_call("cmp_op", CD_void, Type.NO_ARGS), inst);
         }
 
-      case Const.GETFIELD:
+      case GETFIELD:
         return load_store_field(mgen, (GETFIELD) inst);
 
-      case Const.PUTFIELD:
+      case PUTFIELD:
         return load_store_field(mgen, (PUTFIELD) inst);
 
-      case Const.GETSTATIC:
+      case GETSTATIC:
         return load_store_field(mgen, ((GETSTATIC) inst));
 
-      case Const.PUTSTATIC:
+      case PUTSTATIC:
         return load_store_field(mgen, ((PUTSTATIC) inst));
 
-      case Const.DLOAD:
-      case Const.DLOAD_0:
-      case Const.DLOAD_1:
-      case Const.DLOAD_2:
-      case Const.DLOAD_3:
-      case Const.FLOAD:
-      case Const.FLOAD_0:
-      case Const.FLOAD_1:
-      case Const.FLOAD_2:
-      case Const.FLOAD_3:
-      case Const.ILOAD:
-      case Const.ILOAD_0:
-      case Const.ILOAD_1:
-      case Const.ILOAD_2:
-      case Const.ILOAD_3:
-      case Const.LLOAD:
-      case Const.LLOAD_0:
-      case Const.LLOAD_1:
-      case Const.LLOAD_2:
-      case Const.LLOAD_3:
+      case DLOAD:
+      case DLOAD_0:
+      case DLOAD_1:
+      case DLOAD_2:
+      case DLOAD_3:
+      case FLOAD:
+      case FLOAD_0:
+      case FLOAD_1:
+      case FLOAD_2:
+      case FLOAD_3:
+      case ILOAD:
+      case ILOAD_0:
+      case ILOAD_1:
+      case ILOAD_2:
+      case ILOAD_3:
+      case LLOAD:
+      case LLOAD_0:
+      case LLOAD_1:
+      case LLOAD_2:
+      case LLOAD_3:
         {
           return load_store_local((LoadInstruction) inst, tagFrameLocal, "push_local_tag");
         }
 
-      case Const.DSTORE:
-      case Const.DSTORE_0:
-      case Const.DSTORE_1:
-      case Const.DSTORE_2:
-      case Const.DSTORE_3:
-      case Const.FSTORE:
-      case Const.FSTORE_0:
-      case Const.FSTORE_1:
-      case Const.FSTORE_2:
-      case Const.FSTORE_3:
-      case Const.ISTORE:
-      case Const.ISTORE_0:
-      case Const.ISTORE_1:
-      case Const.ISTORE_2:
-      case Const.ISTORE_3:
-      case Const.LSTORE:
-      case Const.LSTORE_0:
-      case Const.LSTORE_1:
-      case Const.LSTORE_2:
-      case Const.LSTORE_3:
+      case DSTORE:
+      case DSTORE_0:
+      case DSTORE_1:
+      case DSTORE_2:
+      case DSTORE_3:
+      case FSTORE:
+      case FSTORE_0:
+      case FSTORE_1:
+      case FSTORE_2:
+      case FSTORE_3:
+      case ISTORE:
+      case ISTORE_0:
+      case ISTORE_1:
+      case ISTORE_2:
+      case ISTORE_3:
+      case LSTORE:
+      case LSTORE_0:
+      case LSTORE_1:
+      case LSTORE_2:
+      case LSTORE_3:
         {
           return load_store_local((StoreInstruction) inst, tagFrameLocal, "pop_local_tag");
         }
 
-      case Const.LDC:
-      case Const.LDC_W:
-      case Const.LDC2_W:
+      case LDC:
+      case LDC_W:
+      case LDC2_W:
         {
           return ldc_tag(inst, stack);
         }
@@ -1744,72 +1990,72 @@ public class DCInstrument extends InstructionListUtils {
       // Push the tag for the array onto the tag stack.  This causes
       // anything comparable to the length to be comparable to the array
       // as an index.
-      case Const.ARRAYLENGTH:
+      case ARRAYLENGTH:
         {
           return array_length(inst);
         }
 
-      case Const.BIPUSH:
-      case Const.SIPUSH:
-      case Const.DCONST_0:
-      case Const.DCONST_1:
-      case Const.FCONST_0:
-      case Const.FCONST_1:
-      case Const.FCONST_2:
-      case Const.ICONST_0:
-      case Const.ICONST_1:
-      case Const.ICONST_2:
-      case Const.ICONST_3:
-      case Const.ICONST_4:
-      case Const.ICONST_5:
-      case Const.ICONST_M1:
-      case Const.LCONST_0:
-      case Const.LCONST_1:
+      case BIPUSH:
+      case SIPUSH:
+      case DCONST_0:
+      case DCONST_1:
+      case FCONST_0:
+      case FCONST_1:
+      case FCONST_2:
+      case ICONST_0:
+      case ICONST_1:
+      case ICONST_2:
+      case ICONST_3:
+      case ICONST_4:
+      case ICONST_5:
+      case ICONST_M1:
+      case LCONST_0:
+      case LCONST_1:
         {
-          return build_il(dcr_call("push_const", Type.VOID, Type.NO_ARGS), inst);
+          return build_il(dcr_call("push_const", CD_void, Type.NO_ARGS), inst);
         }
 
       // Primitive Binary operators.  Each is augmented with a call to
       // DCRuntime.binary_tag_op that merges the tags and updates the tag
       // Stack.
-      case Const.DADD:
-      case Const.DCMPG:
-      case Const.DCMPL:
-      case Const.DDIV:
-      case Const.DMUL:
-      case Const.DREM:
-      case Const.DSUB:
-      case Const.FADD:
-      case Const.FCMPG:
-      case Const.FCMPL:
-      case Const.FDIV:
-      case Const.FMUL:
-      case Const.FREM:
-      case Const.FSUB:
-      case Const.IADD:
-      case Const.IAND:
-      case Const.IDIV:
-      case Const.IMUL:
-      case Const.IOR:
-      case Const.IREM:
-      case Const.ISHL:
-      case Const.ISHR:
-      case Const.ISUB:
-      case Const.IUSHR:
-      case Const.IXOR:
-      case Const.LADD:
-      case Const.LAND:
-      case Const.LCMP:
-      case Const.LDIV:
-      case Const.LMUL:
-      case Const.LOR:
-      case Const.LREM:
-      case Const.LSHL:
-      case Const.LSHR:
-      case Const.LSUB:
-      case Const.LUSHR:
-      case Const.LXOR:
-        return build_il(dcr_call("binary_tag_op", Type.VOID, Type.NO_ARGS), inst);
+      case DADD:
+      case DCMPG:
+      case DCMPL:
+      case DDIV:
+      case DMUL:
+      case DREM:
+      case DSUB:
+      case FADD:
+      case FCMPG:
+      case FCMPL:
+      case FDIV:
+      case FMUL:
+      case FREM:
+      case FSUB:
+      case IADD:
+      case IAND:
+      case IDIV:
+      case IMUL:
+      case IOR:
+      case IREM:
+      case ISHL:
+      case ISHR:
+      case ISUB:
+      case IUSHR:
+      case IXOR:
+      case LADD:
+      case LAND:
+      case LCMP:
+      case LDIV:
+      case LMUL:
+      case LOR:
+      case LREM:
+      case LSHL:
+      case LSHR:
+      case LSUB:
+      case LUSHR:
+      case LXOR:
+        return build_il(dcr_call("binary_tag_op", CD_void, Type.NO_ARGS), inst);
 
       // Computed jump based on the int on the top of stack.  Since that int
       // is not made comparable to anything, we just discard its tag.  One
@@ -1817,70 +2063,70 @@ public class DCInstrument extends InstructionListUtils {
       // the jump table.  But the tags for those values are not available.
       // And since they are all constants, its not clear how interesting it
       // would be anyway.
-      case Const.LOOKUPSWITCH:
-      case Const.TABLESWITCH:
+      case LOOKUPSWITCH:
+      case TABLESWITCH:
         return discard_tag_code(inst, 1);
 
       // Make the integer argument to ANEWARRAY comparable to the new
       // array's index.
-      case Const.ANEWARRAY:
-      case Const.NEWARRAY:
+      case ANEWARRAY:
+      case NEWARRAY:
         return new_array(inst);
 
       // If the new array has 2 dimensions, make the integer arguments
       // comparable to the corresponding indices of the new array.
       // For any other number of dimensions, discard the tags for the
       // arguments.
-      case Const.MULTIANEWARRAY:
+      case MULTIANEWARRAY:
         return multi_newarray_dc(inst);
 
       // Mark the array and its index as comparable.  Also for primitives,
       // push the tag of the array element on the tag stack
-      case Const.AALOAD:
-      case Const.BALOAD:
-      case Const.CALOAD:
-      case Const.DALOAD:
-      case Const.FALOAD:
-      case Const.IALOAD:
-      case Const.LALOAD:
-      case Const.SALOAD:
+      case AALOAD:
+      case BALOAD:
+      case CALOAD:
+      case DALOAD:
+      case FALOAD:
+      case IALOAD:
+      case LALOAD:
+      case SALOAD:
         return array_load(inst);
 
       // Mark the array and its index as comparable.  For primitives, store
       // the tag for the value on the top of the stack in the tag storage
       // for the array.
-      case Const.AASTORE:
-        return array_store(inst, "aastore", Type.OBJECT);
-      case Const.BASTORE:
+      case AASTORE:
+        return array_store(inst, "aastore", CD_Object);
+      case BASTORE:
         // The JVM uses bastore for both byte and boolean.
         // We need to differentiate.
         Type arr_type = stack.peek(2);
         if (arr_type.getSignature().equals("[Z")) {
-          return array_store(inst, "zastore", Type.BOOLEAN);
+          return array_store(inst, "zastore", CD_boolean);
         } else {
-          return array_store(inst, "bastore", Type.BYTE);
+          return array_store(inst, "bastore", CD_byte);
         }
-      case Const.CASTORE:
-        return array_store(inst, "castore", Type.CHAR);
-      case Const.DASTORE:
-        return array_store(inst, "dastore", Type.DOUBLE);
-      case Const.FASTORE:
-        return array_store(inst, "fastore", Type.FLOAT);
-      case Const.IASTORE:
-        return array_store(inst, "iastore", Type.INT);
-      case Const.LASTORE:
-        return array_store(inst, "lastore", Type.LONG);
-      case Const.SASTORE:
-        return array_store(inst, "sastore", Type.SHORT);
+      case CASTORE:
+        return array_store(inst, "castore", CD_char);
+      case DASTORE:
+        return array_store(inst, "dastore", CD_double);
+      case FASTORE:
+        return array_store(inst, "fastore", CD_float);
+      case IASTORE:
+        return array_store(inst, "iastore", CD_int);
+      case LASTORE:
+        return array_store(inst, "lastore", CD_long);
+      case SASTORE:
+        return array_store(inst, "sastore", CD_short);
 
       // Prefix the return with a call to the correct normal_exit method
       // to handle the tag stack
-      case Const.ARETURN:
-      case Const.DRETURN:
-      case Const.FRETURN:
-      case Const.IRETURN:
-      case Const.LRETURN:
-      case Const.RETURN:
+      case ARETURN:
+      case DRETURN:
+      case FRETURN:
+      case IRETURN:
+      case LRETURN:
+      case RETURN:
         {
           return return_tag(mgen, inst);
         }
@@ -1889,11 +2135,11 @@ public class DCInstrument extends InstructionListUtils {
       // to call the instrumented version (with the DCompMarker argument).
       // Calls to uninstrumented code (rare) discard primitive arguments
       // from the tag stack and produce an arbitrary return tag.
-      case Const.INVOKESTATIC:
-      case Const.INVOKEVIRTUAL:
-      case Const.INVOKESPECIAL:
-      case Const.INVOKEINTERFACE:
-      case Const.INVOKEDYNAMIC:
+      case INVOKESTATIC:
+      case INVOKEVIRTUAL:
+      case INVOKESPECIAL:
+      case INVOKEINTERFACE:
+      case INVOKEDYNAMIC:
         {
           assert this.mgen != null
               : "@AssumeAssertion(nullness): bug: local `mgen` is non-null, "
@@ -1903,55 +2149,55 @@ public class DCInstrument extends InstructionListUtils {
 
       // Throws an exception.  This clears the operand stack of the current
       // frame.  We need to clear the tag stack as well.
-      case Const.ATHROW:
-        return build_il(dcr_call("throw_op", Type.VOID, Type.NO_ARGS), inst);
+      case ATHROW:
+        return build_il(dcr_call("throw_op", CD_void, Type.NO_ARGS), inst);
 
       // Opcodes that don't need any modifications.  Here for reference
-      case Const.ACONST_NULL:
-      case Const.ALOAD:
-      case Const.ALOAD_0:
-      case Const.ALOAD_1:
-      case Const.ALOAD_2:
-      case Const.ALOAD_3:
-      case Const.ASTORE:
-      case Const.ASTORE_0:
-      case Const.ASTORE_1:
-      case Const.ASTORE_2:
-      case Const.ASTORE_3:
-      case Const.CHECKCAST:
-      case Const.D2F: // double to float
-      case Const.D2I: // double to integer
-      case Const.D2L: // double to long
-      case Const.DNEG: // Negate double on top of stack
-      case Const.F2D: // float to double
-      case Const.F2I: // float to integer
-      case Const.F2L: // float to long
-      case Const.FNEG: // Negate float on top of stack
-      case Const.GOTO:
-      case Const.GOTO_W:
-      case Const.I2B: // integer to byte
-      case Const.I2C: // integer to char
-      case Const.I2D: // integer to double
-      case Const.I2F: // integer to float
-      case Const.I2L: // integer to long
-      case Const.I2S: // integer to short
-      case Const.IFNONNULL:
-      case Const.IFNULL:
-      case Const.IINC: // increment local variable by a constant
-      case Const.INEG: // negate integer on top of stack
-      case Const.JSR: // pushes return address on the stack, but that
+      case ACONST_NULL:
+      case ALOAD:
+      case ALOAD_0:
+      case ALOAD_1:
+      case ALOAD_2:
+      case ALOAD_3:
+      case ASTORE:
+      case ASTORE_0:
+      case ASTORE_1:
+      case ASTORE_2:
+      case ASTORE_3:
+      case CHECKCAST:
+      case D2F: // double to float
+      case D2I: // double to integer
+      case D2L: // double to long
+      case DNEG: // Negate double on top of stack
+      case F2D: // float to double
+      case F2I: // float to integer
+      case F2L: // float to long
+      case FNEG: // Negate float on top of stack
+      case GOTO:
+      case GOTO_W:
+      case I2B: // integer to byte
+      case I2C: // integer to char
+      case I2D: // integer to double
+      case I2F: // integer to float
+      case I2L: // integer to long
+      case I2S: // integer to short
+      case IFNONNULL:
+      case IFNULL:
+      case IINC: // increment local variable by a constant
+      case INEG: // negate integer on top of stack
+      case JSR: // pushes return address on the stack, but that
       // is thought of as an object, so we don't need
       // a tag for it.
-      case Const.JSR_W:
-      case Const.L2D: // long to double
-      case Const.L2F: // long to float
-      case Const.L2I: // long to int
-      case Const.LNEG: // negate long on top of stack
-      case Const.MONITORENTER:
-      case Const.MONITOREXIT:
-      case Const.NEW:
-      case Const.NOP:
-      case Const.RET: // this is the internal JSR return
+      case JSR_W:
+      case L2D: // long to double
+      case L2F: // long to float
+      case L2I: // long to int
+      case LNEG: // negate long on top of stack
+      case MONITORENTER:
+      case MONITOREXIT:
+      case NEW:
+      case NOP:
+      case RET: // this is the internal JSR return
         return null;
 
       // Make sure we didn't miss anything
@@ -1990,7 +2236,7 @@ public class DCInstrument extends InstructionListUtils {
       if (inst instanceof ReturnInstruction) {
         Type type = mgen.getReturnType();
         InstructionList new_il = new InstructionList();
-        if (type != Type.VOID) {
+        if (type != CD_void) {
           LocalVariableGen return_loc = get_return_local(mgen, type);
           new_il.append(InstructionFactory.createDup(type.getSize()));
           new_il.append(InstructionFactory.createStore(type, return_loc.getIndex()));
@@ -2094,16 +2340,16 @@ public class DCInstrument extends InstructionListUtils {
       // Replace calls to Object's equals method with calls to our
       // replacement, a static method in DCRuntime.
 
-      Type[] new_param_types = new Type[] {javalangObject, javalangObject};
+      Type[] new_param_types = {CD_Object, CD_Object};
 
       InstructionList il = new InstructionList();
       il.append(
           ifact.createInvoke(
               dcompRuntimeClassName,
-              (invoke.getOpcode() == Const.INVOKESPECIAL) ? "dcomp_super_equals" : "dcomp_equals",
+              (invoke.getOpcode() == INVOKESPECIAL) ? "dcomp_super_equals" : "dcomp_equals",
               returnType,
               new_param_types,
-              Const.INVOKESTATIC));
+              INVOKESTATIC));
       return il;
     }
 
@@ -2153,11 +2399,11 @@ public class DCInstrument extends InstructionListUtils {
       }
 
       // Add a tag for the return type if it is primitive.
-      if ((returnType instanceof BasicType) && (returnType != Type.VOID)) {
+      if ((returnType instanceof BasicType) && (returnType != CD_void)) {
         if (debugHandleInvoke) {
           System.out.printf("push tag for return  type of %s%n", invoke.getReturnType(pool));
         }
-        il.append(dcr_call("push_const", Type.VOID, Type.NO_ARGS));
+        il.append(dcr_call("push_const", CD_void, Type.NO_ARGS));
       }
       il.append(invoke);
       return il;
@@ -2261,7 +2507,7 @@ public class DCInstrument extends InstructionListUtils {
           && (invoke instanceof INVOKEINTERFACE || invoke instanceof INVOKEVIRTUAL)) {
         Integer access = getAccessFlags(classname);
 
-        if ((access.intValue() & Const.ACC_ANNOTATION) != 0) {
+        if ((access.intValue() & ACC_ANNOTATION) != 0) {
           targetInstrumented = false;
         }
 
@@ -2585,9 +2831,9 @@ public class DCInstrument extends InstructionListUtils {
   @Pure
   boolean is_object_equals(@Identifier String methodName, Type returnType, Type[] paramTypes) {
     return (methodName.equals("equals")
-        && returnType == Type.BOOLEAN
+        && returnType == CD_boolean
         && paramTypes.length == 1
-        && paramTypes[0].equals(javalangObject));
+        && paramTypes[0].equals(CD_Object));
   }
 
   /**
@@ -2600,9 +2846,7 @@ public class DCInstrument extends InstructionListUtils {
    */
   @Pure
   boolean is_object_clone(@Identifier String methodName, Type returnType, Type[] paramTypes) {
-    return methodName.equals("clone")
-        && returnType.equals(javalangObject)
-        && (paramTypes.length == 0);
+    return methodName.equals("clone") && returnType.equals(CD_Object) && (paramTypes.length == 0);
   }
 
   /**
@@ -2627,19 +2871,19 @@ public class DCInstrument extends InstructionListUtils {
     // push the target class
     il.append(new LDC(pool.addClass(classname)));
 
-    if (invoke.getOpcode() == Const.INVOKESPECIAL) {
+    if (invoke.getOpcode() == INVOKESPECIAL) {
       // This is a super call.
 
       // Runtime will discover if the object's superclass has an instrumented clone method.
       // If so, call it; otherwise call the uninstrumented version.
-      il.append(dcr_call("dcomp_super_clone", returnType, new Type[] {Type.OBJECT, javalangClass}));
+      il.append(dcr_call("dcomp_super_clone", returnType, new Type[] {CD_Object, CD_Class}));
 
     } else {
       // This is a regular (non-super) clone() call.
 
       // Runtime will discover if the object has an instrumented clone method.
       // If so, call it; otherwise call the uninstrumented version.
-      il.append(dcr_call("dcomp_clone", returnType, new Type[] {Type.OBJECT, javalangClass}));
+      il.append(dcr_call("dcomp_clone", returnType, new Type[] {CD_Object, CD_Class}));
     }
 
     return il;
@@ -2656,11 +2900,7 @@ public class DCInstrument extends InstructionListUtils {
     InstructionList il = new InstructionList();
     il.append(
         ifact.createInvoke(
-            dcompRuntimeClassName,
-            compare_method,
-            Type.BOOLEAN,
-            objectObjectSig,
-            Const.INVOKESTATIC));
+            dcompRuntimeClassName, compare_method, CD_boolean, objectObjectSig, INVOKESTATIC));
     assert branch.getTarget() != null;
     il.append(InstructionFactory.createBranchInstruction(boolean_if, branch.getTarget()));
     return il;
@@ -2684,10 +2924,10 @@ public class DCInstrument extends InstructionListUtils {
     // If this class doesn't support tag fields, don't load/store them.
     if (!tag_fields_ok(mgen, classname)) {
       if ((fi instanceof GETFIELD) || (fi instanceof GETSTATIC)) {
-        il.append(dcr_call("push_const", Type.VOID, Type.NO_ARGS));
+        il.append(dcr_call("push_const", CD_void, Type.NO_ARGS));
       } else {
         il.append(ifact.createConstant(1));
-        il.append(dcr_call("discard_tag", Type.VOID, intSig));
+        il.append(dcr_call("discard_tag", CD_void, intSig));
       }
 
       // Perform the orginal field command.
@@ -2700,26 +2940,26 @@ public class DCInstrument extends InstructionListUtils {
           ifact.createInvoke(
               classname,
               Premain.tag_method_name(Premain.GET_TAG, classname, fi.getFieldName(pool)),
-              Type.VOID,
+              CD_void,
               Type.NO_ARGS,
-              Const.INVOKESTATIC));
+              INVOKESTATIC));
     } else if (fi instanceof PUTSTATIC) {
       il.append(
           ifact.createInvoke(
               classname,
               Premain.tag_method_name(Premain.SET_TAG, classname, fi.getFieldName(pool)),
-              Type.VOID,
+              CD_void,
               Type.NO_ARGS,
-              Const.INVOKESTATIC));
+              INVOKESTATIC));
     } else if (fi instanceof GETFIELD) {
       il.append(InstructionFactory.createDup(obj_type.getSize()));
       il.append(
           ifact.createInvoke(
               classname,
               Premain.tag_method_name(Premain.GET_TAG, classname, fi.getFieldName(pool)),
-              Type.VOID,
+              CD_void,
               Type.NO_ARGS,
-              Const.INVOKEVIRTUAL));
+              INVOKEVIRTUAL));
     } else { // must be put field
       if (field_type.getSize() == 2) {
         LocalVariableGen lv = get_tmp2_local(mgen, field_type);
@@ -2729,9 +2969,9 @@ public class DCInstrument extends InstructionListUtils {
             ifact.createInvoke(
                 classname,
                 Premain.tag_method_name(Premain.SET_TAG, classname, fi.getFieldName(pool)),
-                Type.VOID,
+                CD_void,
                 Type.NO_ARGS,
-                Const.INVOKEVIRTUAL));
+                INVOKEVIRTUAL));
         il.append(InstructionFactory.createLoad(field_type, lv.getIndex()));
       } else {
         il.append(new SWAP());
@@ -2740,9 +2980,9 @@ public class DCInstrument extends InstructionListUtils {
             ifact.createInvoke(
                 classname,
                 Premain.tag_method_name(Premain.SET_TAG, classname, fi.getFieldName(pool)),
-                Type.VOID,
+                CD_void,
                 Type.NO_ARGS,
-                Const.INVOKEVIRTUAL));
+                INVOKEVIRTUAL));
         il.append(new SWAP());
       }
     }
@@ -2767,8 +3007,8 @@ public class DCInstrument extends InstructionListUtils {
     InstructionList il = new InstructionList();
 
     // Push the tag frame and the index of this local
-    il.append(InstructionFactory.createLoad(object_arr, tagFrameLocal.getIndex()));
-    debugInstrument.log("CreateLoad %s %d%n", object_arr, tagFrameLocal.getIndex());
+    il.append(InstructionFactory.createLoad(CD_Object_array, tagFrameLocal.getIndex()));
+    debugInstrument.log("CreateLoad %s %d%n", CD_Object_array, tagFrameLocal.getIndex());
     il.append(ifact.createConstant(lvi.getIndex()));
 
     // Call the runtime method to handle loading/storing the local/parameter
@@ -2776,9 +3016,9 @@ public class DCInstrument extends InstructionListUtils {
         ifact.createInvoke(
             dcompRuntimeClassName,
             method,
-            Type.VOID,
-            new Type[] {object_arr, Type.INT},
-            Const.INVOKESTATIC));
+            CD_void,
+            new Type[] {CD_Object_array, CD_int},
+            INVOKESTATIC));
     il.append(lvi);
     return il;
   }
@@ -2945,12 +3185,12 @@ public class DCInstrument extends InstructionListUtils {
       }
 
       switch (ih.getInstruction().getOpcode()) {
-        case Const.ARETURN:
-        case Const.DRETURN:
-        case Const.FRETURN:
-        case Const.IRETURN:
-        case Const.LRETURN:
-        case Const.RETURN:
+        case ARETURN:
+        case DRETURN:
+        case FRETURN:
+        case IRETURN:
+        case LRETURN:
+        case RETURN:
           // log ("Exit at line %d%n", line_number);
           // only do incremental lines if we don't have the line generator
           if (line_number == prev_line_number && foundLine == false) {
@@ -2987,11 +3227,11 @@ public class DCInstrument extends InstructionListUtils {
     }
     if (cinit == null) {
       InstructionList il = new InstructionList();
-      il.append(InstructionFactory.createReturn(Type.VOID));
+      il.append(InstructionFactory.createReturn(CD_void));
       MethodGen cinit_classGen =
           new MethodGen(
-              Const.ACC_STATIC,
-              Type.VOID,
+              ACC_STATIC,
+              CD_void,
               Type.NO_ARGS,
               new String[0],
               "<clinit>",
@@ -3014,11 +3254,7 @@ public class DCInstrument extends InstructionListUtils {
       il.append(ifact.createConstant(classGen.getClassName()));
       il.append(
           ifact.createInvoke(
-              dcompRuntimeClassName,
-              "set_class_initialized",
-              Type.VOID,
-              string_arg,
-              Const.INVOKESTATIC));
+              dcompRuntimeClassName, "set_class_initialized", CD_void, string_arg, INVOKESTATIC));
 
       insertAtMethodStart(cinit_classGen, il);
       createNewStackMapAttribute(cinit_classGen);
@@ -3057,7 +3293,7 @@ public class DCInstrument extends InstructionListUtils {
       method = "primitive_array_load_null_ok";
     }
 
-    il.append(dcr_call(method, Type.VOID, new Type[] {Type.OBJECT, Type.INT}));
+    il.append(dcr_call(method, CD_void, new Type[] {CD_Object, CD_int}));
 
     // Perform the original instruction
     il.append(inst);
@@ -3080,7 +3316,7 @@ public class DCInstrument extends InstructionListUtils {
 
     InstructionList il = new InstructionList();
     Type arr_type = new ArrayType(base_type, 1);
-    il.append(dcr_call(method, Type.VOID, new Type[] {arr_type, Type.INT, base_type}));
+    il.append(dcr_call(method, CD_void, new Type[] {arr_type, CD_int, base_type}));
     return il;
   }
 
@@ -3099,7 +3335,7 @@ public class DCInstrument extends InstructionListUtils {
     // Duplicate the array ref and pass it to DCRuntime which will push
     // it onto the tag stack.
     il.append(new DUP());
-    il.append(dcr_call("push_array_tag", Type.VOID, new Type[] {Type.OBJECT}));
+    il.append(dcr_call("push_array_tag", CD_void, new Type[] {CD_Object}));
 
     // Perform the original instruction
     il.append(inst);
@@ -3122,11 +3358,11 @@ public class DCInstrument extends InstructionListUtils {
     // Duplicate the array ref from the top of the stack and pass it
     // to DCRuntime which will push it onto the tag stack.
     il.append(new DUP());
-    il.append(dcr_call("push_array_tag", Type.VOID, new Type[] {Type.OBJECT}));
+    il.append(dcr_call("push_array_tag", CD_void, new Type[] {CD_Object}));
 
     // Make the array and the count comparable. Also, pop the tags for
     // the array and the count off the tag stack.
-    il.append(dcr_call("cmp_op", Type.VOID, Type.NO_ARGS));
+    il.append(dcr_call("cmp_op", CD_void, Type.NO_ARGS));
 
     return il;
   }
@@ -3151,8 +3387,8 @@ public class DCInstrument extends InstructionListUtils {
     // Stack is now: ..., arrayref, count1, count2, arrayref
     il.append(new DUP_X2());
 
-    Type objArray = new ArrayType(Type.OBJECT, 1);
-    il.append(dcr_call("multianewarray2", Type.VOID, new Type[] {Type.INT, Type.INT, objArray}));
+    Type objArray = new ArrayType(CD_Object, 1);
+    il.append(dcr_call("multianewarray2", CD_void, new Type[] {CD_int, CD_int, objArray}));
 
     return il;
   }
@@ -3234,7 +3470,7 @@ public class DCInstrument extends InstructionListUtils {
   InvokeInstruction dcr_call(@Identifier String methodName, Type returnType, Type[] paramTypes) {
 
     return ifact.createInvoke(
-        dcompRuntimeClassName, methodName, returnType, paramTypes, Const.INVOKESTATIC);
+        dcompRuntimeClassName, methodName, returnType, paramTypes, INVOKESTATIC);
   }
 
   /**
@@ -3247,7 +3483,7 @@ public class DCInstrument extends InstructionListUtils {
   InstructionList discard_tag_code(Instruction inst, int tag_count) {
     InstructionList il = new InstructionList();
     il.append(ifact.createConstant(tag_count));
-    il.append(dcr_call("discard_tag", Type.VOID, intSig));
+    il.append(dcr_call("discard_tag", CD_void, intSig));
     append_inst(il, inst);
     return il;
   }
@@ -3262,7 +3498,7 @@ public class DCInstrument extends InstructionListUtils {
       debug_dup.log("DUP -> %s [... %s]%n", "dup", stack_contents(stack, 2));
     }
     if (is_primitive(top)) {
-      return build_il(dcr_call("dup", Type.VOID, Type.NO_ARGS), inst);
+      return build_il(dcr_call("dup", CD_void, Type.NO_ARGS), inst);
     }
     return null;
   }
@@ -3285,7 +3521,7 @@ public class DCInstrument extends InstructionListUtils {
     if (!is_primitive(stack.peek(1))) {
       method = "dup";
     }
-    return build_il(dcr_call(method, Type.VOID, Type.NO_ARGS), inst);
+    return build_il(dcr_call(method, CD_void, Type.NO_ARGS), inst);
   }
 
   /**
@@ -3322,7 +3558,7 @@ public class DCInstrument extends InstructionListUtils {
       debug_dup.log("DUP2_X1 -> %s [... %s]%n", op, stack_contents(stack, 3));
     }
 
-    return build_il(dcr_call(op, Type.VOID, Type.NO_ARGS), inst);
+    return build_il(dcr_call(op, CD_void, Type.NO_ARGS), inst);
   }
 
   /**
@@ -3343,7 +3579,7 @@ public class DCInstrument extends InstructionListUtils {
     if (debug_dup.enabled) {
       debug_dup.log("DUP2 -> %s [... %s]%n", op, stack_contents(stack, 2));
     }
-    return build_il(dcr_call(op, Type.VOID, Type.NO_ARGS), inst);
+    return build_il(dcr_call(op, CD_void, Type.NO_ARGS), inst);
   }
 
   /**
@@ -3365,7 +3601,7 @@ public class DCInstrument extends InstructionListUtils {
     if (debug_dup.enabled) {
       debug_dup.log("DUP_X2 -> %s [... %s]%n", op, stack_contents(stack, 3));
     }
-    return build_il(dcr_call(op, Type.VOID, Type.NO_ARGS), inst);
+    return build_il(dcr_call(op, CD_void, Type.NO_ARGS), inst);
   }
 
   /**
@@ -3429,7 +3665,7 @@ public class DCInstrument extends InstructionListUtils {
     if (debug_dup.enabled) {
       debug_dup.log("DUP_X2 -> %s [... %s]%n", op, stack_contents(stack, 3));
     }
-    return build_il(dcr_call(op, Type.VOID, Type.NO_ARGS), inst);
+    return build_il(dcr_call(op, CD_void, Type.NO_ARGS), inst);
   }
 
   /**
@@ -3475,7 +3711,7 @@ public class DCInstrument extends InstructionListUtils {
     Type type1 = stack.peek();
     Type type2 = stack.peek(1);
     if (is_primitive(type1) && is_primitive(type2)) {
-      return build_il(dcr_call("swap", Type.VOID, Type.NO_ARGS), inst);
+      return build_il(dcr_call("swap", CD_void, Type.NO_ARGS), inst);
     }
     return null;
   }
@@ -3494,7 +3730,7 @@ public class DCInstrument extends InstructionListUtils {
     if (!(type instanceof BasicType)) {
       return null;
     }
-    return build_il(dcr_call("push_const", Type.VOID, Type.NO_ARGS), inst);
+    return build_il(dcr_call("push_const", CD_void, Type.NO_ARGS), inst);
   }
 
   /**
@@ -3527,12 +3763,12 @@ public class DCInstrument extends InstructionListUtils {
     InstructionList il = new InstructionList();
 
     // Push the tag frame
-    il.append(InstructionFactory.createLoad(object_arr, tagFrameLocal.getIndex()));
+    il.append(InstructionFactory.createLoad(CD_Object_array, tagFrameLocal.getIndex()));
 
-    if ((type instanceof BasicType) && (type != Type.VOID)) {
-      il.append(dcr_call("normal_exit_primitive", Type.VOID, new Type[] {object_arr}));
+    if ((type instanceof BasicType) && (type != CD_void)) {
+      il.append(dcr_call("normal_exit_primitive", CD_void, new Type[] {CD_Object_array}));
     } else {
-      il.append(dcr_call("normal_exit", Type.VOID, new Type[] {object_arr}));
+      il.append(dcr_call("normal_exit", CD_void, new Type[] {CD_Object_array}));
     }
     il.append(inst);
     return il;
@@ -3546,7 +3782,7 @@ public class DCInstrument extends InstructionListUtils {
    */
   @Pure
   boolean is_primitive(Type type) {
-    return (type instanceof BasicType) && (type != Type.VOID);
+    return (type instanceof BasicType) && (type != CD_void);
   }
 
   /**
@@ -3557,7 +3793,7 @@ public class DCInstrument extends InstructionListUtils {
    */
   @Pure
   boolean is_category2(Type type) {
-    return (type == Type.DOUBLE) || (type == Type.LONG);
+    return (type == CD_double) || (type == CD_long);
   }
 
   /**
@@ -3574,21 +3810,21 @@ public class DCInstrument extends InstructionListUtils {
       loader = DCInstrument.class.getClassLoader();
     }
 
-    if (t == Type.BOOLEAN) {
+    if (t == CD_boolean) {
       return Boolean.TYPE;
-    } else if (t == Type.BYTE) {
+    } else if (t == CD_byte) {
       return Byte.TYPE;
-    } else if (t == Type.CHAR) {
+    } else if (t == CD_char) {
       return Character.TYPE;
-    } else if (t == Type.DOUBLE) {
+    } else if (t == CD_double) {
       return Double.TYPE;
-    } else if (t == Type.FLOAT) {
+    } else if (t == CD_float) {
       return Float.TYPE;
-    } else if (t == Type.INT) {
+    } else if (t == CD_int) {
       return Integer.TYPE;
-    } else if (t == Type.LONG) {
+    } else if (t == CD_long) {
       return Long.TYPE;
-    } else if (t == Type.SHORT) {
+    } else if (t == CD_short) {
       return Short.TYPE;
     } else if (t instanceof ObjectType || t instanceof ArrayType) {
       @ClassGetName String sig = typeToClassGetName(t);
@@ -3642,8 +3878,8 @@ public class DCInstrument extends InstructionListUtils {
 
     // push a tag if there is a primitive return value
     Type returnType = mgen.getReturnType();
-    if ((returnType instanceof BasicType) && (returnType != Type.VOID)) {
-      il.append(dcr_call("push_const", Type.VOID, Type.NO_ARGS));
+    if ((returnType instanceof BasicType) && (returnType != CD_void)) {
+      il.append(dcr_call("push_const", CD_void, Type.NO_ARGS));
     }
 
     // If the method is not static, push the instance on the stack
@@ -3661,7 +3897,7 @@ public class DCInstrument extends InstructionListUtils {
 
       // The call returns the class realFramesToSkip up on the stack. Since we
       // have added this call in between, we need to increment that number by 1.
-      il.append(InstructionFactory.createLoad(Type.INT, 0));
+      il.append(InstructionFactory.createLoad(CD_int, 0));
       il.append(ifact.createConstant(1));
       il.append(new IADD());
       // System.out.printf("adding 1 in %s.%s%n", classGen.getClassName(),
@@ -3687,7 +3923,7 @@ public class DCInstrument extends InstructionListUtils {
             mgen.getName(),
             mgen.getReturnType(),
             paramTypes,
-            (mgen.isStatic() ? Const.INVOKESTATIC : Const.INVOKEVIRTUAL)));
+            (mgen.isStatic() ? INVOKESTATIC : INVOKEVIRTUAL)));
 
     // If there is a return value, return it
     il.append(InstructionFactory.createReturn(mgen.getReturnType()));
@@ -3701,7 +3937,7 @@ public class DCInstrument extends InstructionListUtils {
     mgen.setMaxLocals();
 
     // turn off the native flag
-    mgen.setAccessFlags(mgen.getAccessFlags() & ~Const.ACC_NATIVE);
+    mgen.setAccessFlags(mgen.getAccessFlags() & ~ACC_NATIVE);
   }
 
   /**
@@ -3716,7 +3952,7 @@ public class DCInstrument extends InstructionListUtils {
 
     // Prior to Java 8 an interface could not contain any implementations.
     if (classGen.isInterface()) {
-      if (classGen.getMajor() < Const.MAJOR_1_8) {
+      if (classGen.getMajor() < MAJOR_1_8) {
         return false;
       }
     }
@@ -3950,28 +4186,28 @@ public class DCInstrument extends InstructionListUtils {
       il.append(InstructionFactory.createThis());
     }
     il.append(ifact.createConstant(tag_offset));
-    il.append(dcr_call(methodname, Type.VOID, params));
-    il.append(InstructionFactory.createReturn(Type.VOID));
+    il.append(dcr_call(methodname, CD_void, params));
+    il.append(InstructionFactory.createReturn(CD_void));
 
     int access_flags = f.getAccessFlags();
     if (classGen.isInterface()) {
       // method in interface cannot be final
-      access_flags &= ~Const.ACC_FINAL;
-      if (classGen.getMajor() < Const.MAJOR_1_8) {
+      access_flags &= ~ACC_FINAL;
+      if (classGen.getMajor() < MAJOR_1_8) {
         // If class file version is prior to 8 then a method in an interface
         // cannot be static (it's implicit) and must be abstract.
-        access_flags &= ~Const.ACC_STATIC;
-        access_flags |= Const.ACC_ABSTRACT;
+        access_flags &= ~ACC_STATIC;
+        access_flags |= ACC_ABSTRACT;
       }
     } else {
-      access_flags |= Const.ACC_FINAL;
+      access_flags |= ACC_FINAL;
     }
 
     // Create the get accessor method
     MethodGen get_method =
         new MethodGen(
             access_flags,
-            Type.VOID,
+            CD_void,
             Type.NO_ARGS,
             new String[] {},
             accessor_name,
@@ -4025,34 +4261,27 @@ public class DCInstrument extends InstructionListUtils {
       il.append(InstructionFactory.createThis());
     }
     il.append(ifact.createConstant(tag_offset));
-    il.append(dcr_call(methodname, Type.VOID, params));
-    il.append(InstructionFactory.createReturn(Type.VOID));
+    il.append(dcr_call(methodname, CD_void, params));
+    il.append(InstructionFactory.createReturn(CD_void));
 
     int access_flags = f.getAccessFlags();
     if (classGen.isInterface()) {
       // method in interface cannot be final
-      access_flags &= ~Const.ACC_FINAL;
-      if (classGen.getMajor() < Const.MAJOR_1_8) {
+      access_flags &= ~ACC_FINAL;
+      if (classGen.getMajor() < MAJOR_1_8) {
         // If class file version is prior to 8 then a method in an interface
         // cannot be static (it's implicit) and must be abstract.
-        access_flags &= ~Const.ACC_STATIC;
-        access_flags |= Const.ACC_ABSTRACT;
+        access_flags &= ~ACC_STATIC;
+        access_flags |= ACC_ABSTRACT;
       }
     } else {
-      access_flags |= Const.ACC_FINAL;
+      access_flags |= ACC_FINAL;
     }
 
     // Create the setter method.
     MethodGen set_method =
         new MethodGen(
-            access_flags,
-            Type.VOID,
-            Type.NO_ARGS,
-            new String[] {},
-            setter_name,
-            classname,
-            il,
-            pool);
+            access_flags, CD_void, Type.NO_ARGS, new String[] {}, setter_name, classname, il, pool);
     set_method.setMaxLocals();
     set_method.setMaxStack();
     // add_line_numbers(set_method, il);
@@ -4080,32 +4309,32 @@ public class DCInstrument extends InstructionListUtils {
     debugInstrument.log("Added interface DCompInstrumented%n");
 
     InstructionList il = new InstructionList();
-    int access_flags = Const.ACC_PUBLIC;
+    int access_flags = ACC_PUBLIC;
     if (classGen.isInterface()) {
-      access_flags |= Const.ACC_ABSTRACT;
+      access_flags |= ACC_ABSTRACT;
     }
     MethodGen method =
         new MethodGen(
             access_flags,
-            Type.BOOLEAN,
-            new Type[] {Type.OBJECT},
+            CD_boolean,
+            new Type[] {CD_Object},
             new String[] {"obj"},
             "equals_dcomp_instrumented",
             classGen.getClassName(),
             il,
             pool);
 
-    il.append(InstructionFactory.createLoad(Type.OBJECT, 0)); // load this
-    il.append(InstructionFactory.createLoad(Type.OBJECT, 1)); // load obj
+    il.append(InstructionFactory.createLoad(CD_Object, 0)); // load this
+    il.append(InstructionFactory.createLoad(CD_Object, 1)); // load obj
     il.append(new ACONST_NULL()); // use null for marker
     il.append(
         ifact.createInvoke(
             classGen.getClassName(),
             "equals",
-            Type.BOOLEAN,
-            new Type[] {Type.OBJECT, dcomp_marker},
-            Const.INVOKEVIRTUAL));
-    il.append(InstructionFactory.createReturn(Type.BOOLEAN));
+            CD_boolean,
+            new Type[] {CD_Object, dcomp_marker},
+            INVOKEVIRTUAL));
+    il.append(InstructionFactory.createReturn(CD_boolean));
     method.setMaxStack();
     method.setMaxLocals();
     classGen.addMethod(method.getMethod());
@@ -4127,31 +4356,31 @@ public class DCInstrument extends InstructionListUtils {
    */
   void add_equals_method(ClassGen classGen) {
     InstructionList il = new InstructionList();
-    int access_flags = Const.ACC_PUBLIC;
+    int access_flags = ACC_PUBLIC;
     if (classGen.isInterface()) {
-      access_flags |= Const.ACC_ABSTRACT;
+      access_flags |= ACC_ABSTRACT;
     }
     MethodGen method =
         new MethodGen(
             access_flags,
-            Type.BOOLEAN,
-            new Type[] {Type.OBJECT},
+            CD_boolean,
+            new Type[] {CD_Object},
             new String[] {"obj"},
             "equals",
             classGen.getClassName(),
             il,
             pool);
 
-    il.append(InstructionFactory.createLoad(Type.OBJECT, 0)); // load this
-    il.append(InstructionFactory.createLoad(Type.OBJECT, 1)); // load obj
+    il.append(InstructionFactory.createLoad(CD_Object, 0)); // load this
+    il.append(InstructionFactory.createLoad(CD_Object, 1)); // load obj
     il.append(
         ifact.createInvoke(
             classGen.getSuperclassName(),
             "equals",
-            Type.BOOLEAN,
-            new Type[] {Type.OBJECT},
-            Const.INVOKESPECIAL));
-    il.append(InstructionFactory.createReturn(Type.BOOLEAN));
+            CD_boolean,
+            new Type[] {CD_Object},
+            INVOKESPECIAL));
+    il.append(InstructionFactory.createReturn(CD_boolean));
     method.setMaxStack();
     method.setMaxLocals();
     classGen.addMethod(method.getMethod());
@@ -4261,9 +4490,9 @@ public class DCInstrument extends InstructionListUtils {
     }
 
     // Call the method
-    short kind = Const.INVOKEVIRTUAL;
+    short kind = INVOKEVIRTUAL;
     if (mgen.isStatic()) {
-      kind = Const.INVOKESTATIC;
+      kind = INVOKESTATIC;
     }
     il.append(
         ifact.createInvoke(
