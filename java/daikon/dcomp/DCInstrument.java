@@ -358,20 +358,24 @@ public class DCInstrument extends InstructionListUtils {
   /** Local that stores the tag frame for the current method. */
   protected @Nullable LocalVariableGen tagFrameLocal;
 
-  // Type descriptors
-
-  /** "java.lang.Object". */
-  private static final ObjectType CD_Object = Type.OBJECT;
+  // Type descriptors: non-arrays
 
   /** Type for "java.lang.Class". */
   protected static ObjectType CD_Class = new ObjectType("java.lang.Class");
+
+  /** "java.lang.Object". */
+  private static final ObjectType CD_Object = Type.OBJECT;
 
   /** Type for "java.lang.String". */
   private static final ObjectType CD_String = Type.STRING;
 
   /** Type for "java.lang.Throwable". */
-  // protected static ObjectType CD_Throwable = new ObjectType("java.lang.Throwable");
   private static final ObjectType CD_Throwable = Type.THROWABLE;
+
+  // private static final ObjectType CD_Throwable = new ObjectType("java.lang.Throwable");
+
+  /** The special DCompMarker type. */
+  protected final ObjectType dcomp_marker;
 
   /** Type for "boolean". */
   private static final BasicType CD_boolean = Type.BOOLEAN;
@@ -400,22 +404,17 @@ public class DCInstrument extends InstructionListUtils {
   /** Type for "void". */
   private static final BasicType CD_void = Type.VOID;
 
+  // Type descriptors: arrays
+
   /** "java.lang.Object[]". */
-  protected static Type objectArrayCD = new ArrayType(CD_Object, 1);
+  protected static Type CD_Object_array = new ArrayType(CD_Object, 1);
 
-  // protected static ObjectType CD_Throwable = new ObjectType("java.lang.Throwable");
-
-  /** The special DCompMarker type. */
-  protected final ObjectType dcomp_marker;
-
-  // Signature descriptors
-
-  // No parameters
+  // Signature descriptors: no parameters
 
   /** Type array with no parameters. */
   protected static final Type[] noArgsSig = Type.NO_ARGS;
 
-  // One parameter
+  // Signature descriptors: one parameter
 
   /** Type array with an int. */
   protected static Type[] intSig = {CD_int};
@@ -429,7 +428,7 @@ public class DCInstrument extends InstructionListUtils {
   /** Type array with an object. */
   protected static Type[] object_arg = {CD_Object};
 
-  // Two parameters
+  // Signature descriptors: two parameters
 
   /** Type array with a long and an int. */
   protected static Type[] longIntSig = {CD_long, CD_int};
@@ -1630,7 +1629,7 @@ public class DCInstrument extends InstructionListUtils {
 
     // Insert a new StackMapEntry at the beginning of the table
     // that adds the tag_frame variable.
-    StackMapType tag_frame_type = generateStackMapTypeFromType(objectArrayCD);
+    StackMapType tag_frame_type = generateStackMapTypeFromType(CD_Object_array);
     StackMapType[] stack_map_type_arr = {tag_frame_type};
     new_stack_map_table[0] =
         new StackMapEntry(APPEND_FRAME, len_code, stack_map_type_arr, null, pool.getConstantPool());
@@ -1665,7 +1664,7 @@ public class DCInstrument extends InstructionListUtils {
    * @return LocalVariableGen for the tag_frame local
    */
   LocalVariableGen createTagFrameLocal(MethodGen mgen) {
-    return create_method_scope_local(mgen, "dcomp_tag_frame$5a", objectArrayCD);
+    return create_method_scope_local(mgen, "dcomp_tag_frame$5a", CD_Object_array);
   }
 
   /**
@@ -1716,8 +1715,8 @@ public class DCInstrument extends InstructionListUtils {
     il.append(ifact.createConstant(params));
     il.append(
         ifact.createInvoke(
-            dcompRuntimeClassName, "createTagFrame", objectArrayCD, string_arg, INVOKESTATIC));
-    il.append(InstructionFactory.createStore(objectArrayCD, tagFrameLocal.getIndex()));
+            dcompRuntimeClassName, "createTagFrame", CD_Object_array, string_arg, INVOKESTATIC));
+    il.append(InstructionFactory.createStore(CD_Object_array, tagFrameLocal.getIndex()));
     debugInstrument.log("Store Tag frame local at index %d%n", tagFrameLocal.getIndex());
 
     return il;
@@ -1743,7 +1742,7 @@ public class DCInstrument extends InstructionListUtils {
     Type[] paramTypes = mgen.getArgumentTypes();
 
     // Push the tag frame
-    il.append(InstructionFactory.createLoad(objectArrayCD, tagFrameLocal.getIndex()));
+    il.append(InstructionFactory.createLoad(CD_Object_array, tagFrameLocal.getIndex()));
 
     // Push the object.  Push null if this is a static method or a constructor.
     if (mgen.isStatic() || (enterOrExit.equals("enter") && BcelUtil.isConstructor(mgen))) {
@@ -1765,7 +1764,7 @@ public class DCInstrument extends InstructionListUtils {
     // Put each argument into the array
     int param_index = param_offset;
     for (int ii = 0; ii < paramTypes.length; ii++) {
-      il.append(InstructionFactory.createDup(objectArrayCD.getSize()));
+      il.append(InstructionFactory.createDup(CD_Object_array.getSize()));
       il.append(ifact.createConstant(ii));
       Type at = paramTypes[ii];
       if (at instanceof BasicType) {
@@ -1803,9 +1802,9 @@ public class DCInstrument extends InstructionListUtils {
     Type[] methodParams;
     if (enterOrExit.equals("exit")) {
       methodParams =
-          new Type[] {objectArrayCD, CD_Object, CD_int, objectArrayCD, CD_Object, CD_int};
+          new Type[] {CD_Object_array, CD_Object, CD_int, CD_Object_array, CD_Object, CD_int};
     } else {
-      methodParams = new Type[] {objectArrayCD, CD_Object, CD_int, objectArrayCD};
+      methodParams = new Type[] {CD_Object_array, CD_Object, CD_int, CD_Object_array};
     }
     il.append(
         ifact.createInvoke(
@@ -2337,7 +2336,7 @@ public class DCInstrument extends InstructionListUtils {
       // Replace calls to Object's equals method with calls to our
       // replacement, a static method in DCRuntime.
 
-      Type[] new_param_types = new Type[] {CD_Object, CD_Object};
+      Type[] new_param_types = {CD_Object, CD_Object};
 
       InstructionList il = new InstructionList();
       il.append(
@@ -3005,8 +3004,8 @@ public class DCInstrument extends InstructionListUtils {
     InstructionList il = new InstructionList();
 
     // Push the tag frame and the index of this local
-    il.append(InstructionFactory.createLoad(objectArrayCD, tagFrameLocal.getIndex()));
-    debugInstrument.log("CreateLoad %s %d%n", objectArrayCD, tagFrameLocal.getIndex());
+    il.append(InstructionFactory.createLoad(CD_Object_array, tagFrameLocal.getIndex()));
+    debugInstrument.log("CreateLoad %s %d%n", CD_Object_array, tagFrameLocal.getIndex());
     il.append(ifact.createConstant(lvi.getIndex()));
 
     // Call the runtime method to handle loading/storing the local/parameter
@@ -3015,7 +3014,7 @@ public class DCInstrument extends InstructionListUtils {
             dcompRuntimeClassName,
             method,
             CD_void,
-            new Type[] {objectArrayCD, CD_int},
+            new Type[] {CD_Object_array, CD_int},
             INVOKESTATIC));
     il.append(lvi);
     return il;
@@ -3778,12 +3777,12 @@ public class DCInstrument extends InstructionListUtils {
     InstructionList il = new InstructionList();
 
     // Push the tag frame
-    il.append(InstructionFactory.createLoad(objectArrayCD, tagFrameLocal.getIndex()));
+    il.append(InstructionFactory.createLoad(CD_Object_array, tagFrameLocal.getIndex()));
 
     if ((type instanceof BasicType) && (type != CD_void)) {
-      il.append(dcr_call("normal_exit_primitive", CD_void, new Type[] {objectArrayCD}));
+      il.append(dcr_call("normal_exit_primitive", CD_void, new Type[] {CD_Object_array}));
     } else {
-      il.append(dcr_call("normal_exit", CD_void, new Type[] {objectArrayCD}));
+      il.append(dcr_call("normal_exit", CD_void, new Type[] {CD_Object_array}));
     }
     il.append(inst);
     return il;
