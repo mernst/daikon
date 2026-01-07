@@ -530,13 +530,13 @@ endif
 # compiled, but changing JDKs doesn't cause this Makefile to otherwise
 # trigger re-execution.
 .PRECIOUS: ChicoryPremain.jar
-ChicoryPremain.jar : daikon/Chicory.class daikon/chicory/manifest.txt
+ChicoryPremain.jar : daikon/Daikon.class daikon/chicory/manifest.txt
 	${JAR} cfm ChicoryPremain.jar daikon/chicory/manifest.txt \
 	  daikon/chicory/ChicoryPremain.class
 
-.PHONY: chicory chicory-test
-chicory chicory-test : daikon/chicory/inv_out.diff
-daikon/chicory/inv_out.diff : ChicoryPremain.jar daikon/Daikon.class
+.PHONY: chicory-test
+chicory-test: daikon/chicory/inv_out.diff
+daikon/chicory/inv_out.diff: ChicoryPremain.jar daikon/Daikon.class
 	cd daikon/chicory && rm -f ChicoryTest.log ChicoryTest.dtrace.gz ChicoryTest.inv.gz ChicoryTest.inv.out
 	cd daikon/chicory && ${JAVA_COMMAND} daikon.Chicory --verbose --debug daikon.chicory.ChicoryTest > ChicoryTest.log || (cat ChicoryTest.log; false)
 	cd daikon/chicory && ${JAVA_COMMAND} daikon.Daikon --no_text_output --no_show_progress ChicoryTest.dtrace.gz
