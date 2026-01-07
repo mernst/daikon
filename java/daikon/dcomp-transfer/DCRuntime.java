@@ -44,8 +44,8 @@ public final class DCRuntime {
     return daikon.dcomp.DCRuntime.object_ne(obj1, obj2);
   }
 
-  public static Object[] createTagFrame(String params) {
-    return daikon.dcomp.DCRuntime.createTagFrame(params);
+  public static Object[] create_tag_frame(String params) {
+    return daikon.dcomp.DCRuntime.create_tag_frame(params);
   }
 
   public static void normal_exit(Object[] tag_frame) {

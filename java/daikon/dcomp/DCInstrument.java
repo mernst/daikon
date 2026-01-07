@@ -1362,7 +1362,7 @@ public class DCInstrument extends InstructionListUtils {
     // stack anaylsis we are about to do is correct for potential
     // code replacements we might make later.
     InstructionHandle orig_start = mgen.getInstructionList().getStart();
-    add_createTagFrame(mgen);
+    add_create_tag_frame(mgen);
     // Calculate the operand stack value(s) for revised code.
     mgen.setMaxStack();
     // Calculate stack types information
@@ -1578,11 +1578,11 @@ public class DCInstrument extends InstructionListUtils {
   @SuppressWarnings("nullness") // calls to side-effecting methods
   @RequiresNonNull({"tagFrameLocal", "stackMapTable"})
   @EnsuresNonNull("insertion_placeholder")
-  public void add_createTagFrame(MethodGen mgen) {
+  public void add_create_tag_frame(MethodGen mgen) {
 
-    InstructionList nl = createTagFrame(mgen, tagFrameLocal);
+    InstructionList nl = create_tag_frame(mgen, tagFrameLocal);
 
-    // We add a temporary NOP at the end of the createTagFrame
+    // We add a temporary NOP at the end of the create_tag_frame
     // code that we will replace with runtime initization code
     // later.  We do this so that any existing stack map at
     // instruction offset 0 is not replaced by the one we are
@@ -1643,7 +1643,7 @@ public class DCInstrument extends InstructionListUtils {
       new_stack_map_table[i + 1] = stackMapTable[i];
     }
     stackMapTable = new_stack_map_table;
-    // print_stackMapTable ("add_createTagFrame");
+    // print_stackMapTable ("add_create_tag_frame");
   }
 
   /**
@@ -1677,7 +1677,7 @@ public class DCInstrument extends InstructionListUtils {
    * @param tagFrameLocal LocalVariableGen for the tag_frame local
    * @return instruction list for tag_frame setup code
    */
-  InstructionList createTagFrame(MethodGen mgen, LocalVariableGen tagFrameLocal) {
+  InstructionList create_tag_frame(MethodGen mgen, LocalVariableGen tagFrameLocal) {
 
     Type paramTypes[] = mgen.getArgumentTypes();
 
@@ -1718,7 +1718,7 @@ public class DCInstrument extends InstructionListUtils {
     il.append(ifact.createConstant(params));
     il.append(
         ifact.createInvoke(
-            dcompRuntimeClassName, "createTagFrame", CD_Object_array, string_arg, INVOKESTATIC));
+            dcompRuntimeClassName, "create_tag_frame", CD_Object_array, string_arg, INVOKESTATIC));
     il.append(InstructionFactory.createStore(CD_Object_array, tagFrameLocal.getIndex()));
     debugInstrument.log("Store Tag frame local at index %d%n", tagFrameLocal.getIndex());
 

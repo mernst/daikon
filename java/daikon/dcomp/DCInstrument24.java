@@ -1776,7 +1776,7 @@ public class DCInstrument24 {
       MethodGen24.MInfo24 minfo,
       List<CodeElement> instructions) {
 
-    List<CodeElement> newCode = createTagFrame(mgen);
+    List<CodeElement> newCode = create_tag_frame(mgen);
 
     // The start of the list of CodeElements looks as follows:
     //   LocalVariable declarations (if any)
@@ -2090,7 +2090,7 @@ public class DCInstrument24 {
    * @param mgen describes the given method
    * @return instruction list for tag_frame setup code
    */
-  private List<CodeElement> createTagFrame(MethodGen24 mgen) {
+  private List<CodeElement> create_tag_frame(MethodGen24 mgen) {
 
     ClassDesc paramTypes[] = mgen.getParameterTypes();
 
@@ -2131,7 +2131,7 @@ public class DCInstrument24 {
 
     MethodRefEntry mre =
         poolBuilder.methodRefEntry(
-            runtimeCD, "createTagFrame", MethodTypeDesc.of(objectArrayCD, CD_String));
+            runtimeCD, "create_tag_frame", MethodTypeDesc.of(objectArrayCD, CD_String));
     instructions.add(buildLDCInstruction(poolBuilder.stringEntry(params)));
     instructions.add(InvokeInstruction.of(INVOKESTATIC, mre));
     instructions.add(StoreInstruction.of(TypeKind.REFERENCE, tagFrameLocal.slot()));

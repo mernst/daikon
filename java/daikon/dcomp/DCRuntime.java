@@ -665,7 +665,7 @@ public final class DCRuntime implements ComparabilityProvider {
    *     Values greater than 9 will have unintuitive (but printable) values.
    * @return the allocated and initialized tag frame
    */
-  public static Object[] createTagFrame(String params) {
+  public static Object[] create_tag_frame(String params) {
     if (debug) {
       System.out.printf("%nEnter: %s%n", caller_name());
     }
@@ -681,7 +681,7 @@ public final class DCRuntime implements ComparabilityProvider {
       methodCountMap.put(method_name, count);
     }
 
-    // createTagFrame is the first DCRuntime method called for an
+    // create_tag_frame is the first DCRuntime method called for an
     // instrumented user method.  Since it might be on a new thread
     // we need to check/set the per-thread data map.
     Thread t = Thread.currentThread();
