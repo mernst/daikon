@@ -1876,7 +1876,7 @@ public class DCInstrument24 {
 
   /**
    * Generates the code to create the tag frame for this method and store it in tagFrameLocal. This
-   * needs to be before the call to DCRuntime.enter (since it passed to that method).
+   * needs to be before the call to DCRuntime.enter (since it is passed to that method).
    *
    * @param mgen describes the given method
    * @return instruction list for tag_frame setup code
@@ -1885,7 +1885,7 @@ public class DCInstrument24 {
 
     ClassDesc paramTypes[] = mgen.getParameterTypes();
 
-    // Determine the offset of the first argument in the frame
+    // Determine the offset of the first argument in the frame.
     int offset = 1;
     if (mgen.isStatic()) {
       offset = 0;
