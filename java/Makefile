@@ -766,8 +766,8 @@ very-clean: clean clean-generated-files
 	-rm -rf api/
 	-rm -rf daikon/chicory/ChicoryTest.inv.out
 	-rm -rf daikon/chicory/debug/
-	-rm -rf daikon/dcomp/DcompTest.log
 	-rm -rf daikon/dcomp/debug/
+	-rm -rf daikon/dcomp/DcompTest.log
 	-rm -rf daikon/dcomp/std_dcomp_out.diff daikon/dcomp/std_dcomp_out.txt
 
 run:	all
