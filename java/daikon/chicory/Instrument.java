@@ -47,6 +47,7 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.ObjectType;
 import org.apache.bcel.generic.PUSH;
 import org.apache.bcel.generic.Type;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -106,24 +107,24 @@ public class Instrument extends InstructionListUtils implements ClassFileTransfo
   // private static final ObjectType CD_Throwable = Type.THROWABLE;
 
   // /** Type for "boolean". */
-  // private static final BasicType CD_boolean = Type.BOOLEAN;
+  // private static final @InternedDistinct BasicType CD_boolean = Type.BOOLEAN;
   // /** Type for "byte". */
-  // private static final BasicType CD_byte = Type.BYTE;
+  // private static final @InternedDistinct BasicType CD_byte = Type.BYTE;
   // /** Type for "char". */
-  // private static final BasicType CD_char = Type.CHAR;
+  // private static final @InternedDistinct BasicType CD_char = Type.CHAR;
   // /** Type for "double". */
-  // private static final BasicType CD_double = Type.DOUBLE;
+  // private static final @InternedDistinct BasicType CD_double = Type.DOUBLE;
   // /** Type for "float". */
-  // private static final BasicType CD_float = Type.FLOAT;
+  // private static final @InternedDistinct BasicType CD_float = Type.FLOAT;
   /** Type for "int". */
-  private static final BasicType CD_int = Type.INT;
+  private static final @InternedDistinct BasicType CD_int = Type.INT;
 
   // /** Type for "long". */
-  // private static final BasicType CD_long = Type.LONG;
+  // private static final @InternedDistinct BasicType CD_long = Type.LONG;
   // /** Type for "short". */
-  // private static final BasicType CD_short = Type.SHORT;
+  // private static final @InternedDistinct BasicType CD_short = Type.SHORT;
   /** Type for "void". */
-  private static final BasicType CD_void = Type.VOID;
+  private static final @InternedDistinct BasicType CD_void = Type.VOID;
 
   /** "java.lang.Object[]". */
   protected static Type objectArrayCD = new ArrayType(CD_Object, 1);
