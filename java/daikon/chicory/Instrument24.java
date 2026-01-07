@@ -905,11 +905,7 @@ public class Instrument24 implements ClassFileTransformer {
     if (!type.equals(CD_void)) {
       TypeKind typeKind = TypeKind.from(type);
       LocalVariable returnLocal = getReturnLocal(mgen, type, minfo);
-      if (typeKind.slotSize() == 1) {
-        newCode.add(StackInstruction.of(Opcode.DUP));
-      } else {
-        newCode.add(StackInstruction.of(Opcode.DUP2));
-      }
+      newCode.add(StackInstruction.of(typeKind.slotSize() == 1 ? Opcode.DUP : Opcode.DUP2));
       newCode.add(StoreInstruction.of(typeKind, returnLocal.slot()));
     }
 
