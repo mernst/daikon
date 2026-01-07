@@ -307,7 +307,7 @@ public final class CalcStack24 {
         return true;
 
       // operand stack before: ..., objectref
-      // operand stack after:  ..., objectref [same value, but of a different type]
+      // operand stack after:  ..., objectref
       case Opcode.CHECKCAST:
         {
           final ClassDesc t = stack.pop(); // pop the objectref
