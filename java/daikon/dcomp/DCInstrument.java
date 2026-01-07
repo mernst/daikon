@@ -371,9 +371,6 @@ public class DCInstrument extends InstructionListUtils {
   /** Type for "java.lang.String". */
   private static final ObjectType CD_String = Type.STRING;
 
-  /** Type for "java.lang.String". */
-  private static final ObjectType CD_String = Type.STRING;
-
   /** Type for "java.lang.Throwable". */
   private static final ObjectType CD_Throwable = Type.THROWABLE;
 
