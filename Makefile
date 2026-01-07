@@ -747,7 +747,7 @@ update-libs:        update-bibtex2web update-checklink update-git-scripts update
 
 update-bibtex2web:
 ifndef NONETWORK
-	if test -d utils/bibtex2web/.git ; then \
+	@if test -d utils/bibtex2web/.git ; then \
 	  (cd utils/bibtex2web && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/bibtex2web ; then \
 	  (mkdir -p utils && (git clone -q --depth=1 https://github.com/mernst/bibtex2web.git utils/bibtex2web || (sleep 1m && git clone -q --depth=1 https://github.com/mernst/bibtex2web.git utils/bibtex2web))) \
@@ -756,7 +756,7 @@ endif
 
 update-checklink:
 ifndef NONETWORK
-	if test -d utils/checklink/.git ; then \
+	@if test -d utils/checklink/.git ; then \
 	  (cd utils/checklink && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/checklink ; then \
 	  (mkdir -p utils && (git clone -q --depth=1 https://github.com/plume-lib/checklink.git utils/checklink || (sleep 1m && git clone -q --depth=1 https://github.com/plume-lib/checklink.git utils/checklink))) \
@@ -765,7 +765,7 @@ endif
 
 update-git-scripts:
 ifndef NONETWORK
-	if test -d utils/git-scripts/.git ; then \
+	@if test -d utils/git-scripts/.git ; then \
 	  (cd utils/git-scripts && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/git-scripts ; then \
 	  (mkdir -p utils && (git clone -q --depth=1 https://github.com/plume-lib/git-scripts.git utils/git-scripts || (sleep 1m && git clone -q --depth=1 https://github.com/plume-lib/git-scripts.git utils/git-scripts))) \
@@ -774,7 +774,7 @@ endif
 
 update-html-tools:
 ifndef NONETWORK
-	if test -d utils/html-tools/.git ; then \
+	@if test -d utils/html-tools/.git ; then \
 	  (cd utils/html-tools && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/html-tools ; then \
 	  (mkdir -p utils && (git clone -q --depth=1 https://github.com/plume-lib/html-tools.git utils/html-tools || (sleep 1m && git clone -q --depth=1 https://github.com/plume-lib/html-tools.git utils/html-tools))) \
@@ -783,7 +783,7 @@ endif
 
 update-plume-scripts-in-utils:
 ifndef NONETWORK
-	if test -d utils/plume-scripts/.git ; then \
+	@if test -d utils/plume-scripts/.git ; then \
 	  (cd utils/plume-scripts && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/plume-scripts ; then \
 	  mkdir -p utils && (git clone -q --depth=1 https://github.com/plume-lib/plume-scripts.git utils/plume-scripts || (sleep 1m && git clone -q --depth=1 https://github.com/plume-lib/plume-scripts.git utils/plume-scripts)) \
@@ -792,7 +792,7 @@ endif
 
 update-run-google-java-format:
 ifndef NONETWORK
-	if test -d utils/run-google-java-format/.git ; then \
+	@if test -d utils/run-google-java-format/.git ; then \
 	  (cd utils/run-google-java-format && (git pull -q || (sleep 1m && (git pull || true)))) \
 	elif ! test -d utils/run-google-java-format ; then \
 	  (mkdir -p utils && (git clone -q --depth=1 https://github.com/plume-lib/run-google-java-format.git utils/run-google-java-format || (sleep 1m && git clone -q --depth=1 https://github.com/plume-lib/run-google-java-format.git utils/run-google-java-format))) \

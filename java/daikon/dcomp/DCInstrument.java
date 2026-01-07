@@ -2691,7 +2691,7 @@ public class DCInstrument extends InstructionListUtils {
       return false;
     }
 
-    if (daikon.dcomp.Instrument.is_transformer(Runtime.binaryNameToInternalForm(classname))) {
+    if (daikon.dcomp.Instrument.is_transformer(classname.replace('.', '/'))) {
       return false;
     }
 
