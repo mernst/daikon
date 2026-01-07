@@ -3208,7 +3208,7 @@ public class DCInstrument24 {
       return false;
     }
 
-    if (daikon.dcomp.Instrument24.is_transformer(Runtime.binaryNameToInternalForm(classname))) {
+    if (daikon.dcomp.Instrument24.is_transformer(classname.replace('.', '/'))) {
       return false;
     }
 
