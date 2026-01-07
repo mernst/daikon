@@ -1085,15 +1085,15 @@ public class Instrument extends InstructionListUtils implements ClassFileTransfo
     }
 
     // Call the specified method.
-    Type[] methodArgs;
+    Type[] methodParams;
     if (methodToCall.equals("exit")) {
-      methodArgs = new Type[] {CD_Object, CD_int, CD_int, CD_Object_array, CD_Object, CD_int};
+      methodParams = new Type[] {CD_Object, CD_int, CD_int, CD_Object_array, CD_Object, CD_int};
     } else {
-      methodArgs = new Type[] {CD_Object, CD_int, CD_int, CD_Object_array};
+      methodParams = new Type[] {CD_Object, CD_int, CD_int, CD_Object_array};
     }
     newCode.append(
         instFactory.createInvoke(
-            runtime_classname, methodToCall, CD_void, methodArgs, Const.INVOKESTATIC));
+            runtime_classname, methodToCall, CD_void, methodParams, Const.INVOKESTATIC));
 
     return newCode;
   }
