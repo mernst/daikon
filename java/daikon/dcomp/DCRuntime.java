@@ -2647,7 +2647,7 @@ public final class DCRuntime implements ComparabilityProvider {
     }
   }
 
-  /** Return the number of primitive fields in clazz and all of its superclasses. */
+  /** Returns the number of primitive fields in clazz and all of its superclasses. */
   public static int num_prim_fields(Class<?> clazz) {
     if (clazz == Object.class) {
       return 0;
@@ -3020,6 +3020,7 @@ public final class DCRuntime implements ComparabilityProvider {
    * @return all the daikonvarables in the tree
    */
   private static List<DaikonVariableInfo> varlist(DaikonVariableInfo dvi) {
+
     List<DaikonVariableInfo> list = new ArrayList<>();
     list.add(dvi);
     for (DaikonVariableInfo child : dvi) {
@@ -3095,7 +3096,7 @@ public final class DCRuntime implements ComparabilityProvider {
       }
     }
 
-    /** Return the tag associated with this field. */
+    /** Returns the tag associated with this field. */
     @Override
     Object get_tag(Object parent, Object obj) {
       Object tag;

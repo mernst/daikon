@@ -31,7 +31,9 @@ workflows:
             - non-txt-diff-ubuntu-jdk[]canary_version
             - misc-ubuntu-jdk[]canary_version
             - kvasir-ubuntu-jdk[]canary_version
-            - typecheck-bundled-ubuntu-jdk[]canary_version
+            - typecheck-bundled-part1-ubuntu-jdk[]canary_version
+            - typecheck-bundled-part2-ubuntu-jdk[]canary_version
+            - typecheck-bundled-part3-ubuntu-jdk[]canary_version
 job_dependences(ubuntu, 8, quick-txt-diff)
 job_dependences(ubuntu, 11, quick-txt-diff)
 job_dependences(ubuntu, 17, quick-txt-diff)
@@ -61,11 +63,21 @@ job_dependences(ubuntu, 25, kvasir)
 ## Thus, there is no typecheck_latest_ubuntu_jdk{8,11,17} job.
 ## The Checker Framework cannot be run under Java 8 or 11.
 ## Thus, there is no typecheck_bundled_ubuntu_jdk{8,11} job.
-job_dependences(ubuntu, 17, typecheck-bundled)
-job_dependences(ubuntu, 21, typecheck-latest)
-job_dependences(ubuntu, 21, typecheck-bundled)
-job_dependences(ubuntu, 25, typecheck-latest)
-job_dependences(ubuntu, 25, typecheck-bundled)
+job_dependences_part(ubuntu, 17, typecheck-bundled, part1)
+job_dependences_part(ubuntu, 17, typecheck-bundled, part2)
+job_dependences_part(ubuntu, 17, typecheck-bundled, part3)
+job_dependences_part(ubuntu, 21, typecheck-latest, part1)
+job_dependences_part(ubuntu, 21, typecheck-latest, part2)
+job_dependences_part(ubuntu, 21, typecheck-latest, part3)
+job_dependences_part(ubuntu, 21, typecheck-bundled, part1)
+job_dependences_part(ubuntu, 21, typecheck-bundled, part2)
+job_dependences_part(ubuntu, 21, typecheck-bundled, part3)
+job_dependences_part(ubuntu, 25, typecheck-latest, part1)
+job_dependences_part(ubuntu, 25, typecheck-latest, part2)
+job_dependences_part(ubuntu, 25, typecheck-latest, part3)
+job_dependences_part(ubuntu, 25, typecheck-bundled, part1)
+job_dependences_part(ubuntu, 25, typecheck-bundled, part2)
+job_dependences_part(ubuntu, 25, typecheck-bundled, part3)
 job_dependences(rockylinux, 8, quick-txt-diff)
 job_dependences(rockylinux, 25, quick-txt-diff)
 job_dependences(rockylinux, 8, nonquick-txt-diff)

@@ -9,7 +9,7 @@ DAIKONDIR := $(realpath $(dir $(lastword ${MAKEFILE_LIST}))..)
 
 DAIKONSCRIPTS ?= ${DAIKONDIR}/scripts
 
-PLUMESCRIPTS ?= ${DAIKONDIR}/utils/plume-scripts
+PLUMESCRIPTS ?= ${DAIKONDIR}/.plume-scripts
 HTMLTOOLS ?= ${DAIKONDIR}/utils/html-tools
 
 USER ?= daikonbuild
@@ -100,11 +100,6 @@ CHECKERFRAMEWORK_JAVAC ?= ${CHECKERFRAMEWORK_JAR_DIR}/javac.jar
 
 ### end of user customizations
 
-# Not := because DAIKON_CLASSPATH is set later in this file.
-JAVADOC_COMMAND = ${JAVADOC} -cp ${DAIKON_CLASSPATH}
-JAVAC_COMMAND = ${JAVAC} -cp ${DAIKON_CLASSPATH} -Xlint -J-Xmx7g ${JAVAC_ARGS}
-JAVA_COMMAND = ${JAVA} -cp ${DAIKON_CLASSPATH}
-
 
 ###########################################################################
 ### Variables
@@ -144,6 +139,10 @@ ifneq "$(wildcard ${JAVA_HOME}/jre/lib/rt.jar)" ""
   DAIKON_CLASSPATH := ${DAIKON_CLASSPATH}:${JAVA_HOME}/jre/lib/rt.jar
 endif
 
+JAVADOC_COMMAND := ${JAVADOC} -cp ${DAIKON_CLASSPATH}
+JAVAC_COMMAND := ${JAVAC} -cp ${DAIKON_CLASSPATH} -Xlint -J-Xmx7g ${JAVAC_ARGS}
+JAVA_COMMAND := ${JAVA} -cp ${DAIKON_CLASSPATH}
+
 DOCLETPATH := ${DAIKONDIR}/java:$(wildcard ${DAIKONDIR}/java/lib/bcel-util-*.jar):$(wildcard ${DAIKONDIR}/java/lib/plume-util-*.jar):$(wildcard ${DAIKONDIR}/java/lib/reflection-util-*.jar):$(wildcard ${DAIKONDIR}/java/lib/hashmap-util-*.jar):${DAIKONDIR}/java/lib/daikon-plumelib.jar
 
 DOCLET_FLAGS :=
@@ -160,10 +159,10 @@ endif
 # find command will get run multiple times.  USE AUTO_GENERATED_FILES instead.
 # "-o -path './jakarta-oro*/src/java/examples'" does not work for non-GNU find.
 # " | perl -pi -e 's/^\.\///g'" to remove leading "./"
-SORT_DIRECTORY_ORDER = ${PLUMESCRIPTS}/sort-directory-order
+SORT_DIRECTORY_ORDER := ${PLUMESCRIPTS}/sort-directory-order
 ifneq "$(wildcard ${SORT_DIRECTORY_ORDER})" "${SORT_DIRECTORY_ORDER}"
   # Until "make ../plume-scripts" has been run, sort-directory-order is not available.
-  SORT_DIRECTORY_ORDER = sort
+  SORT_DIRECTORY_ORDER := sort
 endif
 
 DAIKON_JAVA_FILES := $(shell find daikon/ -name '*.java' -not -name '*\#*' -print | ${SORT_DIRECTORY_ORDER})
@@ -174,6 +173,7 @@ JAVA_FILES := $(shell find . -follow \( -name '*daikon-java*' -o -name '*daikon-
 ifeq (${JAVA24}, 0)
   JAVA_FILES :=  $(filter-out %24.java, ${JAVA_FILES})
 endif
+JAVA_FILES_FOR_DEPENDENCES := $(filter-out daikon/test/split/SplitterFactoryTestUpdater.java, $(filter-out daikon/test/split/SplitterFactoryTest.java, ${JAVA_FILES}))
 JAVA_FILES_FOR_STYLE := $(shell find . -follow \( -name '*daikon-java*' -o -name '*daikon-instrumented*' -o -name 'PrototypeChecker.java' -o -name 'VIndexChecker.java' -o -name 'VIndexAnnotatedTypeFactory.java' -o -name 'ReturnBytecodes.java' -o -name 'SplitterFactoryTest.java' -o -name 'WeakHasherMap.java' -o -name 'WeakIdentityHashMap.java' -o -name '\.\#*' -o -path './jtb' -o -path './daikon/dcomp-transfer' \) -prune -o -name '*.java' -print | grep -v '/jakarta-oro.*/src/java/examples/' | ${SORT_DIRECTORY_ORDER})
 ifeq (${JAVA24}, 0)
   JAVA_FILES_FOR_STYLE :=  $(filter-out %24.java, ${JAVA_FILES_FOR_STYLE})
@@ -189,7 +189,7 @@ TAG_FILES :=        $(shell find . -type f -follow \( -name '*daikon-java*' -o -
 TAG_FILES_NO_JTB := $(shell find . -type f -follow \( -name '*daikon-java*' -o -name '*Test.java' -o -name '*Tester.java' -o -name 'Test*.java' -o -name 'GenericTestClass.java' -o -name 'TestQuant.java' -o -name 'DiffDummyInvariant.java' -o -name 'AllTestsSuite.java' \) -prune -o \( -path './jtb' \) -prune -o \( -name '*.java' -o -name '*.java.jpp' \) -print | grep -v '/\.\#' | ${SORT_DIRECTORY_ORDER})
 
 # When removing files from this list, add them to OLD_AUTO_GENERATED_FILES.
-AUTO_GENERATED_FILES = \
+AUTO_GENERATED_FILES := \
 	daikon/PptSlice1.java \
 	daikon/PptSlice2.java \
 	daikon/PptSlice3.java \
@@ -398,7 +398,7 @@ AUTO_GENERATED_FILES = \
 
 # These files were auto-generated previously; they still might exist in
 # some user's directory.
-OLD_AUTO_GENERATED_FILES = \
+OLD_AUTO_GENERATED_FILES := \
 	daikon/inv/binary/twoScalar/FloatComparisonCore.java \
 	daikon/inv/binary/twoScalar/FunctionUnary.java \
 	daikon/inv/binary/twoScalar/FunctionUnaryCore.java \
@@ -430,24 +430,17 @@ OLD_AUTO_GENERATED_FILES = \
 	utilMDE/MathMDE.java \
 	lib/utilMDE.jar
 
-
-OLD_AUTO_GENERATED_CLASSES = $(subst .java,.class,${OLD_AUTO_GENERATED_FILES})
-
+OLD_AUTO_GENERATED_CLASSES := $(subst .java,.class,${OLD_AUTO_GENERATED_FILES})
 
 # These files cannot be generated until everything else has been compiled.
 # (But, a problem is that it can get out of date and cause the compilation
 # to fail during pass 1.)
-AUTO_GENERATED_FILES_2 = \
+AUTO_GENERATED_FILES_2 := \
 	daikon/test/split/SplitterFactoryTest.java
 
-AUTO_GENERATED_CLASSES_2 = $(subst .java,.class,${AUTO_GENERATED_FILES_2})
+AUTO_GENERATED_CLASSES_2 := $(subst .java,.class,${AUTO_GENERATED_FILES_2})
 
-# Used as a prerequisite, not for the file names, so OK to include update-libs.
-ALL_GENERATED_FILES = update-libs ${AUTO_GENERATED_FILES} ${AUTO_GENERATED_FILES_2}
-
-update-libs:
-	make -C .. update-libs
-.PHONY: update-libs
+ALL_GENERATED_FILES := ${AUTO_GENERATED_FILES} ${AUTO_GENERATED_FILES_2}
 
 
 ###########################################################################
@@ -460,48 +453,50 @@ export DAIKONDIR
 
 
 ###########################################################################
-### Compilation targets
+### Test targets
 ###
 
-# all_directly is not marked as phony
-.PHONY: default compile all all_stop_on_error all_via_daikon
-default: all
-compile: all
+.PHONY: all
+all: daikon
 
-# "-S" means do not continue after errors.
-all: all_stop_on_error
+.PHONY: daikon
+daikon: showvars-brief update-libs ${AUTO_GENERATED_FILES}
+	${MAKE} smoke-test
 
-# Don't bother to run the unit tests if the compilation failed.
-all_stop_on_error:
-# if ../.git does not exist, then directory was created from
-# a daikon archive file and we cannot do git-hooks
-ifneq ($(shell ls ../.git 2>/dev/null),)
-	${MAKE} -C .. git-hooks
-endif
-	${MAKE} --stop all_directly
-	${MAKE} junit
+smoke-test: junit chicory-test dyncomp-test
 
-## In general, don't use this; it misses some files
-all_via_daikon: chicory daikon/Daikon.class daikon/diff/Diff.class
-	${MAKE} all_pass2
-
-xlint: chicory ${ALL_GENERATED_FILES}
-	@${JAVAC_COMMAND} -Xlint -Xmaxwarns 1000 ${DAIKON_JAVA_FILES} 2>&1
-
-## ${JAVA_FILES} is so long I can't see the result on the same screen as the command.
-# Do not mark this target as .PHONY.  We want it to
-# always recompile, whether recompilation is necessary or not.  (Why?)
-all_directly: ../utils/plume-scripts ${AUTO_GENERATED_FILES} java_files.txt
-# # If SplitterFactoryTestUpdater.java is newer than SplitterFactoryTest.java, then delete the latter.
-# 	if [ daikon/test/split/SplitterFactoryTestUpdater.java -nt daikon/test/split/SplitterFactoryTest.java ] ; then rm -f daikon/test/split/SplitterFactoryTest.java; fi
-# remove 'bin' and 'orig' after versions stablize
-	rm -f `find daikon -path "*/debug*/bin" -prune -o -path "*/debug*/orig" -prune -o -path "*/debug*/instrumented" -prune -o -path "*/debug*/uninstrumented" -prune -o -name "*.class" -print`
+showvars-brief:
 	@echo "CLASSPATH = ${CLASSPATH}"
 	@echo "DAIKON_CLASSPATH = ${DAIKON_CLASSPATH}"
 	@echo "JAVA_RELEASE_NUMBER = ${JAVA_RELEASE_NUMBER}"
 	@echo "JAVA_VERSION_STRING_WITH_EA = ${JAVA_VERSION_STRING_WITH_EA}"
+
+.PHONY: xlint
+xlint: daikon/Daikon.class
+	@${JAVAC_COMMAND} -Xlint -Xmaxwarns 1000 ${DAIKON_JAVA_FILES} 2>&1
+
+update-libs:
+	${MAKE} -C .. update-libs
+
+
+###########################################################################
+### Compilation targets
+###
+
+# The timestamp of Daikon.class indicates the last time the system was recompiled.
+compile compile-java compile-daikon: daikon/Daikon.class
+daikon/Daikon.class: daikon/Daikon.java ${AUTO_GENERATED_FILES} ${JAVA_FILES_FOR_DEPENDENCES}
+	@echo 'echo $${JAVA_FILES} > java_files.txt'
+	@echo ${JAVA_FILES} > java_files.txt
 	${JAVAC_COMMAND} @java_files.txt
 	rm -f java_files.txt
+	touch $@
+	${MAKE} rename-dcruntime ${AUTO_GENERATED_CLASSES_2}
+# on some systems chmod with symbolic arguments pays attention to umask.  so use 444 instead of -w
+	@chmod 444 ${AUTO_GENERATED_FILES}
+
+.PHONY: rename-dcruntime
+rename-dcruntime:
 # Post JDK 21, additional restrictions have been introduced that prevent developers
 # from explicitly creating or modifying classes in the java.lang package (or any
 # package in java.base) at compile time. However, runtime class redefinition with
@@ -515,25 +510,6 @@ all_directly: ../utils/plume-scripts ${AUTO_GENERATED_FILES} java_files.txt
 	  echo sed -e's/jaxa/java/g' -i -b ${DAIKONDIR}/java/daikon/dcomp-dummy/DCRuntime.class; \
 	  sed -e's/jaxa/java/g' -i -b ${DAIKONDIR}/java/daikon/dcomp-dummy/DCRuntime.class; \
 	fi;
-# on some systems chmod with symbolic arguments pays attention to umask.  so use 444 instead of -w
-	@chmod 444 ${AUTO_GENERATED_FILES}
-# This creates ${AUTO_GENERATED_FILES_2}, so that shouldn't be a prerequisite.
-	${MAKE} all_pass2
-# These can't be prerequisites because they depend on .class files from Daikon itself.
-	${MAKE} chicory
-	${MAKE} dyncomp
-
-.PHONY: java_files.txt
-java_files.txt: ${JAVA_FILES}
-	@echo ${JAVA_FILES} > java_files.txt
-
-.PHONY : daikon compile_daikon
-daikon: compile_daikon junit
-compile_daikon : ../utils/plume-scripts ${AUTO_GENERATED_FILES}
-	@echo ${JAVAC_COMMAND} 'daikon/*.java ...'
-	@${JAVAC_COMMAND} ${DAIKON_JAVA_FILES}
-	@chmod 444 ${AUTO_GENERATED_FILES}
-	# ${MAKE} all_pass2
 
 #
 # Chicory java front end for Daikon
@@ -543,29 +519,20 @@ ifeq (${JAVA24}, 0)
 CHICORY_JAVA_FILES := $(filter-out %24.java, ${CHICORY_JAVA_FILES})
 endif
 
-# This actually requires Daikon to already be compiled.
-# It would be good to make that an explicit prerequisite.
-.PHONY: chicory
-.PRECIOUS: ChicoryPremain.jar
-chicory : ChicoryPremain.jar chicory-test
-
-.PHONY: chicory-compile
-chicory-compile:
-	${JAVAC_COMMAND} ${CHICORY_JAVA_FILES}
-
 # Note that this compiles all of Chicory even though all we need for
 # this step is chicory/ChicoryPremain.java.
 # Also note that it always compiles all of Chicory, to handle changing
 # between different JDKs.  Changing JDKs changes which files are
 # compiled, but changing JDKs doesn't cause this Makefile to otherwise
 # trigger re-execution.
-ChicoryPremain.jar : chicory-compile daikon/chicory/manifest.txt
+.PRECIOUS: ChicoryPremain.jar
+ChicoryPremain.jar : daikon/Chicory.class daikon/chicory/manifest.txt
 	${JAR} cfm ChicoryPremain.jar daikon/chicory/manifest.txt \
 	  daikon/chicory/ChicoryPremain.class
 
-.PHONY: chicory-test
-chicory-test : daikon/chicory/inv_out.diff
-daikon/chicory/inv_out.diff : ChicoryPremain.jar
+.PHONY: chicory chicory-test
+chicory chicory-test : daikon/chicory/inv_out.diff
+daikon/chicory/inv_out.diff : ChicoryPremain.jar daikon/Daikon.class
 	cd daikon/chicory && rm -f ChicoryTest.log ChicoryTest.dtrace.gz ChicoryTest.inv.gz ChicoryTest.inv.out
 	cd daikon/chicory && ${JAVA_COMMAND} daikon.Chicory --verbose --debug daikon.chicory.ChicoryTest > ChicoryTest.log || (cat ChicoryTest.log; false)
 	cd daikon/chicory && ${JAVA_COMMAND} daikon.Daikon --no_text_output --no_show_progress ChicoryTest.dtrace.gz
@@ -586,22 +553,20 @@ endif
 DCOMP_ARGS := --ppt-select-pattern=daikon.dcomp.DcompTest
 DCOMP_DIR := daikon/dcomp
 
-# Build DynComp/Java, check the DF summary info and run a sanity test
-.PHONY: dyncomp dcomp
-dyncomp dcomp : plume-import-check dcomp_premain.jar dcomp-test
-
 # Note that this compiles all of dcomp even though all we need for
 # this step is dcomp/Premain.java.
 dcomp_premain.jar : ${INSTRUMENTATION_JAVA_FILES} daikon/dcomp/manifest.txt
-	${JAVAC_COMMAND} ${INSTRUMENTATION_JAVA_FILES}
+	${MAKE} plume-import-check
+	@${JAVAC_COMMAND} ${INSTRUMENTATION_JAVA_FILES}
 	${JAR} cfm dcomp_premain.jar daikon/dcomp/manifest.txt \
 	  daikon/dcomp/Premain.class
 
+# Build DynComp/Java, check the DF summary info and run a sanity test.
 # Runs a simple sanity test on DynComp/Java without an instrumented JDK
 # Also creates file ./DcompTest.decls-DynComp
 # To debug a problem, change '--dump' to '--debug'
-.PHONY: dcomp-test
-dcomp-test : daikon/dcomp/std_dcomp_out.diff
+.PHONY: dyncomp-test dcomp-test
+dyncomp-test dcomp-test : daikon/dcomp/std_dcomp_out.diff
 daikon/dcomp/std_dcomp_out.diff : dcomp_premain.jar
 	/bin/rm -rf /tmp/${USER}/bin/* /tmp/${USER}/orig/*
 	cd daikon/dcomp && ${JAVA_COMMAND} \
@@ -694,42 +659,20 @@ plume-import-check :
 	fi
 
 ## Use this when you don't want $inv/tests makefiles to restart
-JAVA_FILES_EXCEPT_DAIKON = $(subst ./daikon/Daikon.java,,${JAVA_FILES})
-ifeq (${JAVA24}, 0)
-JAVA_FILES_EXCEPT_DAIKON := $(filter-out %24.java, ${JAVA_FILES_EXCEPT_DAIKON})
-endif
+JAVA_FILES_EXCEPT_DAIKON := $(subst ./daikon/Daikon.java,,${JAVA_FILES})
 all_except_daikon: ../utils/plume-scripts ${AUTO_GENERATED_FILES}
 	@echo ${JAVAC_COMMAND} '*.java ... (except Daikon.java)'
 	@${JAVAC_COMMAND} ${JAVA_FILES_EXCEPT_DAIKON}
 	@chmod a-w ${AUTO_GENERATED_FILES}
-	${MAKE} all_pass2
-
-.PHONY: all_pass2
-all_pass2: ${AUTO_GENERATED_CLASSES_2}
-
-all_except: all_except_daikon
-
-all_force:	all_directly
-
-all_via_javac:
-	${MAKE} JAVAC='javac' all
-
-all_javac:	all_via_javac
-
-javac:	all_via_javac
-
-# These rules are undesirable, because Daikon.class (or Diff.class) might
-# be up to date even if other files aren't.
-daikon/Daikon.class: daikon/Daikon.java	../utils/plume-scripts ${AUTO_GENERATED_FILES}
-	${JAVAC_COMMAND} daikon/Daikon.java
-
-daikon/Diff.class: Diff.java ../utils/plume-scripts ${AUTO_GENERATED_FILES}
-	${JAVAC_COMMAND} daikon/Diff.java
 
 
 ###########################################################################
 ### Cleaning (removing generated files
 ###
+
+# TODO:
+# 	rm -f `find daikon -path "*/debug*/bin" -prune -o -path "*/debug*/orig" -prune -o -path "*/debug*/instrumented" -prune -o -path "*/debug*/uninstrumented" -prune -o -name "*.class" -print`
+
 
 # It's good to run "make clean" occasionally, because it costs little to
 # regenerate .class files and it's bad to continue to use an orphaned class
@@ -759,13 +702,13 @@ veryclean: very_clean
 very_clean: very-clean
 very-clean: clean clean-generated-files
 	-rm -f TAGS
-	-rm -rf dcomp_premain.jar dcomp_rt.jar ${DCOMP_RT}
 	-rm -rf api/
 	-rm -rf daikon/chicory/ChicoryTest.inv.out
 	-rm -rf daikon/chicory/debug/
 	-rm -rf daikon/dcomp/DcompTest.decls-DynComp daikon/dcomp/DcompTest.log
 	-rm -rf daikon/dcomp/debug/
 	-rm -rf daikon/dcomp/std_dcomp_out.diff daikon/dcomp/std_dcomp_out.txt
+	-rm -rf dcomp_premain.jar dcomp_rt.jar ${DCOMP_RT}
 
 run:	all
 	${JAVA_COMMAND} daikon.Daikon
@@ -813,8 +756,8 @@ endif
 # See version numbers at https://github.com/google/error-prone/releases
 # and https://errorprone.info/docs/installation.
 # Only run under Java 21+.
-error-prone-version = 2.42.0
-extra-error-prone-args-1 = --should-stop=ifError=FLOW
+error-prone-version := 2.42.0
+extra-error-prone-args-1 := --should-stop=ifError=FLOW
 
 ERRORPRONE_PROCESSOR_PATH := ${DAIKONDIR}/java/lib/error-prone/error_prone_core-${error-prone-version}-with-dependencies.jar:${DAIKONDIR}/java/lib/error-prone/dataflow-errorprone-3.49.3-eisop1.jar
 
@@ -939,42 +882,43 @@ endif
 
 ## All of the following targets need to depend on "compile".
 
+## Code in dcomp directory is not called directly; annotations would be useless.
+INDEX_SKIPDEFS := ^daikon\.dcomp\|^jtb\.
+INTERNING_SKIPDEFS := ^daikon\.dcomp\|^jtb\.
+ALLSYSTEMS_SKIPDEFS := ^jtb\.
+
 # Just check that the Index Checker doesn't crash -- -AsuppressWarnings="index"
 # command-line argument suppresses all type-checking errors.
-JAVAC_RESOURCELEAK_ARGS = -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}' -ApermitStaticOwning -ApermitInitializationLeak
-JAVAC_FORMATTER_ARGS = -processor org.checkerframework.checker.formatter.FormatterChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
-JAVAC_INDEX_ARGS = -processor org.checkerframework.checker.index.IndexChecker -implicit:class -Xlint:-processing -AskipDefs='${INDEX_SKIPDEFS}' -AassumeAssertionsAreEnabled -AsuppressWarnings="index"
-# JAVAC_INTERNING_ARGS = -processor org.checkerframework.checker.interning.InterningChecker -implicit:class -Xlint:-processing
-JAVAC_INTERNING_ARGS = -processor org.checkerframework.checker.interning.InterningChecker -Alint=-dotequals -implicit:class -Xlint:-processing -AskipDefs='${INTERNING_SKIPDEFS}'
-JAVAC_NULLNESS_ARGS = -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
-JAVAC_PROTOTYPE_ARGS = -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=typequals.Prototype,typequals.NonPrototype -implicit:class -Xlint:-processing -J-Dcheckers.skipUses='^java\.'
-JAVAC_REGEX_ARGS = -processor org.checkerframework.checker.regex.RegexChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
-JAVAC_REGEX_QUAL_ARGS = -processor org.checkerframework.checker.experimental.regex_qual.RegexCheckerAdapter -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
-JAVAC_SIGNATURE_ARGS = -processor org.checkerframework.checker.signature.SignatureChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
-JAVAC_SIGNEDNESS_ARGS = -processor org.checkerframework.checker.signedness.SignednessChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
-JAVAC_VINDEX_ARGS = -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=typequals.VIndexTop,typequals.ValueIndex,typequals.VarIndex,typequals.VIndexUnqualified,typequals.VIndexBottom -implicit:class -Xlint:-processing -J-Dcheckers.skipUses='^java\.'
+JAVAC_RESOURCELEAK_ARGS := -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}' -ApermitStaticOwning -ApermitInitializationLeak
+JAVAC_FORMATTER_ARGS := -processor org.checkerframework.checker.formatter.FormatterChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
+JAVAC_INDEX_ARGS := -processor org.checkerframework.checker.index.IndexChecker -implicit:class -Xlint:-processing -AskipDefs='${INDEX_SKIPDEFS}' -AassumeAssertionsAreEnabled -AsuppressWarnings="index"
+# JAVAC_INTERNING_ARGS := -processor org.checkerframework.checker.interning.InterningChecker -implicit:class -Xlint:-processing
+JAVAC_INTERNING_ARGS := -processor org.checkerframework.checker.interning.InterningChecker -Alint=-dotequals -implicit:class -Xlint:-processing -AskipDefs='${INTERNING_SKIPDEFS}'
+JAVAC_NULLNESS_ARGS := -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
+JAVAC_PROTOTYPE_ARGS := -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=typequals.Prototype,typequals.NonPrototype -implicit:class -Xlint:-processing -J-Dcheckers.skipUses='^java\.'
+JAVAC_REGEX_ARGS := -processor org.checkerframework.checker.regex.RegexChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
+JAVAC_REGEX_QUAL_ARGS := -processor org.checkerframework.checker.experimental.regex_qual.RegexCheckerAdapter -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
+JAVAC_SIGNATURE_ARGS := -processor org.checkerframework.checker.signature.SignatureChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
+JAVAC_SIGNEDNESS_ARGS := -processor org.checkerframework.checker.signedness.SignednessChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
+JAVAC_VINDEX_ARGS := -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=typequals.VIndexTop,typequals.ValueIndex,typequals.VarIndex,typequals.VIndexUnqualified,typequals.VIndexBottom -implicit:class -Xlint:-processing -J-Dcheckers.skipUses='^java\.'
 # -AsuppressWarnings=lock:method.guarantee.violated,lock:override.sideeffect is temporary.
 # Once the Purity Checker and -AsuggestPureMethods are fixed, they can be run on plume-lib
 # and Daikon and this can be removed. The method.guarantee.violated warning is issued by
 # the Lock Checker when a method calls another method with a weaker side effect guarantee.
 # The override.sideeffect warning is issued by the Lock Checker when the side effect
 # annotation on the overridder method is weaker than that on the overridden method.
-JAVAC_LOCK_ARGS = -processor org.checkerframework.checker.lock.LockChecker -AsuppressWarnings=lock:method.guarantee.violated,lock:override.sideeffect -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
-JAVAC_JAVARI_ARGS = -processor org.checkerframework.checker.javari.JavariChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
-JAVAC_IGJ_ARGS = -processor org.checkerframework.checker.igj.IGJChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
-## Code in dcomp directory is not called directly; annotations would be useless.
-INDEX_SKIPDEFS = ^daikon\.dcomp\|^jtb\.
-INTERNING_SKIPDEFS = ^daikon\.dcomp\|^jtb\.
-ALLSYSTEMS_SKIPDEFS=^jtb\.
-INDEX_JAVA_FILES = ${DAIKON_JAVA_FILES}
+JAVAC_LOCK_ARGS := -processor org.checkerframework.checker.lock.LockChecker -AsuppressWarnings=lock:method.guarantee.violated,lock:override.sideeffect -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
+JAVAC_JAVARI_ARGS := -processor org.checkerframework.checker.javari.JavariChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
+JAVAC_IGJ_ARGS := -processor org.checkerframework.checker.igj.IGJChecker -implicit:class -Xlint:-processing -AskipDefs='${ALLSYSTEMS_SKIPDEFS}'
+INDEX_JAVA_FILES := ${DAIKON_JAVA_FILES}
 # Intern.java implements interning and so has very many annotations.  VarInfoName
 # is obsolescent, retained for backward compatibility only; it is of flawed design
 # and has 60 @Interned annotations and quite a few SuppressWarnings.
-INTERNING_JAVA_FILES_SKIP_COUNTS = Intern.java\|VarInfoName.java\|daikon/dcomp
+INTERNING_JAVA_FILES_SKIP_COUNTS := Intern.java\|VarInfoName.java\|daikon/dcomp
 ## Which files to check.
-INTERNING_JAVA_FILES = ${DAIKON_JAVA_FILES}
+INTERNING_JAVA_FILES := ${DAIKON_JAVA_FILES}
 INTERNING_JAVA_FILES_COUNTS := $(shell find . -type f -name '*.java' | egrep -v ${INTERNING_JAVA_FILES_SKIP_COUNTS} | xargs grep -l -i '@Interned' | ${SORT_DIRECTORY_ORDER})
-NULLNESS_JAVA_FILES = ${DAIKON_JAVA_FILES}
+NULLNESS_JAVA_FILES := ${DAIKON_JAVA_FILES}
 
 #  $(shell find daikon -name '*.java' -a -exec grep -L "^@SuppressWarnings.*nullness" {} \; | sort)
 #   $(shell find typequals/ -name '*.java')
@@ -1137,8 +1081,8 @@ typecheck-vindex-nocompile:
 	@echo ${JAVAC_COMMAND} ${JAVAC_VINDEX_ARGS} ${CHECKER_ARGS} ...
 	@${JAVAC_COMMAND} -Xbootclasspath/p:${DAIKONDIR}/java ${JAVAC_VINDEX_ARGS} ${CHECKER_ARGS} ${NULLNESS_JAVA_FILES}
 
-TYPEQUALS_JAVA_FILES = $(wildcard typequals/*.java)
-TYPEQUALS_CLASSES = $(subst .java,.class,${TYPEQUALS_JAVA_FILES})
+TYPEQUALS_JAVA_FILES := $(wildcard typequals/*.java)
+TYPEQUALS_CLASSES := $(subst .java,.class,${TYPEQUALS_JAVA_FILES})
 
 compile-typequals: ${TYPEQUALS_CLASSES}
 ${TYPEQUALS_CLASSES}: ${TYPEQUALS_JAVA_FILES}
@@ -1194,7 +1138,7 @@ nullness-counts:
 
 
 # Count the total possible locations at which a type annotation could be written.
-JAVAC_COUNT_ARGS = -processor org.checkerframework.common.util.count.Locations -implicit:class -Xlint:-processing
+JAVAC_COUNT_ARGS := -processor org.checkerframework.common.util.count.Locations -implicit:class -Xlint:-processing
 possible-annos: ${ALL_GENERATED_FILES} compile-typequals compile
 	@echo ${JAVAC_COMMAND} ${JAVAC_COUNT_ARGS} ${CHECKER_ARGS} ...
 	@${JAVAC_COMMAND} ${JAVAC_COUNT_ARGS} ${CHECKER_ARGS} ${NULLNESS_JAVA_FILES}
@@ -1205,9 +1149,9 @@ possible-annos: ${ALL_GENERATED_FILES} compile-typequals compile
 ### Testing
 ###
 
-test: tests
-
-tests: junit
+.PHONY: test tests
+test tests: daikon-tests
+daikon-tests: smoke-test
 	${MAKE} -C ../tests all
 
 # run a static check on currently-compiled classes
@@ -1220,7 +1164,7 @@ check-serialize:
 
 
 .PHONY: junit
-junit:
+junit: daikon/Daikon.class
 	@echo "Running unit (not system) tests..."
 	LC_ALL=en_US.UTF-8 ${JAVA_COMMAND} org.junit.runner.JUnitCore daikon.test.AllTestsSuite
 
@@ -1264,17 +1208,18 @@ clover: all_directly
 ### Documentation
 ###
 
-JAVADOC_DEST = api
+JAVADOC_DEST := api
 # ${DAIKONDIR}/java should not be in classpath, to avoid Javadoc error
 # "Multiple sources of package comments found for package".
 # It also keeps javadoc from finding "*24.java"
 # Removed "-source 8" because it causes a crash under JDK 11:  https://bugzilla.redhat.com/show_bug.cgi?id=1874672
-JAVADOC_FLAGS_COMMON = -breakiterator -quiet -linksource -noqualifier all \
+JAVADOC_FLAGS_COMMON := -breakiterator -quiet -linksource -noqualifier all \
                 -Xmaxerrs 100000 -Xmaxwarns 100000 \
                 -d ${JAVADOC_DEST} \
                 -linkoffline ${LINKOFFLINE} ${LINKOFFLINE} \
+		-notimestamp \
                 -classpath "$(subst *:${DAIKONDIR}/java,*,${DAIKON_CLASSPATH})"
-JAVADOC_FLAGS = ${JAVADOC_FLAGS_COMMON} \
+JAVADOC_FLAGS := ${JAVADOC_FLAGS_COMMON} \
                 -docletpath "${DOCLETPATH}"
 
 # Daikon packages except for util (which is just a copy of plume), plume,
@@ -1340,7 +1285,7 @@ else
 	mkdir -p ${JAVADOC_DEST}
 	${JAVADOC_COMMAND} ${extra-javadoc-args} -J-Xmx7g -J-ea ${JAVADOC_FLAGS} -private -Xdoclint:all ${DOCLET_FLAGS} \
 	  daikon -subpackages ${DAIKON_PACKAGES}
-	cd api && ../../utils/plume-scripts/preplace '^ *&#64;cindex.*' ''
+	cd ${JAVADOC_DEST} && ${PLUMESCRIPTS}/preplace '^ *&#64;cindex.*' ''
 endif
 
 ## Test that each program component is documented with Javadoc.
@@ -1458,9 +1403,12 @@ list_java_files: showvar_JAVA_FILES
 ### Automatically generated files
 ###
 
+# This must NOT depend on "daikon/Daikon.class", as that would lead to infinite regress.
+daikon/test/split/SplitterFactoryTestUpdater.class: daikon/test/split/SplitterFactoryTestUpdater.java
+	${JAVAC_COMMAND} $<
+
 ## First, a file not generated via java-cpp.
-daikon/test/split/SplitterFactoryTest.java: daikon/test/split/SplitterFactoryTestUpdater.java daikon/split/TokenReplacer.java
-	${JAVAC_COMMAND} $^
+daikon/test/split/SplitterFactoryTest.java: daikon/test/split/SplitterFactoryTestUpdater.class
 	rm -f $@
 # Has expected errors while compiling splitter files.
 # Suppress output unless whole command fails.
@@ -1469,10 +1417,6 @@ daikon/test/split/SplitterFactoryTest.java: daikon/test/split/SplitterFactoryTes
 
 ${AUTO_GENERATED_CLASSES_2}: ${AUTO_GENERATED_FILES_2}
 	${JAVAC_COMMAND} ${AUTO_GENERATED_FILES_2}
-
-## This would be an alternative to the above rule for ${AUTO_GENERATED_CLASSES_2}.
-# daikon/test/split/SplitterFactoryTest.class: daikon/test/split/SplitterFactoryTest.java
-# 	${JAVAC_COMMAND} $<
 
 # Create the auto-generated files with jpp
 .PHONY: jpp
