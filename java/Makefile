@@ -594,6 +594,7 @@ dyncomp-update-goals dcomp-update-goals:
 #
 # Rules to build the instrumented JDK for DynComp/Java
 #
+# TODO: What is the convention for when "$DCOMP_RT" (= "dcomp-rt") versus "dcomp_rt" is used?
 DCOMP_RT	:= dcomp-rt
 dyncomp-jdk dcomp-jdk   : dcomp_rt.jar
 ${DCOMP_RT} dcomp_rt.jar : dcomp_premain.jar
