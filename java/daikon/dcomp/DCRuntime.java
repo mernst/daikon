@@ -2471,7 +2471,7 @@ public final class DCRuntime implements ComparabilityProvider {
     Map<String, DaikonVariableInfo> dest_map = new LinkedHashMap<>();
     for (DaikonVariableInfo dest_var : varlist(dest)) {
       String dest_var_name = dest_var.getName();
-      if (false) { // temporarily commented out because it is failing
+      if (true) { // temporarily commented out because it is failing
         if (dest_map.containsKey(dest_var_name)) {
           DaikonVariableInfo old_dest_var = dest_map.get(dest_var_name);
           throw new Error(
