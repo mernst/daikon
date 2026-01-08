@@ -536,7 +536,7 @@ ChicoryPremain.jar : daikon/Daikon.class daikon/chicory/manifest.txt
 
 .PHONY: chicory-test
 chicory-test: daikon/chicory/inv_out.diff
-daikon/chicory/inv_out.diff: ChicoryPremain.jar daikon/Daikon.class
+daikon/chicory/inv_out.diff: ChicoryPremain.jar
 	cd daikon/chicory && rm -f ChicoryTest.log ChicoryTest.dtrace.gz ChicoryTest.inv.gz ChicoryTest.inv.out
 	cd daikon/chicory && ${JAVA_COMMAND} daikon.Chicory --verbose --debug daikon.chicory.ChicoryTest > ChicoryTest.log || (cat ChicoryTest.log; false)
 	cd daikon/chicory && ${JAVA_COMMAND} daikon.Daikon --no_text_output --no_show_progress ChicoryTest.dtrace.gz
