@@ -4919,7 +4919,9 @@ public class DCInstrument24 {
       classGen.addInterface(Signatures.addPackage(dcompRuntimePrefix, "DCompClone"));
     }
 
-    MethodModel ts = classGen.containsMethod("toString", "()Ljava/lang/String;");
+    @SuppressWarnings("signature:assignment")
+    @MethodDescriptor String noArgsReturnString = "()Ljava/lang/String;";
+    MethodModel ts = classGen.containsMethod("toString", noArgsReturnString);
     if (ts != null) {
       classGen.addInterface(Signatures.addPackage(dcompRuntimePrefix, "DCompToString"));
     }
