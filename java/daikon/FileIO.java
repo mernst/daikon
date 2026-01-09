@@ -1047,7 +1047,7 @@ public final class FileIO {
       } catch (Throwable e) {
         if (dkconfig_continue_after_file_exception) {
           System.out.println();
-          System.out.println(
+          System.out.printf(
               "WARNING: Error while processing trace file %s; remaining records ignored.%n",
               filename);
           System.out.println("Ignored backtrace:");
@@ -1392,7 +1392,7 @@ public final class FileIO {
         try {
           total_lines = FilesPlume.countLines(raw_filename);
         } catch (Throwable t) {
-          // There is nothing to do, because `total_lines` was already set to 0.
+          // There is no need to set `total_lines`, because it was initialized to 0.
         }
       } else {
         // System.out.printf("no count %b %d %s %d %d%n", is_decl_file,
@@ -1579,9 +1579,10 @@ public final class FileIO {
               throw new Daikon.UserError(e, data_trace_state);
             } else {
               System.out.println();
-              System.out.println(
-                  "WARNING: Error while processing trace file; subsequent records ignored.");
-              System.out.print("Ignored backtrace:");
+              System.out.printf(
+                  "WARNING: Error while processing trace file %s; remaining records ignored.%n",
+                  filename);
+              System.out.println("Ignored backtrace:");
               e.printStackTrace(System.out);
               System.out.println();
             }
