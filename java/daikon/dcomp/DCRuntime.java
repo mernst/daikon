@@ -2073,7 +2073,7 @@ public final class DCRuntime implements ComparabilityProvider {
         if ((set.size() == 1) && (set.get(0) instanceof StaticObjInfo)) {
           continue;
         }
-        List<String> stuff = skinyOutput(set, daikon.DynComp.abridged_vars);
+        List<String> stuff = skinnyOutput(set, daikon.DynComp.abridged_vars);
         // To see "daikon.chicory.FooInfo:variable", change true to false
         pw.printf("  [%d] %s%n", stuff.size(), stuff);
       }
@@ -2088,7 +2088,7 @@ public final class DCRuntime implements ComparabilityProvider {
         if ((set.size() == 1) && (set.get(0) instanceof StaticObjInfo)) {
           continue;
         }
-        List<String> stuff = skinyOutput(set, daikon.DynComp.abridged_vars);
+        List<String> stuff = skinnyOutput(set, daikon.DynComp.abridged_vars);
         // To see "daikon.chicory.FooInfo:variable", change true to false
         pw.printf("  [%d] %s%n", stuff.size(), stuff);
       }
@@ -2155,7 +2155,7 @@ public final class DCRuntime implements ComparabilityProvider {
      */
 
     if (depth == 0) {
-      pw.printf("%s%n", skinyOutput(node, daikon.DynComp.abridged_vars));
+      pw.printf("%s%n", skinnyOutput(node, daikon.DynComp.abridged_vars));
       if (tree.get(node) == null) {
         return;
       }
@@ -2170,7 +2170,7 @@ public final class DCRuntime implements ComparabilityProvider {
       }
       pw.printf(
           "%s (%s)%n",
-          skinyOutput(node, daikon.DynComp.abridged_vars), TagEntry.get_line_trace(node));
+          skinnyOutput(node, daikon.DynComp.abridged_vars), TagEntry.get_line_trace(node));
       if (tree.get(node) == null) {
         return;
       }
@@ -2184,7 +2184,7 @@ public final class DCRuntime implements ComparabilityProvider {
 
   /**
    * If on, returns an ArrayList of Strings that converts the usual DVInfo.toString() output to a
-   * more readable form
+   * more readable form.
    *
    * <p>e.g. "daikon.chicory.ParameterInfo:foo" becomes "Parameter foo"
    *
@@ -2194,15 +2194,15 @@ public final class DCRuntime implements ComparabilityProvider {
    * @param on value of daikon.Daikon.abridger_vars
    * @return a readable version of {@code l}
    */
-  private static List<String> skinyOutput(DVSet l, boolean on) {
+  private static List<String> skinnyOutput(DVSet l, boolean on) {
     List<String> o = new ArrayList<>();
     for (DaikonVariableInfo dvi : l) {
-      o.add(skinyOutput(dvi, on));
+      o.add(skinnyOutput(dvi, on));
     }
     return o;
   }
 
-  private static String skinyOutput(DaikonVariableInfo dv, boolean on) {
+  private static String skinnyOutput(DaikonVariableInfo dv, boolean on) {
     if (!on) {
       return dv.toString();
     }
@@ -2274,7 +2274,7 @@ public final class DCRuntime implements ComparabilityProvider {
       StringJoiner result = new StringJoiner(System.lineSeparator());
       result.add("DVSet(");
       for (DaikonVariableInfo dvi : this) {
-        result.add(String.format("  %s [%s]", dvi, System.identityHashCode(dvi)));
+        result.add(String.format("  " + dvi.toStringWithIdentityHashCode()));
       }
       result.add("  )");
       return result.toString();
@@ -2282,12 +2282,14 @@ public final class DCRuntime implements ComparabilityProvider {
   }
 
   /**
-   * Gets a list of comparability sets of Daikon variables. If the method has never been executed
-   * returns null (it would probably be better to return each variable in a separate set, but I
+   * Gets a list of comparability sets of Daikon variables. Returns null if the method has never
+   * been executed (it would probably be better to return each variable in a separate set, but I
    * wanted to differentiate this case for now).
    *
    * <p>The sets are calculated by processing each daikon variable and adding it to a list
    * associated with the leader of that set.
+   *
+   * <p>This routine is only used for diagnostics.
    */
   static @Nullable List<DVSet> get_comparable(RootInfo root) {
 
@@ -2300,7 +2302,7 @@ public final class DCRuntime implements ComparabilityProvider {
         new IdentityHashMap<DaikonVariableInfo, DVSet>();
 
     for (DaikonVariableInfo dv : root) {
-      add_variable(sets, dv);
+      add_variable_quietly(sets, dv);
     }
     map_info.log("sets size: %d%n", sets.size());
 
@@ -2468,10 +2470,6 @@ public final class DCRuntime implements ComparabilityProvider {
     debug_merge_comp.log("  src =%n%s%n", src.treeString());
     debug_merge_comp.log("  dest =%n%s%n", dest.treeString());
 
-    debug_merge_comp.log("Before merge_dv_comparability:%n");
-    debug_merge_comp.log("  src comparable =%n%s%n", dvSetsToString(get_comparable(src), 10));
-    debug_merge_comp.log("  dest comparable =%n%s%n", dvSetsToString(get_comparable(dest), 10));
-
     // TODO: This should be a map from variable to variable, not from name to variable.
     // Create a map relating destination names to their variables
     Map<String, DaikonVariableInfo> dest_map = new LinkedHashMap<>();
@@ -2480,19 +2478,24 @@ public final class DCRuntime implements ComparabilityProvider {
       if (true) { // temporarily commented out because it is failing
         if (dest_map.containsKey(dest_var_name)) {
           DaikonVariableInfo old_dest_var = dest_map.get(dest_var_name);
-          throw new Error(
+          String msg =
               String.format(
-                  "duplicate var name %s%n for %s [%s]%n and %s [%s]%n in %s",
+                  "duplicate var name %s%n from old_dest_var = %s%n and dest_var = %s%n" + " in %s",
                   dest_var_name,
-                  old_dest_var,
-                  System.identityHashCode(old_dest_var),
-                  dest_var,
-                  System.identityHashCode(dest_var),
-                  new DVSet(varlist(dest)).toStringWithIdentityHashCode()));
+                  old_dest_var.toStringWithIdentityHashCode(),
+                  dest_var.toStringWithIdentityHashCode(),
+                  new DVSet(varlist(dest)).toStringWithIdentityHashCode());
+          System.out.println(msg);
+          System.err.println(msg);
+          throw new Error(msg);
         }
       }
       dest_map.put(dest_var_name, dest_var);
     }
+
+    debug_merge_comp.log("Before merge_dv_comparability:%n");
+    debug_merge_comp.log("  src comparable =%n%s%n", dvSetsToString(get_comparable(src), 10));
+    debug_merge_comp.log("  dest comparable =%n%s%n", dvSetsToString(get_comparable(dest), 10));
 
     // Get the variable sets for the source
     List<DVSet> src_sets = get_comparable(src);
@@ -2528,15 +2531,38 @@ public final class DCRuntime implements ComparabilityProvider {
     debug_merge_comp.exdent();
   }
 
+  // TODO: Is this "noisy" version of add_variable useful?  Or should it never be used?  (I suspect
+  // the latter...)
   /**
    * Adds this daikon variable and all of its children into their appropriate sets (those of their
    * leader) in sets.
    */
   static void add_variable(Map<DaikonVariableInfo, DVSet> sets, DaikonVariableInfo dv) {
+    add_variable(sets, dv, false);
+  }
 
-    debug_merge_comp.log(
-        "add_variable(%s [%s]) declShouldPrint=%s%n",
-        dv, System.identityHashCode(dv), dv.declShouldPrint());
+  /**
+   * Adds this daikon variable and all of its children into their appropriate sets (those of their
+   * leader) in sets.
+   *
+   * <p>Does no logging, so can be called in logging code itself.
+   */
+  static void add_variable_quietly(Map<DaikonVariableInfo, DVSet> sets, DaikonVariableInfo dv) {
+    add_variable(sets, dv, true);
+  }
+
+  /**
+   * Adds this daikon variable and all of its children into their appropriate sets (those of their
+   * leader) in sets.
+   */
+  private static void add_variable(
+      Map<DaikonVariableInfo, DVSet> sets, DaikonVariableInfo dv, boolean noLogging) {
+
+    if (!noLogging) {
+      debug_merge_comp.log(
+          "add_variable(%s) declShouldPrint=%s%n",
+          dv.toStringWithIdentityHashCode(), dv.declShouldPrint());
+    }
 
     // Add this variable into the set of its leader
     if (dv.declShouldPrint()) {
@@ -2547,7 +2573,7 @@ public final class DCRuntime implements ComparabilityProvider {
 
     // Process the children
     for (DaikonVariableInfo child : dv) {
-      add_variable(sets, child);
+      add_variable(sets, child, noLogging);
     }
   }
 
