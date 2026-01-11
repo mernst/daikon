@@ -2726,7 +2726,7 @@ public class DCInstrument24 {
       System.out.println("searching interfaces of: " + ClassGen24.getClassName(startClass));
     }
     for (ClassEntry classEntry : startClass.interfaces()) {
-      @BinaryName String interfaceName = Signatures.internalFormToBinaryName(classEntry.asInternalName());
+      @BinaryName String interfaceName = Runtime.internalFormToBinaryName(classEntry.asInternalName());
       if (debugGetDefiningInterface) {
         System.out.println("interface: " + interfaceName);
       }
@@ -2810,7 +2810,7 @@ public class DCInstrument24 {
   private List<CodeElement> handleInvoke(InvokeInstruction invoke, MethodGen24 mgen) {
 
     // Get information about the call.
-    @BinaryName String classname = Signatures.internalFormToBinaryName(invoke.owner().asInternalName());
+    @BinaryName String classname = Runtime.internalFormToBinaryName(invoke.owner().asInternalName());
     String methodName = invoke.name().stringValue();
     MethodTypeDesc mtd = invoke.typeSymbol();
     ClassDesc returnType = mtd.returnType();
@@ -3468,7 +3468,7 @@ public class DCInstrument24 {
     List<CodeElement> il = new ArrayList<>();
     Opcode op = fi.opcode();
     String fieldName = fi.name().stringValue();
-    @BinaryName String owner = Signatures.internalFormToBinaryName(fi.owner().asInternalName());
+    @BinaryName String owner = Runtime.internalFormToBinaryName(fi.owner().asInternalName());
     ClassDesc ownerCD = fi.owner().asSymbol();
 
     // If this class doesn't support tag fields, don't load/store them.
@@ -4521,7 +4521,7 @@ public class DCInstrument24 {
     }
 
     // Get the offsets for each field in the superclass.
-    String superclassName = Signatures.internalFormToBinaryName(ce.get().asInternalName());
+    String superclassName = Runtime.internalFormToBinaryName(ce.get().asInternalName());
     ClassModel super_cm = getClassModel(superclassName);
     if (super_cm == null) {
       throw new DynCompError("Can't get superclass for " + superclassName);
