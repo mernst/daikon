@@ -2183,8 +2183,9 @@ public final class DCRuntime implements ComparabilityProvider {
   }
 
   /**
-   * If on, returns an ArrayList of Strings that converts the usual DVInfo.toString() output to a
-   * more readable form.
+   * If {@code on} is true, returns an ArrayList of Strings that converts the usual
+   * DVInfo.toString() output to a more readable form. Just uses DVInfo.toString if {@code on} is
+   * false.
    *
    * <p>e.g. "daikon.chicory.ParameterInfo:foo" becomes "Parameter foo"
    *
@@ -2202,6 +2203,15 @@ public final class DCRuntime implements ComparabilityProvider {
     return o;
   }
 
+  // TODO: This should be a method of DaikonVariableInfo.
+  /**
+   * If {@code on} is false, returns {@code dv.toString()}. If {@code on} is true, returns a more
+   * readable and informative string.
+   *
+   * @param dv a Daikon variable
+   * @param on value of daikon.Daikon.abridger_vars
+   * @return a readable version of {@code dv}
+   */
   private static String skinnyOutput(DaikonVariableInfo dv, boolean on) {
     if (!on) {
       return dv.toString();
@@ -2270,11 +2280,12 @@ public final class DCRuntime implements ComparabilityProvider {
      *
      * @return a multi-line representation of the list of variables
      */
+    @SuppressWarnings("UnusedMethod") // TEMPORARY
     String toStringWithIdentityHashCode() {
       StringJoiner result = new StringJoiner(System.lineSeparator());
       result.add("DVSet(");
       for (DaikonVariableInfo dvi : this) {
-        result.add(String.format("  " + dvi.toStringWithIdentityHashCode()));
+        result.add("  " + dvi.toStringWithIdentityHashCode());
       }
       result.add("  )");
       return result.toString();
