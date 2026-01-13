@@ -27,6 +27,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.Identifier;
+import org.plumelib.reflection.Signatures;
 import org.plumelib.util.StringsPlume;
 
 /** Static methods for manipulating the AST. */
@@ -1423,7 +1424,7 @@ public class Ast {
     if (c.isPrimitive()) {
       return c.getName();
     } else if (c.isArray()) {
-      return Runtime.classGetNameToBinaryName(c.getName());
+      return Signatures.classGetNameToBinaryName(c.getName());
     } else {
       return c.getName();
     }
