@@ -317,6 +317,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.Identifier;
+import org.checkerframework.checker.signature.qual.InternalForm;
 import org.checkerframework.dataflow.qual.Pure;
 
 /**
@@ -2693,7 +2694,9 @@ public class DCInstrument extends InstructionListUtils {
       return false;
     }
 
-    if (daikon.dcomp.Instrument.is_transformer(classname.replace('.', '/'))) {
+    @SuppressWarnings("signature:assignment") // string conversion
+    @InternalForm String internalName = classname.replace('.', '/');
+    if (daikon.dcomp.Instrument.is_transformer(internalName)) {
       return false;
     }
 
