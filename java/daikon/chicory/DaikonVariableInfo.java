@@ -201,7 +201,11 @@ public abstract class DaikonVariableInfo
     children.add(info);
   }
 
-  /** Returns a string representation of this node. */
+  /**
+   * Returns a string representation of this node.
+   *
+   * <p>This implementation returns its run-time class and its name.
+   */
   @SideEffectFree
   @Override
   public String toString(@GuardSatisfied DaikonVariableInfo this) {
