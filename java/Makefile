@@ -30,6 +30,7 @@ ifneq (,$(findstring start1.8,start${JAVA_VERSION_STRING}))
   JAVA21 := 0
   JAVA24 := 0
   JAVA25 := 0
+  JAVA26 := 0
   JAVA_RELEASE_NUMBER := 8
 else
   JAVA8 := 0
@@ -37,6 +38,7 @@ else
   JAVA21 := 0
   JAVA24 := 0
   JAVA25 := 0
+  JAVA26 := 0
   JAVA_RELEASE_NUMBER := $(shell echo ${JAVA_VERSION_STRING} | sed 's/\([0-9]*\)\..*/\1/')
 endif
 ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -ge 17; echo $$?),0)
@@ -45,15 +47,14 @@ endif
 ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -ge 21; echo $$?),0)
   JAVA21 := 1
 endif
-# Temporary, since Java 24 is not a LTS release.
-ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -ge 24; echo $$?),0)
-  JAVA24 := 1
-endif
 ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -ge 25; echo $$?),0)
   JAVA25 := 1
   ifndef JAVA25_HOME
     JAVA25_HOME := ${JAVA_HOME}
   endif
+endif
+ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -ge 26; echo $$?),0)
+  JAVA26 := 1
 endif
 
 ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -gt 20; echo $$?),0)
@@ -72,8 +73,6 @@ ifeq (${JAVA25}, 1)
     $(error JAVA25_HOME is not set; JAVA_HOME=${JAVA_HOME})
   endif
   JAVAC_TARGET_FLAGS ?= --source 25 --target 25 --system ${JAVA25_HOME}
-else ifeq (${JAVA24}, 1)
-  JAVAC_TARGET_FLAGS ?= -source 24 -target 24
 else
   JAVAC_TARGET_FLAGS ?= -source 8 -target 8
 endif
