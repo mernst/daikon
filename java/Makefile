@@ -47,6 +47,10 @@ endif
 ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -ge 21; echo $$?),0)
   JAVA21 := 1
 endif
+# JDK 24 isn't an LTS version, but we need it to know whether to compile Instrument24.java.
+ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -ge 24; echo $$?),0)
+  JAVA24 := 1
+endif
 ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -ge 25; echo $$?),0)
   JAVA25 := 1
   ifndef JAVA25_HOME
