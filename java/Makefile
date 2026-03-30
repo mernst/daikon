@@ -53,6 +53,8 @@ ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -ge 24; echo $$?),0)
 endif
 ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -ge 25; echo $$?),0)
   JAVA25 := 1
+endif
+ifeq ($(shell test ${JAVA_RELEASE_NUMBER} -eq 25; echo $$?),0)
   ifndef JAVA25_HOME
     JAVA25_HOME := ${JAVA_HOME}
   endif
