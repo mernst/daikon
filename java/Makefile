@@ -72,11 +72,16 @@ OS_REL := $(shell sed -n -e 's/^VERSION_ID="\(.*\)"/\1/p' /etc/os-release)
 # Users can set JAVAC_TARGET_FLAGS, taking precedence over these settings.
 # Use "--source 25 --target 25" because Java 25 is an LTS version.
 ifeq (${JAVA25}, 1)
-  ifndef JAVA25_HOME
+  ifdef JAVA25_HOME
+    JAVAC_TARGET_FLAGS ?= --source 25 --target 25 --system ${JAVA25_HOME}
+  else
+  ifdef JAVA26_HOME
+    JAVAC_TARGET_FLAGS ?= --source 25 --target 25 --system ${JAVA26_HOME}
+  else
     # If this happens, $JAVA_HOME must also be empty.
-    $(error JAVA25_HOME is not set; JAVA_HOME=${JAVA_HOME})
+    $(error JAVA25_HOME and JAVA26_HOME are not set; JAVA_HOME=${JAVA_HOME})
   endif
-  JAVAC_TARGET_FLAGS ?= --source 25 --target 25 --system ${JAVA25_HOME}
+  endif
 else
   JAVAC_TARGET_FLAGS ?= -source 8 -target 8
 endif
