@@ -18,6 +18,8 @@ echo "HEAD=$(git rev-parse HEAD)"
 
 make compile daikon.jar
 
+(cd java/lib && gradle shadowjar --stacktrace)
+
 # Code style & quality
 make -C java error-prone
 make -C java check-format || (make -C java reformat && git --no-pager diff && /bin/false)
