@@ -8,11 +8,11 @@ HTMLTOOLS ?= ${DAIKONDIR}/.utils/html-tools
 CHECKLINK ?= ${DAIKONDIR}/.utils/checklink
 
 PLUMESCRIPTS ?= ${DAIKONDIR}/.utils/plume-scripts
-SORT_DIRECTORY_ORDER = ${PLUMESCRIPTS}/sort-directory-order
-ifneq "$(wildcard ${SORT_DIRECTORY_ORDER})" "${SORT_DIRECTORY_ORDER}"
-  # Until "make ../plume-scripts" has been run, sort-directory-order is not available.
-  SORT_DIRECTORY_ORDER = sort
+
+ifeq (,$(wildcard ${PLUMESCRIPTS}))
+  dummy := $(shell git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git ${PLUMESCRIPTS})
 endif
+SORT_DIRECTORY_ORDER := ${PLUMESCRIPTS}/sort-directory-order
 
 JAVA_RELEASE_NUMBER := $(shell java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
 
@@ -325,10 +325,7 @@ nightly-test-except-doc-pdf:
 # Excluding "utils" is temporary; it was changed to ".utils"
 CODE_STYLE_EXCLUSIONS_USER := ${CODE_STYLE_EXCLUSIONS_USER} --exclude-dir kvasir-tests --exclude-dir six170 --exclude-dir .utils --exclude-dir utils --exclude clustering.html --exclude=’*.log’
 CODE_STYLE_FILTER_OUT_USER := ${CODE_STYLE_FILTER_OUT_USER} ./doc/daikon/% ./doc/developer/%
-ifeq (,$(wildcard .plume-scripts))
-dummy := $(shell git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts)
-endif
-include .plume-scripts/code-style.mak
+include ${PLUMESCRIPTS}/code-style.mak
 
 
 ### Tags

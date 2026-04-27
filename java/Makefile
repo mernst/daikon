@@ -641,7 +641,7 @@ dyncomp-jdk-only dcomp-jdk-only :
 	fi
 
 ## These two rules create the directories if absent but don't update them.
-../.utils/plume-scripts:
+${PLUMESCRIPTS}:
 	${MAKE} -C .. update-plume-scripts-in-utils
 
 ../.utils/html-tools:
@@ -671,7 +671,7 @@ plume-import-check :
 
 ## Use this when you don't want $inv/tests makefiles to restart
 JAVA_FILES_EXCEPT_DAIKON := $(subst ./daikon/Daikon.java,,${JAVA_FILES})
-all_except_daikon: ../.utils/plume-scripts ${AUTO_GENERATED_FILES}
+all_except_daikon: ${PLUMESCRIPTS} ${AUTO_GENERATED_FILES}
 	@echo ${JAVAC_COMMAND} '*.java ... (except Daikon.java)'
 	@${JAVAC_COMMAND} ${JAVA_FILES_EXCEPT_DAIKON}
 	@chmod a-w ${AUTO_GENERATED_FILES}
@@ -708,7 +708,7 @@ clean:
 clean-generated-files:
 	-rm -f ${AUTO_GENERATED_FILES} ${AUTO_GENERATED_FILES_2}
 
-# Could/should remove plume-scripts here, too.
+# Could/should remove .utils here, too.
 veryclean: very_clean
 very_clean: very-clean
 very-clean: clean clean-generated-files
@@ -752,7 +752,7 @@ tags-without-generated-files: clean-generated-files
 	${MAKE} compile
 
 # A TAGS file that does not contain jtb-generated files.
-tags-nojtb: ../.utils/plume-scripts
+tags-nojtb: ${PLUMESCRIPTS}
 ifndef ETAGS
 	$(error etags is not available, please install it)
 endif
