@@ -4,9 +4,9 @@ all-except-pdf: config-options.texinfo invariants-doc.texinfo html-chap html
 TEXI2HTML ?= makeinfo --html
 
 HTMLTOOLS ?= ../.utils/html-tools
-PLUMESCRIPTS ?= ../.utils/plume-scripts
+PLUME_SCRIPTS ?= ../.utils/plume-scripts
 # `cronic` suppresses output unless the wrapped command fails.
-CRONIC ?= ${PLUMESCRIPTS}/cronic
+CRONIC ?= ${PLUME_SCRIPTS}/cronic
 
 daikon.info: daikon.texinfo config-options.texinfo invariants-doc.texinfo
 # Large split size fixes an apparent bug in makeinfo 4.11:
@@ -69,8 +69,8 @@ daikon-fast: daikon.texinfo
 ../.utils/html-tools:
 	${MAKE} -C .. update-html-tools
 
-${CRONIC}: ${PLUMESCRIPTS}
-${PLUMESCRIPTS}:
+${CRONIC}: ${PLUME_SCRIPTS}
+${PLUME_SCRIPTS}:
 	${MAKE} -C .. update-plume-scripts-in-utils
 
 .PHONY: daikon-html
