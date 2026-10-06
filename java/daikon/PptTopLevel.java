@@ -4728,6 +4728,25 @@ public class PptTopLevel extends Ppt {
     return type == PptType.SUBEXIT;
   }
 
+  /**
+   * Returns true if this is a leaf of the program point hierarchy, which receives samples directly
+   * rather than computing its invariants from its children. Rather than defining leaves as
+   * :::GLOBAL or :::EXIT54 (numbered exit), this defines them as everything except :::EXIT
+   * (combined), :::ENTER, :::THROWS, :::OBJECT, and :::CLASS program points. This ensures that
+   * arbitrarily named program points such as :::POINT (used by convertcsv.pl) are treated as
+   * leaves.
+   *
+   * @return true if this is a leaf of the program point hierarchy
+   */
+  @Pure
+  public boolean is_leaf() {
+    return !(is_combined_exit()
+        || is_enter()
+        || ppt_name.isThrowsPoint()
+        || is_object()
+        || is_class());
+  }
+
   /** Is this a ppt that represents an object? */
   @Pure
   public boolean is_object() {
